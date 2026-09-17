@@ -1,6 +1,11 @@
-# HeteroNexus · 异构算力协同调度平台
+# HeteroNexus · 异构执行资源决策引擎
 
-> 面向深度学习训练的异构算力智能调度平台 —— 以 Kubernetes 插件形式部署，通过多目标深度强化学习实现 CPU / GPU / FPGA 混合架构下的动态资源分配。
+> 统一的异构资源决策引擎 —— 在同一套多目标优化内核下，同时覆盖 **算力层**（CPU / GPU / 云 GPU 的作业编排）与 **模型层**（大模型 API / 自建模型的省成本路由）。
+
+**内核保留，场景外扩。** 算力调度回答"这个作业放哪块硬件"，模型路由回答"这个请求调哪个模型"。
+两者在数学上是同一个问题 —— 把任务映射到候选执行资源上，在成本 / 延迟 / 质量之间求最优 ——
+差别只在一个地方：**质量在算力侧是常量**（训练结果不因节点而变），
+**在模型侧是难度的函数**（选错模型就是答错，不可回滚）。这一个差异，就是本项目从 Q1 走到 Q2 的真实技术增量。
 
 [![CI](https://github.com/quannie255-star/HeteroNexus/actions/workflows/ci.yml/badge.svg)](https://github.com/quannie255-star/HeteroNexus/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/Python-3.11+-3776AB?logo=python&logoColor=white)
@@ -106,6 +111,62 @@
 2. **无静态权重可通吃全部指标**：四组预设分别落在帕累托前沿的不同位置，不存在支配所有其他配置的单点。
 3. **→ 强化学习的必要性**：既然最优权重随负载特征（推理密集 / 训练密集、大任务占比、队列深度）变化，"在线选择权重"本身就是一个可学习的策略，而非调参问题。
 
+### 4.3 场景二：Token 侧路由实验（模型层，Q2 新增）
+
+**要回答的问题**：不知道该用哪个模型的用户，为了保险一律调用最强的那个。这里面有多少是白花的钱？
+
+#### 方法：不烧真实 token 也能验证
+
+整套评估在离线完成，输入只有三样公开可得的东西：
+
+| 输入 | 来源 | 口径 |
+|---|---|---|
+| 各模型能力分数 | AI Model Benchmark Tracker（2026-04-10） | MMLU / MATH / HumanEval / GSM8K 正确率 |
+| 各模型价格 | API 价格汇总（2026-08-17） | 元 / 百万 token |
+| 任务难度分布 | 四组可配置的业务场景预设 | 简单 / 中等 / 困难 三档 |
+
+任务能否答对，由 `quality_at_difficulty()` 建模：采用难度校准的 logistic（简化 Rasch/IRT 形式），
+保证 **当任务难度等于 benchmark 基准难度时，仿真正确率恰好还原公开榜单分数**。
+这条性质让整套数字有了校准锚点 —— 不是凭空造的分布。
+
+#### 结论（mixed 场景，2000 任务/样本，5 种子平均）
+
+| 策略 | 总花费 | 省钱 | 正确率 | 质量保有 |
+|---|---|---|---|---|
+| 全用最强模型（用户现状） | ¥35.22 | — | 90.9% | 100% |
+| 全用最便宜模型 | ¥2.69 | 92.4% | 67.1% | 73.9% |
+| 级联升级（先小后大） | ¥5.67 | 83.9% | 82.9% | 91.2% |
+| **路由方案（本项目，λ=0.2）** | **¥17.32** | **50.8%** | **89.4%** | **98.4%** |
+| 理论最优 Oracle | ¥4.19 | 88.1% | 100% | 110.0% |
+
+**三条可用的结论**
+
+1. **省一半的钱不必牺牲质量**：质量保有 98.4% 的配置下花费减半。大多数日常请求用不上顶尖模型。
+2. **成本空间的绝大部分已被简单策略吃掉了**（90% vs Oracle 的 88.1%），**剩下的差距在质量而不在钱** —— Oracle 既省钱又全对，而实际策略省了钱却掉了 3 个百分点。真正的技术难点是"在省钱的同时保住正确率"。
+3. **"省多少"必须由用户定**：不存在既更便宜又更准的单一方案，只有一条帕累托前沿（见 `figures/token_pareto_front.svg`）。产品的角色是画出这条曲线并标出膝点，而不是替用户决定。
+
+#### 算力层与模型层的耦合点
+
+自建模型本质上是用 GPU 卡时换 token，其单位成本反比于 **GPU 有效负载率**：
+
+```
+每 token 成本 = GPU 时租金 ÷ 3600 ÷（吞吐 × 负载率）
+```
+
+敏感度分析显示临界点在 **20% 负载率附近**：低于此，"自建开源模型替代调 API" 反而不划算。
+而"把 GPU 喂满"恰恰是算力侧调度器的职责 —— 两个场景不是并列，是耦合的
+（见 `figures/token_utilization.svg`）。
+
+#### 数据溯源与校准
+
+`tokenrouter/data/catalog.json` 中每个模型的能力分数与价格都带来源标注
+（`measured` 或 `proxy:xxx`），闭源旗舰缺少同口径公开榜单时用同系列分数代理并显式注明。
+GPU 租金与吞吐为工程量级估算，**默认按 0.35 的有效负载率折算**（宁可低估自建的吸引力）。
+GPU 租金与吞吐为工程量级估算，**默认按 0.35 的有效负载率折算**（宁可低估自建的吸引力）。
+参数校准后重跑 `python scripts/run_token_experiments.py` 即可刷新全部结论。
+
+> **口径红线**：对外表述时必须同时给出省钱比例与质量代价。只讲省 92% 而不讲正确率掉到 67%，等同于误导。
+
 ## 五、快速开始
 
 ### 运行基线实验
@@ -133,15 +194,53 @@ open console/index.html
 ### 运行测试
 
 ```bash
-pytest tests/ -v
+pytest tests/ -v      # 81 项：算力侧 40 项 + Token 侧 41 项
 ```
+
+### 场景二：Token 侧路由评估（模型层）
+
+```bash
+# 混合候选池（商用 API + 自建开源模型），推荐默认 λ=0.2
+python scripts/run_token_experiments.py
+
+# 只看商用 API —— 模拟没有自建 GPU 的个人 / 小企业用户
+python scripts/run_token_experiments.py --api-only
+
+# 切换业务场景：daily_assistant（轻量）/ dev_copilot（研发）/ analytics（高难度）
+python scripts/run_token_experiments.py --scenario dev_copilot
+
+# 调节省钱力度：λ 越大越省钱、质量相应下降
+python scripts/run_token_experiments.py --cost-weight 0.4
+
+# 自建 GPU 负载率敏感性（默认 0.35；设为 1.0 会显著低估自建成本）
+python scripts/run_token_experiments.py --gpu-utilization 1.0
+
+# 生成图表 → figures/token_*.svg
+python scripts/generate_token_charts.py
+```
+
+结果写入 `data/token_experiments.json`：策略对比、帕累托前沿、可交付推荐表、
+GPU 负载率敏感性分析，以及全部数据的来源标注。
 
 ## 六、目录结构
 
 ```
 HeteroNexus/
+├── core/                             # 统一决策内核（两个场景共用）
+│   ├── resource.py                   # 执行资源抽象 + 难度校准质量模型
+│   └── objective.py                  # 多目标建模与对数归一化标量化
+├── tokenrouter/                      # 场景二：Token 侧路由（模型层）
+│   ├── catalog.py                    # 清单加载 + 自建 GPU→token 成本折算
+│   ├── data/catalog.json             # 模型 / 价格 / 能力清单（含来源标注）
+│   ├── workload.py                   # 任务流生成（四组业务场景预设）
+│   ├── policies.py                   # 5 类策略（含可交付的难度分档路由）
+│   ├── engine.py                     # 离线路由仿真
+│   └── pareto.py                     # 帕累托前沿与负载率敏感性
 ├── console/
 │   └── index.html                    # 调度控制台（单文件离线应用）
+├── figures/                          # Token 侧实验图表（SVG）
+└── data/
+    └── token_experiments.json        # Token 侧全量实验结果
 ├── simulation/
 │   ├── cluster_simulator.py          # 离散事件仿真引擎 + 4 类基线调度器
 │   ├── generate_svg_charts.py        # 实验图表生成

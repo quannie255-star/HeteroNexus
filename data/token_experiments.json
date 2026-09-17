@@ -1,0 +1,704 @@
+{
+  "meta": {
+    "generated_at": "2026-09-17T20:24:16",
+    "scenario": "mixed",
+    "seeds": [
+      1,
+      7,
+      42,
+      999,
+      2026
+    ],
+    "n_tasks_per_sample": 2000,
+    "min_quality_constraint": 0.0,
+    "cost_weight": 0.2,
+    "gpu_utilization": 0.35,
+    "api_only": false,
+    "executor_ids": [
+      "gpt-4o-mini",
+      "deepseek-v3",
+      "deepseek-r1",
+      "gpt-4o",
+      "claude-3-5-sonnet",
+      "qwen-max",
+      "self-gemma2-9b",
+      "self-llama31-8b",
+      "self-qwen25-32b",
+      "self-qwen25-72b"
+    ],
+    "master_seed": 42,
+    "catalog_version": "2026.09-scenario-expansion",
+    "catalog_sources": {
+      "price": {
+        "name": "AI API 价格对比（2026年8月汇总）",
+        "url": "https://www.bxtdata.com/pt/insights/294/",
+        "as_of": "2026-08-17",
+        "unit": "CNY / 百万 token"
+      },
+      "capability": {
+        "name": "AI Model Benchmark Tracker 2026",
+        "url": "https://gpt0x.com/research/ai-model-benchmark-tracker.html",
+        "as_of": "2026-04-10",
+        "note": "源自各厂商官方技术报告与 HuggingFace Open LLM Leaderboard；取值均为 0~1 的正确率"
+      }
+    },
+    "calibration_note": "标注 ESTIMATE 的字段为工程量级估算，不代表任何厂商的实际报价。请按本地实际报价 / 实测吞吐替换后重跑实验；结论的定性方向对估算误差不敏感（见敏感性分析脚本）。",
+    "caveats": [
+      "闭源商业旗舰（如 Claude 3.5 Sonnet、Qwen-Max）通常不公开同口径 benchmark 分数，此处用同系列相近型号的公开分数代理，已在 capability_source 标注。",
+      "Benchmark 存在测试集污染与评测口径差异，分数应视为相对信号而非绝对能力证明。",
+      "token 成本不含 GPU 折旧以外的运维、人力与机房开销。"
+    ]
+  },
+  "workload_summary": {
+    "n_tasks": 2000,
+    "total_input_tokens": 3423436,
+    "total_output_tokens": 1362286,
+    "avg_difficulty": 0.387,
+    "domain_ratio": {
+      "coding": 0.2075,
+      "general": 0.4995,
+      "knowledge": 0.2025,
+      "reasoning": 0.0905
+    },
+    "difficulty_ratio": {
+      "easy": 0.5615,
+      "hard": 0.14,
+      "medium": 0.2985
+    }
+  },
+  "candidate_pool": {
+    "n_executors": 10,
+    "api_models": [
+      "gpt-4o-mini",
+      "deepseek-v3",
+      "deepseek-r1",
+      "gpt-4o",
+      "claude-3-5-sonnet",
+      "qwen-max"
+    ],
+    "self_hosted_models": [
+      "self-gemma2-9b",
+      "self-llama31-8b",
+      "self-qwen25-32b",
+      "self-qwen25-72b"
+    ],
+    "unit_cost_yuan_per_mtok": {
+      "claude-3-5-sonnet": 105.0,
+      "deepseek-r1": 16.0,
+      "deepseek-v3": 8.0,
+      "gpt-4o": 70.0,
+      "gpt-4o-mini": 3.36,
+      "qwen-max": 60.0,
+      "self-gemma2-9b": 1.0823,
+      "self-llama31-8b": 1.1905,
+      "self-qwen25-32b": 8.8183,
+      "self-qwen25-72b": 30.525
+    }
+  },
+  "policy_comparison": {
+    "strongest": {
+      "description": "全部走能力最强的模型（用户现状基线）",
+      "total_cost_yuan": 35.2175,
+      "accuracy": 0.9089,
+      "cost_saving": 0.0,
+      "quality_retention": 1.0,
+      "efficiency_gain": 0.0,
+      "latency_change": 0.0,
+      "avg_latency_s": 2.005,
+      "p95_latency_s": 3.134,
+      "calls_per_task": 1.0,
+      "escalation_rate": 0.0,
+      "model_usage": {
+        "deepseek-r1": 10000
+      },
+      "band_usage": {}
+    },
+    "cheapest": {
+      "description": "全部走单位成本最低的模型（省钱的代价下界）",
+      "total_cost_yuan": 2.6897,
+      "accuracy": 0.6712,
+      "cost_saving": 0.9236,
+      "quality_retention": 0.7385,
+      "efficiency_gain": 0.8966,
+      "latency_change": -0.4643,
+      "avg_latency_s": 1.074,
+      "p95_latency_s": 1.548,
+      "calls_per_task": 1.0,
+      "escalation_rate": 0.0,
+      "model_usage": {
+        "self-gemma2-9b": 10000
+      },
+      "band_usage": {}
+    },
+    "cascade": {
+      "description": "小模型先行，判定不可信则逐级升级（经典级联，带额外调用开销）",
+      "total_cost_yuan": 5.6701,
+      "accuracy": 0.829,
+      "cost_saving": 0.839,
+      "quality_retention": 0.9121,
+      "efficiency_gain": 0.8235,
+      "latency_change": -0.193,
+      "avg_latency_s": 1.618,
+      "p95_latency_s": 3.679,
+      "calls_per_task": 1.49,
+      "escalation_rate": 0.3425,
+      "model_usage": {
+        "self-gemma2-9b": 6575,
+        "self-llama31-8b": 2265,
+        "gpt-4o-mini": 842,
+        "deepseek-r1": 318
+      },
+      "band_usage": {}
+    },
+    "difficulty_router": {
+      "description": "多目标效用路由：逐任务在候选模型上做成本-质量权衡（可交付方案）",
+      "total_cost_yuan": 17.3172,
+      "accuracy": 0.8944,
+      "cost_saving": 0.5083,
+      "quality_retention": 0.984,
+      "efficiency_gain": 0.5003,
+      "latency_change": -0.3237,
+      "avg_latency_s": 1.356,
+      "p95_latency_s": 2.907,
+      "calls_per_task": 1.0,
+      "escalation_rate": 0.0,
+      "model_usage": {
+        "gpt-4o-mini": 4779,
+        "deepseek-r1": 3520,
+        "self-gemma2-9b": 1103,
+        "deepseek-v3": 598
+      },
+      "band_usage": {}
+    },
+    "oracle": {
+      "description": "已知每次调用的真实正确性下的最小成本选择（理论上界）",
+      "total_cost_yuan": 4.1887,
+      "accuracy": 0.9996,
+      "cost_saving": 0.8811,
+      "quality_retention": 1.0998,
+      "efficiency_gain": 0.8919,
+      "latency_change": -0.4648,
+      "avg_latency_s": 1.073,
+      "p95_latency_s": 1.552,
+      "calls_per_task": 1.0,
+      "escalation_rate": 0.0,
+      "model_usage": {
+        "self-gemma2-9b": 6712,
+        "self-llama31-8b": 1996,
+        "gpt-4o-mini": 845,
+        "deepseek-v3": 280,
+        "deepseek-r1": 76,
+        "self-qwen25-32b": 70,
+        "self-qwen25-72b": 11,
+        "gpt-4o": 5,
+        "claude-3-5-sonnet": 4,
+        "qwen-max": 1
+      },
+      "band_usage": {}
+    }
+  },
+  "pareto_front": [
+    {
+      "cost_weight": 0.05,
+      "min_quality": 0.0,
+      "accuracy": 0.9165,
+      "total_cost_yuan": 34.7719,
+      "cost_saving": 0.0127,
+      "quality_retention": 1.0084,
+      "recommended_table": {
+        "coding/easy": "gpt-4o-mini",
+        "coding/hard": "claude-3-5-sonnet",
+        "coding/medium": "gpt-4o-mini",
+        "general/easy": "deepseek-r1",
+        "general/hard": "deepseek-r1",
+        "general/medium": "deepseek-r1",
+        "knowledge/easy": "deepseek-r1",
+        "knowledge/hard": "deepseek-r1",
+        "knowledge/medium": "deepseek-r1",
+        "reasoning/easy": "deepseek-r1",
+        "reasoning/hard": "deepseek-r1",
+        "reasoning/medium": "deepseek-r1"
+      }
+    },
+    {
+      "cost_weight": 0.1,
+      "min_quality": 0.0,
+      "accuracy": 0.9095,
+      "total_cost_yuan": 19.967,
+      "cost_saving": 0.433,
+      "quality_retention": 1.0007,
+      "recommended_table": {
+        "coding/easy": "gpt-4o-mini",
+        "coding/hard": "gpt-4o-mini",
+        "coding/medium": "gpt-4o-mini",
+        "general/easy": "gpt-4o-mini",
+        "general/hard": "deepseek-r1",
+        "general/medium": "deepseek-r1",
+        "knowledge/easy": "deepseek-v3",
+        "knowledge/hard": "deepseek-r1",
+        "knowledge/medium": "deepseek-r1",
+        "reasoning/easy": "deepseek-r1",
+        "reasoning/hard": "deepseek-r1",
+        "reasoning/medium": "deepseek-r1"
+      }
+    },
+    {
+      "cost_weight": 0.15,
+      "min_quality": 0.0,
+      "accuracy": 0.903,
+      "total_cost_yuan": 17.7639,
+      "cost_saving": 0.4956,
+      "quality_retention": 0.9935,
+      "recommended_table": {
+        "coding/easy": "gpt-4o-mini",
+        "coding/hard": "gpt-4o-mini",
+        "coding/medium": "gpt-4o-mini",
+        "general/easy": "gpt-4o-mini",
+        "general/hard": "deepseek-r1",
+        "general/medium": "deepseek-r1",
+        "knowledge/easy": "gpt-4o-mini",
+        "knowledge/hard": "deepseek-r1",
+        "knowledge/medium": "deepseek-v3",
+        "reasoning/easy": "deepseek-r1",
+        "reasoning/hard": "deepseek-r1",
+        "reasoning/medium": "deepseek-r1"
+      }
+    },
+    {
+      "cost_weight": 0.2,
+      "min_quality": 0.0,
+      "accuracy": 0.897,
+      "total_cost_yuan": 17.2412,
+      "cost_saving": 0.5104,
+      "quality_retention": 0.9869,
+      "recommended_table": {
+        "coding/easy": "gpt-4o-mini",
+        "coding/hard": "gpt-4o-mini",
+        "coding/medium": "gpt-4o-mini",
+        "general/easy": "gpt-4o-mini",
+        "general/hard": "deepseek-r1",
+        "general/medium": "deepseek-r1",
+        "knowledge/easy": "self-gemma2-9b",
+        "knowledge/hard": "deepseek-r1",
+        "knowledge/medium": "deepseek-v3",
+        "reasoning/easy": "deepseek-r1",
+        "reasoning/hard": "deepseek-r1",
+        "reasoning/medium": "deepseek-r1"
+      }
+    },
+    {
+      "cost_weight": 0.25,
+      "min_quality": 0.0,
+      "accuracy": 0.8785,
+      "total_cost_yuan": 11.4347,
+      "cost_saving": 0.6753,
+      "quality_retention": 0.9666,
+      "recommended_table": {
+        "coding/easy": "gpt-4o-mini",
+        "coding/hard": "gpt-4o-mini",
+        "coding/medium": "gpt-4o-mini",
+        "general/easy": "gpt-4o-mini",
+        "general/hard": "deepseek-r1",
+        "general/medium": "gpt-4o-mini",
+        "knowledge/easy": "self-gemma2-9b",
+        "knowledge/hard": "deepseek-r1",
+        "knowledge/medium": "deepseek-v3",
+        "reasoning/easy": "gpt-4o-mini",
+        "reasoning/hard": "deepseek-r1",
+        "reasoning/medium": "deepseek-r1"
+      }
+    },
+    {
+      "cost_weight": 0.3,
+      "min_quality": 0.0,
+      "accuracy": 0.8785,
+      "total_cost_yuan": 11.4347,
+      "cost_saving": 0.6753,
+      "quality_retention": 0.9666,
+      "recommended_table": {
+        "coding/easy": "gpt-4o-mini",
+        "coding/hard": "gpt-4o-mini",
+        "coding/medium": "gpt-4o-mini",
+        "general/easy": "gpt-4o-mini",
+        "general/hard": "deepseek-r1",
+        "general/medium": "gpt-4o-mini",
+        "knowledge/easy": "self-gemma2-9b",
+        "knowledge/hard": "deepseek-r1",
+        "knowledge/medium": "deepseek-v3",
+        "reasoning/easy": "gpt-4o-mini",
+        "reasoning/hard": "deepseek-r1",
+        "reasoning/medium": "deepseek-r1"
+      }
+    },
+    {
+      "cost_weight": 0.4,
+      "min_quality": 0.0,
+      "accuracy": 0.871,
+      "total_cost_yuan": 10.2164,
+      "cost_saving": 0.7099,
+      "quality_retention": 0.9583,
+      "recommended_table": {
+        "coding/easy": "gpt-4o-mini",
+        "coding/hard": "gpt-4o-mini",
+        "coding/medium": "gpt-4o-mini",
+        "general/easy": "gpt-4o-mini",
+        "general/hard": "deepseek-r1",
+        "general/medium": "gpt-4o-mini",
+        "knowledge/easy": "self-gemma2-9b",
+        "knowledge/hard": "deepseek-v3",
+        "knowledge/medium": "gpt-4o-mini",
+        "reasoning/easy": "gpt-4o-mini",
+        "reasoning/hard": "deepseek-r1",
+        "reasoning/medium": "deepseek-r1"
+      }
+    },
+    {
+      "cost_weight": 0.5,
+      "min_quality": 0.0,
+      "accuracy": 0.8235,
+      "total_cost_yuan": 6.7417,
+      "cost_saving": 0.8086,
+      "quality_retention": 0.906,
+      "recommended_table": {
+        "coding/easy": "gpt-4o-mini",
+        "coding/hard": "gpt-4o-mini",
+        "coding/medium": "gpt-4o-mini",
+        "general/easy": "self-llama31-8b",
+        "general/hard": "gpt-4o-mini",
+        "general/medium": "gpt-4o-mini",
+        "knowledge/easy": "self-gemma2-9b",
+        "knowledge/hard": "deepseek-v3",
+        "knowledge/medium": "self-gemma2-9b",
+        "reasoning/easy": "gpt-4o-mini",
+        "reasoning/hard": "deepseek-r1",
+        "reasoning/medium": "deepseek-r1"
+      }
+    },
+    {
+      "cost_weight": 0.7,
+      "min_quality": 0.0,
+      "accuracy": 0.784,
+      "total_cost_yuan": 4.8052,
+      "cost_saving": 0.8636,
+      "quality_retention": 0.8626,
+      "recommended_table": {
+        "coding/easy": "self-llama31-8b",
+        "coding/hard": "gpt-4o-mini",
+        "coding/medium": "gpt-4o-mini",
+        "general/easy": "self-llama31-8b",
+        "general/hard": "gpt-4o-mini",
+        "general/medium": "gpt-4o-mini",
+        "knowledge/easy": "self-gemma2-9b",
+        "knowledge/hard": "self-gemma2-9b",
+        "knowledge/medium": "self-gemma2-9b",
+        "reasoning/easy": "self-llama31-8b",
+        "reasoning/hard": "deepseek-r1",
+        "reasoning/medium": "gpt-4o-mini"
+      }
+    },
+    {
+      "cost_weight": 1.0,
+      "min_quality": 0.0,
+      "accuracy": 0.748,
+      "total_cost_yuan": 3.5529,
+      "cost_saving": 0.8991,
+      "quality_retention": 0.823,
+      "recommended_table": {
+        "coding/easy": "self-llama31-8b",
+        "coding/hard": "gpt-4o-mini",
+        "coding/medium": "gpt-4o-mini",
+        "general/easy": "self-gemma2-9b",
+        "general/hard": "gpt-4o-mini",
+        "general/medium": "self-llama31-8b",
+        "knowledge/easy": "self-gemma2-9b",
+        "knowledge/hard": "self-gemma2-9b",
+        "knowledge/medium": "self-gemma2-9b",
+        "reasoning/easy": "self-llama31-8b",
+        "reasoning/hard": "self-llama31-8b",
+        "reasoning/medium": "self-llama31-8b"
+      }
+    },
+    {
+      "cost_weight": 1.5,
+      "min_quality": 0.0,
+      "accuracy": 0.705,
+      "total_cost_yuan": 2.8985,
+      "cost_saving": 0.9177,
+      "quality_retention": 0.7757,
+      "recommended_table": {
+        "coding/easy": "self-llama31-8b",
+        "coding/hard": "gpt-4o-mini",
+        "coding/medium": "self-llama31-8b",
+        "general/easy": "self-gemma2-9b",
+        "general/hard": "self-gemma2-9b",
+        "general/medium": "self-gemma2-9b",
+        "knowledge/easy": "self-gemma2-9b",
+        "knowledge/hard": "self-gemma2-9b",
+        "knowledge/medium": "self-gemma2-9b",
+        "reasoning/easy": "self-llama31-8b",
+        "reasoning/hard": "self-llama31-8b",
+        "reasoning/medium": "self-llama31-8b"
+      }
+    },
+    {
+      "cost_weight": 3.0,
+      "min_quality": 0.0,
+      "accuracy": 0.6815,
+      "total_cost_yuan": 2.7394,
+      "cost_saving": 0.9222,
+      "quality_retention": 0.7498,
+      "recommended_table": {
+        "coding/easy": "self-gemma2-9b",
+        "coding/hard": "self-llama31-8b",
+        "coding/medium": "self-llama31-8b",
+        "general/easy": "self-gemma2-9b",
+        "general/hard": "self-gemma2-9b",
+        "general/medium": "self-gemma2-9b",
+        "knowledge/easy": "self-gemma2-9b",
+        "knowledge/hard": "self-gemma2-9b",
+        "knowledge/medium": "self-gemma2-9b",
+        "reasoning/easy": "self-gemma2-9b",
+        "reasoning/hard": "self-gemma2-9b",
+        "reasoning/medium": "self-llama31-8b"
+      }
+    }
+  ],
+  "knee_point": {
+    "cost_weight": 0.4,
+    "min_quality": 0.0,
+    "accuracy": 0.871,
+    "total_cost_yuan": 10.2164,
+    "cost_saving": 0.7099,
+    "quality_retention": 0.9583
+  },
+  "deliverable_plan": {
+    "min_quality": 0.0,
+    "cost_weight": 0.2,
+    "recommendation_table": [
+      {
+        "domain": "coding",
+        "band": "easy",
+        "model": "gpt-4o-mini"
+      },
+      {
+        "domain": "coding",
+        "band": "hard",
+        "model": "gpt-4o-mini"
+      },
+      {
+        "domain": "coding",
+        "band": "medium",
+        "model": "gpt-4o-mini"
+      },
+      {
+        "domain": "general",
+        "band": "easy",
+        "model": "gpt-4o-mini"
+      },
+      {
+        "domain": "general",
+        "band": "hard",
+        "model": "deepseek-r1"
+      },
+      {
+        "domain": "general",
+        "band": "medium",
+        "model": "deepseek-r1"
+      },
+      {
+        "domain": "knowledge",
+        "band": "easy",
+        "model": "self-gemma2-9b"
+      },
+      {
+        "domain": "knowledge",
+        "band": "hard",
+        "model": "deepseek-r1"
+      },
+      {
+        "domain": "knowledge",
+        "band": "medium",
+        "model": "deepseek-v3"
+      },
+      {
+        "domain": "reasoning",
+        "band": "easy",
+        "model": "deepseek-r1"
+      },
+      {
+        "domain": "reasoning",
+        "band": "hard",
+        "model": "deepseek-r1"
+      },
+      {
+        "domain": "reasoning",
+        "band": "medium",
+        "model": "deepseek-r1"
+      }
+    ],
+    "diagnostics": [
+      {
+        "domain": "general",
+        "band": "easy",
+        "mid_difficulty": 0.225,
+        "chosen": "gpt-4o-mini",
+        "expected_quality": 0.9366,
+        "quality_target_met": true
+      },
+      {
+        "domain": "general",
+        "band": "medium",
+        "mid_difficulty": 0.5,
+        "chosen": "deepseek-r1",
+        "expected_quality": 0.9098,
+        "quality_target_met": true
+      },
+      {
+        "domain": "general",
+        "band": "hard",
+        "mid_difficulty": 0.8,
+        "chosen": "deepseek-r1",
+        "expected_quality": 0.7522,
+        "quality_target_met": true
+      },
+      {
+        "domain": "knowledge",
+        "band": "easy",
+        "mid_difficulty": 0.225,
+        "chosen": "self-gemma2-9b",
+        "expected_quality": 0.8869,
+        "quality_target_met": true
+      },
+      {
+        "domain": "knowledge",
+        "band": "medium",
+        "mid_difficulty": 0.5,
+        "chosen": "deepseek-v3",
+        "expected_quality": 0.885,
+        "quality_target_met": true
+      },
+      {
+        "domain": "knowledge",
+        "band": "hard",
+        "mid_difficulty": 0.8,
+        "chosen": "deepseek-r1",
+        "expected_quality": 0.7483,
+        "quality_target_met": true
+      },
+      {
+        "domain": "coding",
+        "band": "easy",
+        "mid_difficulty": 0.225,
+        "chosen": "gpt-4o-mini",
+        "expected_quality": 0.9526,
+        "quality_target_met": true
+      },
+      {
+        "domain": "coding",
+        "band": "medium",
+        "mid_difficulty": 0.5,
+        "chosen": "gpt-4o-mini",
+        "expected_quality": 0.87,
+        "quality_target_met": true
+      },
+      {
+        "domain": "coding",
+        "band": "hard",
+        "mid_difficulty": 0.8,
+        "chosen": "gpt-4o-mini",
+        "expected_quality": 0.6684,
+        "quality_target_met": true
+      },
+      {
+        "domain": "reasoning",
+        "band": "easy",
+        "mid_difficulty": 0.225,
+        "chosen": "deepseek-r1",
+        "expected_quality": 0.9647,
+        "quality_target_met": true
+      },
+      {
+        "domain": "reasoning",
+        "band": "medium",
+        "mid_difficulty": 0.5,
+        "chosen": "deepseek-r1",
+        "expected_quality": 0.901,
+        "quality_target_met": true
+      },
+      {
+        "domain": "reasoning",
+        "band": "hard",
+        "mid_difficulty": 0.8,
+        "chosen": "deepseek-r1",
+        "expected_quality": 0.7327,
+        "quality_target_met": true
+      }
+    ]
+  },
+  "utilization_sensitivity": [
+    {
+      "utilization": 1.0,
+      "model": "自建 Qwen2.5 72B",
+      "self_cost_per_mtok": 10.6838,
+      "ref_model": "通义千问 Max",
+      "ref_cost_per_mtok": 60.0,
+      "self_hosted_wins": true
+    },
+    {
+      "utilization": 0.8,
+      "model": "自建 Qwen2.5 72B",
+      "self_cost_per_mtok": 13.3547,
+      "ref_model": "通义千问 Max",
+      "ref_cost_per_mtok": 60.0,
+      "self_hosted_wins": true
+    },
+    {
+      "utilization": 0.6,
+      "model": "自建 Qwen2.5 72B",
+      "self_cost_per_mtok": 17.8063,
+      "ref_model": "通义千问 Max",
+      "ref_cost_per_mtok": 60.0,
+      "self_hosted_wins": true
+    },
+    {
+      "utilization": 0.5,
+      "model": "自建 Qwen2.5 72B",
+      "self_cost_per_mtok": 21.3675,
+      "ref_model": "通义千问 Max",
+      "ref_cost_per_mtok": 60.0,
+      "self_hosted_wins": true
+    },
+    {
+      "utilization": 0.4,
+      "model": "自建 Qwen2.5 72B",
+      "self_cost_per_mtok": 26.7094,
+      "ref_model": "通义千问 Max",
+      "ref_cost_per_mtok": 60.0,
+      "self_hosted_wins": true
+    },
+    {
+      "utilization": 0.3,
+      "model": "自建 Qwen2.5 72B",
+      "self_cost_per_mtok": 35.6125,
+      "ref_model": "通义千问 Max",
+      "ref_cost_per_mtok": 60.0,
+      "self_hosted_wins": true
+    },
+    {
+      "utilization": 0.2,
+      "model": "自建 Qwen2.5 72B",
+      "self_cost_per_mtok": 53.4188,
+      "ref_model": "通义千问 Max",
+      "ref_cost_per_mtok": 60.0,
+      "self_hosted_wins": true
+    },
+    {
+      "utilization": 0.1,
+      "model": "自建 Qwen2.5 72B",
+      "self_cost_per_mtok": 106.8376,
+      "ref_model": "通义千问 Max",
+      "ref_cost_per_mtok": 60.0,
+      "self_hosted_wins": false
+    }
+  ]
+}

@@ -1,0 +1,153 @@
+{
+  "_meta": {
+    "catalog_version": "2026.09-scenario-expansion",
+    "created": "2026-09-17",
+    "description": "HeteroNexus Token 侧候选执行资源清单。所有数字均标注来源，价格与自建成本为可校准参数。",
+    "sources": {
+      "price": {
+        "name": "AI API 价格对比（2026年8月汇总）",
+        "url": "https://www.bxtdata.com/pt/insights/294/",
+        "as_of": "2026-08-17",
+        "unit": "CNY / 百万 token"
+      },
+      "capability": {
+        "name": "AI Model Benchmark Tracker 2026",
+        "url": "https://gpt0x.com/research/ai-model-benchmark-tracker.html",
+        "as_of": "2026-04-10",
+        "note": "源自各厂商官方技术报告与 HuggingFace Open LLM Leaderboard；取值均为 0~1 的正确率"
+      }
+    },
+    "calibration_note": "标注 ESTIMATE 的字段为工程量级估算，不代表任何厂商的实际报价。请按本地实际报价 / 实测吞吐替换后重跑实验；结论的定性方向对估算误差不敏感（见敏感性分析脚本）。",
+    "known_caveats": [
+      "闭源商业旗舰（如 Claude 3.5 Sonnet、Qwen-Max）通常不公开同口径 benchmark 分数，此处用同系列相近型号的公开分数代理，已在 capability_source 标注。",
+      "Benchmark 存在测试集污染与评测口径差异，分数应视为相对信号而非绝对能力证明。",
+      "token 成本不含 GPU 折旧以外的运维、人力与机房开销。"
+    ]
+  },
+
+  "gpu_specs": {
+    "rtx-4090": {"hourly_price": 3.0, "mem_gb": 24, "source": "ESTIMATE — 需按本地报价校准"},
+    "l20":      {"hourly_price": 6.0, "mem_gb": 48, "source": "ESTIMATE — 需按本地报价校准"},
+    "a100-80g": {"hourly_price": 10.0, "mem_gb": 80, "source": "ESTIMATE — 需按本地报价校准"},
+    "h800":     {"hourly_price": 20.0, "mem_gb": 80, "source": "ESTIMATE — 需按本地报价校准"}
+  },
+
+  "self_host_defaults": {
+    "prefill_efficiency": 3.0,
+    "comment": "prefill 相对 decode 的吞吐倍数；自建模型的 input token 成本 = output token 成本 / 该系数"
+  },
+
+  "models": [
+    {
+      "id": "gpt-4o-mini",
+      "name": "GPT-4o mini",
+      "kind": "api_model",
+      "price_in": 0.84,
+      "price_out": 3.36,
+      "capability": {"mmlu": 0.820, "math": 0.702, "humaneval": 0.870, "gsm8k": 0.932},
+      "capability_source": "measured",
+      "output_speed": 1200,
+      "speed_source": "ESTIMATE"
+    },
+    {
+      "id": "deepseek-v3",
+      "name": "DeepSeek V3",
+      "kind": "api_model",
+      "price_in": 2.0,
+      "price_out": 8.0,
+      "capability": {"mmlu": 0.885, "math": 0.759, "humaneval": 0.826, "gsm8k": 0.928},
+      "capability_source": "measured",
+      "output_speed": 900,
+      "speed_source": "ESTIMATE"
+    },
+    {
+      "id": "deepseek-r1",
+      "name": "DeepSeek R1",
+      "kind": "api_model",
+      "price_in": 4.0,
+      "price_out": 16.0,
+      "capability": {"mmlu": 0.908, "math": 0.901, "humaneval": 0.857, "gsm8k": 0.973},
+      "capability_source": "measured",
+      "output_speed": 420,
+      "speed_source": "ESTIMATE — 推理型模型输出长、速度慢"
+    },
+    {
+      "id": "gpt-4o",
+      "name": "GPT-4o",
+      "kind": "api_model",
+      "price_in": 17.5,
+      "price_out": 70.0,
+      "capability": {"mmlu": 0.887, "math": 0.766, "humaneval": 0.871, "gsm8k": 0.953},
+      "capability_source": "measured",
+      "output_speed": 1000,
+      "speed_source": "ESTIMATE"
+    },
+    {
+      "id": "claude-3-5-sonnet",
+      "name": "Claude 3.5 Sonnet",
+      "kind": "api_model",
+      "price_in": 21.0,
+      "price_out": 105.0,
+      "capability": {"mmlu": 0.888, "math": 0.783, "humaneval": 0.892, "gsm8k": 0.951},
+      "capability_source": "proxy: Claude Sonnet 4 公开分数（同系列近似档位）",
+      "output_speed": 900,
+      "speed_source": "ESTIMATE"
+    },
+    {
+      "id": "qwen-max",
+      "name": "通义千问 Max",
+      "kind": "api_model",
+      "price_in": 20.0,
+      "price_out": 60.0,
+      "capability": {"mmlu": 0.853, "math": 0.721, "humaneval": 0.765, "gsm8k": 0.918},
+      "capability_source": "proxy: Qwen2.5-72B 开源同系列分数（商业版实际能力可能更高）",
+      "output_speed": 1000,
+      "speed_source": "ESTIMATE"
+    },
+
+    {
+      "id": "self-gemma2-9b",
+      "name": "自建 Gemma 2 9B",
+      "kind": "self_hosted_model",
+      "gpu": "rtx-4090",
+      "gpu_count": 1,
+      "throughput_tps": 2200,
+      "capability": {"mmlu": 0.723, "math": 0.441, "humaneval": 0.548, "gsm8k": 0.765},
+      "capability_source": "measured",
+      "speed_source": "ESTIMATE"
+    },
+    {
+      "id": "self-llama31-8b",
+      "name": "自建 Llama 3.1 8B",
+      "kind": "self_hosted_model",
+      "gpu": "rtx-4090",
+      "gpu_count": 1,
+      "throughput_tps": 2000,
+      "capability": {"mmlu": 0.684, "math": 0.519, "humaneval": 0.626, "gsm8k": 0.774},
+      "capability_source": "measured",
+      "speed_source": "ESTIMATE"
+    },
+    {
+      "id": "self-qwen25-32b",
+      "name": "自建 Qwen2.5 32B",
+      "kind": "self_hosted_model",
+      "gpu": "a100-80g",
+      "gpu_count": 1,
+      "throughput_tps": 900,
+      "capability": {"mmlu": 0.812, "math": 0.645, "humaneval": 0.718, "gsm8k": 0.883},
+      "capability_source": "measured",
+      "speed_source": "ESTIMATE"
+    },
+    {
+      "id": "self-qwen25-72b",
+      "name": "自建 Qwen2.5 72B",
+      "kind": "self_hosted_model",
+      "gpu": "a100-80g",
+      "gpu_count": 2,
+      "throughput_tps": 520,
+      "capability": {"mmlu": 0.853, "math": 0.721, "humaneval": 0.765, "gsm8k": 0.918},
+      "capability_source": "measured",
+      "speed_source": "ESTIMATE"
+    }
+  ]
+}

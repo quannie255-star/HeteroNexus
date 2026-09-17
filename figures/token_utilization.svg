@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="500" viewBox="0 0 900 500" font-family="Microsoft YaHei, PingFang SC, sans-serif">
+<rect width="900" height="500" fill="#ffffff"/>
+<text x="30" y="34" font-size="18" font-weight="600" fill="#1a1a1a">自建划不划算，取决于能把 GPU 喂到多满</text>
+<line x1="100.0" y1="90.0" x2="100.0" y2="410.0" stroke="#eee" stroke-width="1.5"/>
+<text x="100.0" y="430.0" font-size="11" fill="#666" text-anchor="middle" font-weight="400">0%</text>
+<line x1="250.0" y1="90.0" x2="250.0" y2="410.0" stroke="#eee" stroke-width="1.5"/>
+<text x="250.0" y="430.0" font-size="11" fill="#666" text-anchor="middle" font-weight="400">20%</text>
+<line x1="400.0" y1="90.0" x2="400.0" y2="410.0" stroke="#eee" stroke-width="1.5"/>
+<text x="400.0" y="430.0" font-size="11" fill="#666" text-anchor="middle" font-weight="400">40%</text>
+<line x1="550.0" y1="90.0" x2="550.0" y2="410.0" stroke="#eee" stroke-width="1.5"/>
+<text x="550.0" y="430.0" font-size="11" fill="#666" text-anchor="middle" font-weight="400">60%</text>
+<line x1="700.0" y1="90.0" x2="700.0" y2="410.0" stroke="#eee" stroke-width="1.5"/>
+<text x="700.0" y="430.0" font-size="11" fill="#666" text-anchor="middle" font-weight="400">80%</text>
+<line x1="850.0" y1="90.0" x2="850.0" y2="410.0" stroke="#eee" stroke-width="1.5"/>
+<text x="850.0" y="430.0" font-size="11" fill="#666" text-anchor="middle" font-weight="400">100%</text>
+<line x1="100.0" y1="410.0" x2="850.0" y2="410.0" stroke="#eee" stroke-width="1.5"/>
+<text x="90.0" y="414.0" font-size="11" fill="#666" text-anchor="end" font-weight="400">0</text>
+<line x1="100.0" y1="355.5" x2="850.0" y2="355.5" stroke="#eee" stroke-width="1.5"/>
+<text x="90.0" y="359.5" font-size="11" fill="#666" text-anchor="end" font-weight="400">20</text>
+<line x1="100.0" y1="301.1" x2="850.0" y2="301.1" stroke="#eee" stroke-width="1.5"/>
+<text x="90.0" y="305.1" font-size="11" fill="#666" text-anchor="end" font-weight="400">40</text>
+<line x1="100.0" y1="246.6" x2="850.0" y2="246.6" stroke="#eee" stroke-width="1.5"/>
+<text x="90.0" y="250.6" font-size="11" fill="#666" text-anchor="end" font-weight="400">60</text>
+<line x1="100.0" y1="192.2" x2="850.0" y2="192.2" stroke="#eee" stroke-width="1.5"/>
+<text x="90.0" y="196.2" font-size="11" fill="#666" text-anchor="end" font-weight="400">80</text>
+<line x1="100.0" y1="137.7" x2="850.0" y2="137.7" stroke="#eee" stroke-width="1.5"/>
+<text x="90.0" y="141.7" font-size="11" fill="#666" text-anchor="end" font-weight="400">100</text>
+<line x1="100.0" y1="410.0" x2="850.0" y2="410.0" stroke="#333" stroke-width="1.5"/>
+<line x1="100.0" y1="90.0" x2="100.0" y2="410.0" stroke="#333" stroke-width="1.5"/>
+<text x="475.0" y="478.0" font-size="12" fill="#444" text-anchor="middle" font-weight="400">GPU 有效负载率</text>
+<text x="30.0" y="250.0" font-size="12" fill="#444" text-anchor="middle" font-weight="400" transform="rotate(-90 30.0 250.0)">output token 成本（元 / 百万）</text>
+<line x1="100.0" y1="246.6" x2="850.0" y2="246.6" stroke="#D4537E" stroke-width="2"/>
+<text x="844.0" y="236.6" font-size="12" fill="#993556" text-anchor="end" font-weight="600">通义千问 Max API：¥60/M</text>
+<polyline points="850.0,380.9 700.0,373.6 550.0,361.5 475.0,351.8 400.0,337.3 325.0,313.0 250.0,264.5 175.0,119.1" fill="none" stroke="#534AB7" stroke-width="2.5"/>
+<circle cx="850.0" cy="380.9" r="5" fill="#534AB7" stroke="#fff" stroke-width="1.5"/>
+<circle cx="700.0" cy="373.6" r="5" fill="#534AB7" stroke="#fff" stroke-width="1.5"/>
+<circle cx="550.0" cy="361.5" r="5" fill="#534AB7" stroke="#fff" stroke-width="1.5"/>
+<circle cx="475.0" cy="351.8" r="5" fill="#534AB7" stroke="#fff" stroke-width="1.5"/>
+<circle cx="400.0" cy="337.3" r="5" fill="#534AB7" stroke="#fff" stroke-width="1.5"/>
+<circle cx="325.0" cy="313.0" r="5" fill="#534AB7" stroke="#fff" stroke-width="1.5"/>
+<circle cx="250.0" cy="264.5" r="5" fill="#534AB7" stroke="#fff" stroke-width="1.5"/>
+<circle cx="175.0" cy="119.1" r="5" fill="#534AB7" stroke="#fff" stroke-width="1.5"/>
+<text x="860.0" y="368.9" font-size="12" fill="#3C3489" text-anchor="start" font-weight="600">自建 Qwen2.5 72B</text>
+<line x1="175.0" y1="90.0" x2="175.0" y2="410.0" stroke="#D85A30" stroke-width="1.5" stroke-dasharray="6 4"/>
+<text x="183.0" y="110.0" font-size="12" fill="#993C1D" text-anchor="start" font-weight="600">临界点 ≈ 10%：低于此负载，自建反而不如调 API</text>
+<text x="100.0" y="60.0" font-size="11" fill="#888" text-anchor="start" font-weight="400">这张图是算力侧与 token 侧的耦合点：负载率由调度决定，而负载率反过来决定自建模型的单位成本。</text>
+</svg>
