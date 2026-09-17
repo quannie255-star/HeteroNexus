@@ -1,0 +1,133 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master, dev]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: 单元测试 · Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 配置 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: 安装依赖
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pytest-cov
+          # requirements.txt 中的硬件依赖为可选；无硬件环境下模块自动降级
+          pip install -r requirements.txt || echo "部分可选依赖安装失败，已跳过（模块支持降级）"
+
+      - name: 运行测试
+        run: |
+          python -m pytest tests/ -v --cov=. --cov-report=term-missing \
+            --cov-report=xml:coverage.xml
+
+      - name: 上传覆盖率报告
+        if: matrix.python-version == '3.12'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.xml
+          if-no-files-found: ignore
+
+  reproducibility:
+    name: 实验可复现性校验
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 重跑基线实验并比对归档结果
+        run: |
+          set -e
+          cp simulation/baseline_results.json /tmp/archived.json
+          python simulation/cluster_simulator.py
+          python - <<'PY'
+          import json, sys
+          archived = json.load(open('/tmp/archived.json', encoding='utf-8'))
+          fresh    = json.load(open('simulation/baseline_results.json', encoding='utf-8'))
+          keys = ['avg_jct', 'median_jct', 'p95_jct', 'avg_waiting', 'makespan',
+                  'avg_cpu_util', 'avg_gpu_util', 'avg_mem_util', 'completed']
+          bad = []
+          for algo in archived:
+              for k in keys:
+                  if archived[algo][k] != fresh[algo][k]:
+                      bad.append(f"{algo}.{k}: {archived[algo][k]} -> {fresh[algo][k]}")
+          if bad:
+              print("实验结果不可复现，差异如下：")
+              print("\n".join(bad))
+              sys.exit(1)
+          print(f"✅ {len(archived)} 个调度算法的 {len(keys)} 项指标全部可复现")
+          PY
+
+  console:
+    name: 控制台构建校验（单文件零依赖）
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 校验控制台为自包含单文件
+        run: |
+          set -e
+          f=console/index.html
+          test -f "$f" || { echo "缺少 $f"; exit 1; }
+          # 不得引用任何外部资源（保证离线可用）
+          if grep -Eqi '<script[^>]+src=|<link[^>]+href=|https?://[^"]+\.(js|css)' "$f"; then
+            echo "❌ 控制台引用了外部资源，无法离线运行"
+            grep -Eni '<script[^>]+src=|<link[^>]+href=' "$f"
+            exit 1
+          fi
+          echo "✅ 控制台为自包含单文件（无外部依赖）"
+          echo "文件大小: $(wc -c < "$f") 字节"
+
+  lint:
+    name: 代码风格
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 编译检查（语法）
+        run: |
+          python -m compileall -q simulation modules tests
+          echo "✅ 所有 Python 文件编译通过"
+
+      - name: 检查文件编码为 UTF-8
+        run: |
+          set -e
+          for f in $(find simulation modules tests -name '*.py'); do
+            python -c "
+          import sys
+          data = open(sys.argv[1], 'rb').read()
+          try:
+              data.decode('utf-8')
+          except UnicodeDecodeError:
+              print(f'非 UTF-8 编码: {sys.argv[1]}'); sys.exit(1)
+          " "$f"
+          done
+          echo "✅ 所有源文件均为 UTF-8 编码"

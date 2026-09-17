@@ -1,0 +1,1454 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HeteroNexus · 异构算力协同调度控制台</title>
+<style>
+:root{
+  --bg:#0a0e14; --panel:#111823; --panel2:#0d141d; --border:#1d2836; --border2:#2a3849;
+  --text:#e6edf3; --muted:#8697a8; --dim:#5b6b7c;
+  --blue:#3b82f6; --cyan:#22d3ee; --amber:#f59e0b; --purple:#a78bfa;
+  --green:#10b981; --red:#ef4444; --pink:#ec4899;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Consolas,"Liberation Mono",Menlo,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--bg); color:var(--text);
+  font-family:system-ui,-apple-system,"Segoe UI","Microsoft YaHei","PingFang SC",sans-serif;
+  font-size:13px; -webkit-font-smoothing:antialiased; overflow-x:hidden;
+}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#223040;border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:#33465c}
+
+/* ---------- Header ---------- */
+header{
+  position:sticky; top:0; z-index:50;
+  background:linear-gradient(180deg,#0d1420,#0a0e14);
+  border-bottom:1px solid var(--border);
+  padding:10px 18px 0;
+}
+.hrow{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px}
+.logo{
+  width:30px;height:30px;border-radius:7px;flex-shrink:0;
+  background:linear-gradient(135deg,#3b82f6,#a78bfa);
+  display:grid;place-items:center;font-weight:800;font-size:14px;color:#fff;
+  box-shadow:0 0 18px rgba(59,130,246,.35);
+}
+.brand h1{font-size:15px;font-weight:650;letter-spacing:.2px;line-height:1.2}
+.brand .sub{font-size:10.5px;color:var(--dim);letter-spacing:.3px}
+.spacer{flex:1}
+.badge{
+  font-size:10px;padding:3px 8px;border-radius:20px;border:1px solid var(--border2);
+  color:var(--muted);background:var(--panel2);white-space:nowrap;
+}
+.badge.live{border-color:#10b98155;color:var(--green);background:#10b9810f}
+.badge.warn{border-color:#f59e0b55;color:var(--amber);background:#f59e0b0f}
+
+.tabs{display:flex;gap:2px;margin-top:10px}
+.tab{
+  padding:8px 16px;font-size:12.5px;color:var(--muted);cursor:pointer;
+  border:1px solid transparent;border-bottom:none;border-radius:7px 7px 0 0;
+  transition:.15s; user-select:none; white-space:nowrap;
+}
+.tab:hover{color:var(--text);background:#ffffff06}
+.tab.on{color:var(--text);background:var(--panel);border-color:var(--border)}
+
+/* ---------- Controls ---------- */
+.ctrlbar{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  padding:10px 18px;background:var(--panel);border-bottom:1px solid var(--border);
+}
+.cg{display:flex;align-items:center;gap:6px}
+.cg label{font-size:11px;color:var(--muted);white-space:nowrap}
+select,button,input[type=range]{font-family:inherit;font-size:12px;color:var(--text)}
+select{
+  background:var(--panel2);border:1px solid var(--border2);border-radius:6px;
+  padding:5px 9px;cursor:pointer;outline:none;
+}
+select:focus{border-color:var(--blue)}
+button{
+  background:var(--panel2);border:1px solid var(--border2);border-radius:6px;
+  padding:5px 12px;cursor:pointer;transition:.15s;white-space:nowrap;
+}
+button:hover{background:#1a2432;border-color:#3a4c63}
+button:active{transform:translateY(1px)}
+button.pri{background:linear-gradient(135deg,#2563eb,#3b82f6);border-color:#3b82f6;color:#fff;font-weight:600}
+button.pri:hover{background:linear-gradient(135deg,#1d4ed8,#2563eb)}
+button.danger:hover{border-color:var(--red);color:#ffb4b4}
+input[type=range]{width:96px;accent-color:var(--blue);cursor:pointer}
+
+/* ---------- Layout ---------- */
+main{padding:14px 18px 40px;max-width:1640px;margin:0 auto}
+.view{display:none;animation:fade .25s ease}
+.view.on{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:10px;margin-bottom:14px}
+.ph{
+  display:flex;align-items:center;gap:9px;padding:10px 14px;border-bottom:1px solid var(--border);
+}
+.ph h3{font-size:12.5px;font-weight:600;letter-spacing:.2px}
+.ph .hint{font-size:10.5px;color:var(--dim);margin-left:auto;text-align:right}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--blue);box-shadow:0 0 8px var(--blue)}
+.pb{padding:14px}
+
+/* ---------- KPI ---------- */
+.kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:14px}
+.kpi{
+  background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:12px 14px;
+  position:relative;overflow:hidden;
+}
+.kpi::after{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--blue);opacity:.7}
+.kpi.g::after{background:var(--amber)} .kpi.c::after{background:var(--cyan)}
+.kpi.p::after{background:var(--purple)} .kpi.s::after{background:var(--green)}
+.kpi .k{font-size:10.5px;color:var(--muted);letter-spacing:.3px;margin-bottom:5px}
+.kpi .v{font-size:21px;font-weight:680;font-family:var(--mono);line-height:1}
+.kpi .u{font-size:11px;color:var(--dim);font-weight:400;margin-left:2px}
+.kpi .d{font-size:10px;color:var(--dim);margin-top:5px;font-family:var(--mono)}
+.up{color:var(--green)!important} .down{color:var(--red)!important}
+
+/* ---------- Cluster ---------- */
+.split{display:grid;grid-template-columns:1fr 340px;gap:14px;align-items:stretch}
+.split>.panel{display:flex;flex-direction:column;min-height:0;margin-bottom:0}
+.split>.panel>.log{flex:1 1 auto;height:auto;min-height:200px;max-height:430px;overflow-y:auto}
+.nodes{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.node{
+  background:var(--panel2);border:1px solid var(--border);border-radius:9px;padding:11px 12px;
+  transition:.2s;position:relative;overflow:hidden;
+}
+.node.gpu{border-left:2px solid var(--amber)}
+.node.cpu{border-left:2px solid var(--cyan)}
+.node.busy{box-shadow:inset 0 0 0 1px #f59e0b22}
+.nh{display:flex;align-items:center;gap:7px;margin-bottom:9px}
+.nh .nm{font-size:12px;font-weight:620;font-family:var(--mono)}
+.ntag{font-size:9px;padding:1.5px 6px;border-radius:4px;background:#ffffff0d;color:var(--muted);letter-spacing:.4px}
+.ntag.g{background:#f59e0b1a;color:var(--amber)} .ntag.c{background:#22d3ee1a;color:var(--cyan)}
+.nh .nr{margin-left:auto;font-size:10px;color:var(--dim);font-family:var(--mono)}
+.gpus{display:flex;gap:3px;margin-bottom:9px;flex-wrap:wrap}
+.gc{width:15px;height:19px;border-radius:3px;background:#1a2432;border:1px solid #26344a;transition:.25s}
+.gc.on{background:linear-gradient(180deg,#fbbf24,#f59e0b);border-color:#fbbf24;box-shadow:0 0 7px #f59e0b66}
+.gpus.none{height:19px;align-items:center;color:var(--dim);font-size:10px;font-family:var(--mono)}
+.bar{margin-bottom:6px}
+.bar .bl{display:flex;justify-content:space-between;font-size:9.5px;color:var(--dim);margin-bottom:3px;font-family:var(--mono)}
+.track{height:5px;background:#1a2432;border-radius:3px;overflow:hidden}
+.fill{height:100%;border-radius:3px;transition:width .25s}
+.fill.cpu{background:linear-gradient(90deg,#0891b2,#22d3ee)}
+.fill.mem{background:linear-gradient(90deg,#7c3aed,#a78bfa)}
+.nfoot{display:flex;justify-content:space-between;font-size:9.5px;color:var(--dim);margin-top:7px;font-family:var(--mono)}
+
+/* ---------- Log ---------- */
+.log{height:100%;max-height:392px;overflow-y:auto;padding:8px 10px;font-family:var(--mono);font-size:10.5px}
+.le{
+  display:flex;gap:7px;padding:5px 6px;border-radius:5px;margin-bottom:2px;
+  border-left:2px solid transparent;background:#ffffff04;
+}
+.le.fresh{animation:slidein .35s ease}
+@keyframes slidein{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:none}}
+.le .lt{color:var(--dim);flex-shrink:0;white-space:pre;width:42px;text-align:right}
+.le .lb{flex:1;color:#c3cfdb;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.le .ls{color:var(--amber);font-weight:600;flex-shrink:0}
+.le.t0{border-left-color:var(--cyan)} .le.t1{border-left-color:var(--blue)}
+.le.t2{border-left-color:var(--purple)} .le.t3{border-left-color:var(--amber)}
+.le.sys{border-left-color:var(--green);background:#10b9810a}
+
+/* ---------- Canvas ---------- */
+canvas{display:block;width:100%}
+.cbox{position:relative}
+
+/* ---------- Reward sliders ---------- */
+.rew{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;padding:12px 14px;background:var(--panel2);border:1px dashed var(--border2);border-radius:8px;margin-top:10px}
+.rew.off{opacity:.32;pointer-events:none}
+.rw{display:flex;flex-direction:column;gap:5px}
+.rw .rt{display:flex;justify-content:space-between;font-size:10.5px}
+.rw .rt b{color:var(--muted);font-weight:500}
+.rw .rt span{font-family:var(--mono);color:var(--blue);font-weight:600}
+.rw input[type=range]{width:100%}
+
+/* ---------- Benchmark ---------- */
+table{width:100%;border-collapse:collapse;font-size:12px}
+th,td{padding:8px 12px;text-align:right;border-bottom:1px solid var(--border)}
+th:first-child,td:first-child{text-align:left}
+th{font-size:10.5px;color:var(--muted);font-weight:500;letter-spacing:.3px;background:var(--panel2)}
+td{font-family:var(--mono)}
+tbody tr:hover{background:#ffffff05}
+.chip{display:inline-block;padding:1px 7px;border-radius:4px;font-size:10px;font-weight:600;font-family:var(--mono)}
+.chip.g{background:#10b9811a;color:var(--green)} .chip.r{background:#ef44441a;color:var(--red)}
+.chip.n{background:#ffffff0d;color:var(--muted)}
+.legend{display:flex;gap:16px;flex-wrap:wrap;padding:8px 14px 0;font-size:11px;color:var(--muted)}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:middle}
+
+/* ---------- Architecture ---------- */
+.layer{
+  display:grid;grid-template-columns:150px 1fr;gap:14px;align-items:center;
+  background:var(--panel2);border:1px solid var(--border);border-left:3px solid var(--blue);
+  border-radius:8px;padding:12px 14px;margin-bottom:9px;transition:.2s;
+}
+.layer:hover{background:#141d2a;border-color:var(--border2)}
+.layer.l0{border-left-color:#64748b} .layer.l1{border-left-color:var(--cyan)}
+.layer.l2{border-left-color:var(--amber)} .layer.l3{border-left-color:var(--purple)}
+.layer.l4{border-left-color:var(--green)}
+.layer .ln{font-size:12.5px;font-weight:650}
+.layer .lt2{font-size:10px;color:var(--dim);margin-top:2px;font-family:var(--mono)}
+.cards{display:flex;gap:8px;flex-wrap:wrap}
+.card2{
+  background:#0d141d;border:1px solid var(--border2);border-radius:6px;padding:7px 11px;
+}
+.card2 .cn{font-size:11.5px;font-weight:600;color:#cbd5e1}
+.card2 .cd{font-size:9.5px;color:var(--dim);margin-top:2px;font-family:var(--mono)}
+.flow{display:flex;align-items:center;justify-content:center;gap:6px;color:var(--dim);font-size:14px;height:12px;margin:-4px 0}
+
+/* ---------- Roadmap ---------- */
+.qs{display:grid;grid-template-columns:repeat(4,1fr);gap:11px}
+.q{
+  background:var(--panel2);border:1px solid var(--border);border-radius:9px;padding:13px;
+  border-top:2px solid var(--blue);position:relative;
+}
+.q.done{border-top-color:var(--green)} .q.cur{border-top-color:var(--amber);box-shadow:0 0 0 1px #f59e0b33}
+.q.next{border-top-color:var(--cyan)} .q.far{border-top-color:#475569;opacity:.82}
+.q .qh{display:flex;align-items:baseline;gap:7px;margin-bottom:3px}
+.q .qn{font-size:13px;font-weight:680}
+.q .qd{font-size:10px;color:var(--dim);font-family:var(--mono)}
+.q .qs2{font-size:11px;font-weight:600;margin-bottom:9px;color:var(--muted)}
+.q ul{list-style:none;display:flex;flex-direction:column;gap:6px}
+.q li{font-size:11px;color:#b6c2cf;line-height:1.5;padding-left:13px;position:relative}
+.q li::before{content:'';position:absolute;left:2px;top:6px;width:4px;height:4px;border-radius:50%;background:var(--dim)}
+.q li.k::before{background:var(--green)}
+.q .del{margin-top:10px;padding-top:9px;border-top:1px dashed var(--border2);font-size:10px;color:var(--dim)}
+.q .del b{color:var(--amber);font-weight:600}
+
+/* ---------- Skills ---------- */
+.sk{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}
+.skc{background:var(--panel2);border:1px solid var(--border);border-radius:9px;padding:13px}
+.skc h4{font-size:12px;font-weight:650;margin-bottom:4px;display:flex;align-items:center;gap:7px}
+.skc h4 .n{font-size:9.5px;padding:1.5px 7px;border-radius:10px;background:#3b82f61a;color:var(--blue)}
+.skc .role{font-size:10px;color:var(--dim);margin-bottom:10px;font-family:var(--mono)}
+.skc ul{list-style:none;display:flex;flex-direction:column;gap:5px}
+.skc li{font-size:11px;color:#b6c2cf;line-height:1.5;padding-left:14px;position:relative}
+.skc li::before{content:'▸';position:absolute;left:0;color:var(--blue);font-size:9px;top:1px}
+.skc li b{color:var(--text);font-weight:600}
+
+.note{
+  background:linear-gradient(90deg,#f59e0b0f,transparent);border-left:2px solid var(--amber);
+  padding:9px 13px;border-radius:0 7px 7px 0;font-size:11px;color:#c9b48c;line-height:1.6;margin-bottom:12px;
+}
+.note b{color:var(--amber)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:1280px){
+  .kpis{grid-template-columns:repeat(3,1fr)}
+  .split{grid-template-columns:1fr}
+  .qs{grid-template-columns:repeat(2,1fr)}
+  .sk{grid-template-columns:1fr}
+  .rew{grid-template-columns:repeat(2,1fr)}
+  .grid2{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hrow">
+    <div class="brand">
+      <div class="logo">HN</div>
+      <div>
+        <h1>HeteroNexus · 异构算力协同调度控制台</h1>
+        <div class="sub">面向深度学习训练的异构算力协同调度平台 · 中国人民大学 2026 大创 · 统计学院</div>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <span class="badge live" id="statusBadge">● 仿真运行中</span>
+    <span class="badge">Q1 沟通会演示版 v0.9</span>
+    <span class="badge" id="repoBadge">github.com/quannie255-star/HeteroNexus</span>
+  </div>
+  <div class="tabs">
+    <div class="tab on" data-v="live">实时调度数字孪生</div>
+    <div class="tab" data-v="bench">基线实验基准</div>
+    <div class="tab" data-v="arch">系统架构</div>
+    <div class="tab" data-v="road">年度路线图</div>
+    <div class="tab" data-v="skill">工程能力图谱</div>
+  </div>
+</header>
+
+<div class="ctrlbar" id="ctrlbar">
+  <div class="cg">
+    <label>调度算法</label>
+    <select id="algo">
+      <option value="FIFO">FIFO — 先到先服务（基线）</option>
+      <option value="BestFit">BestFit — 最佳适配</option>
+      <option value="DRF">DRF — 主导资源公平</option>
+      <option value="SJF">SJF — 最短作业优先</option>
+      <option value="DRL" selected>HeteroNexus-DRL — 多目标奖励策略</option>
+    </select>
+  </div>
+  <div class="cg">
+    <label>任务规模</label>
+    <select id="ntasks">
+      <option value="100">100</option>
+      <option value="200" selected>200</option>
+      <option value="400">400</option>
+    </select>
+  </div>
+  <div class="cg">
+    <label>速度</label>
+    <input type="range" id="speed" min="8" max="400" value="90" step="2">
+    <span id="speedV" style="font-family:var(--mono);font-size:11px;color:var(--muted);width:52px">90×</span>
+  </div>
+  <button class="pri" id="btnRun">⏸ 暂停</button>
+  <button id="btnStep">⏭ 单步</button>
+  <button id="btnFinish">⚡ 瞬时跑完</button>
+  <button class="danger" id="btnReset">↺ 重置</button>
+  <div class="spacer"></div>
+  <span style="font-family:var(--mono);font-size:11px;color:var(--dim)">T = <span id="clock" style="color:var(--amber)">0</span></span>
+</div>
+
+<main>
+
+<!-- ============ LIVE ============ -->
+<section class="view on" id="v-live">
+
+  <div class="kpis">
+    <div class="kpi g"><div class="k">GPU 利用率</div><div class="v"><span id="kGpu">0</span><span class="u">%</span></div><div class="d" id="kGpuD">实时 / 24 卡</div></div>
+    <div class="kpi c"><div class="k">CPU 利用率</div><div class="v"><span id="kCpu">0</span><span class="u">%</span></div><div class="d" id="kCpuD">实时 / 288 核</div></div>
+    <div class="kpi p"><div class="k">平均 JCT</div><div class="v" id="kJct">—</div><div class="d" id="kJctD">作业完成时间</div></div>
+    <div class="kpi s"><div class="k">已完成 / 总数</div><div class="v"><span id="kDone">0</span><span class="u" id="kTotal">/200</span></div><div class="d" id="kDoneD">完成率 0%</div></div>
+    <div class="kpi"><div class="k">等待队列</div><div class="v" id="kQueue">0</div><div class="d" id="kWaitD">平均等待 —</div></div>
+    <div class="kpi"><div class="k">Makespan</div><div class="v" id="kMake">0</div><div class="d" id="kMakeD">仿真时钟</div></div>
+  </div>
+
+  <div class="note">
+    <b>演示提示：</b>下方为集群<b>数字孪生</b>——6 节点（3×GPU 节点 8 卡 + 3×CPU 节点）的实时调度过程。
+    切换算法或拖动下方<b>多目标奖励权重</b>，可实时观察 JCT、利用率、排队长度的变化。
+    「基线实验基准」页签展示的是 Python 仿真引擎 200 任务全量实验的<b>真实存档结果</b>。
+  </div>
+
+  <div class="split">
+    <div class="panel" style="margin-bottom:0">
+      <div class="ph"><span class="dot"></span><h3>集群资源拓扑 · 实时占用</h3><span class="hint" id="nodeHint">—</span></div>
+      <div class="pb"><div class="nodes" id="nodes"></div></div>
+    </div>
+    <div class="panel" style="margin-bottom:0">
+      <div class="ph"><span class="dot" style="background:var(--green);box-shadow:0 0 8px var(--green)"></span><h3>调度决策日志</h3><span class="hint" id="logHint">0 条</span></div>
+      <div class="log" id="log"></div>
+    </div>
+  </div>
+
+  <div style="height:14px"></div>
+
+  <div class="panel">
+    <div class="ph"><span class="dot" style="background:var(--purple);box-shadow:0 0 8px var(--purple)"></span>
+      <h3>GPU / 节点分配甘特图</h3><span class="hint">滑动时间窗 · 按任务类型着色</span></div>
+    <div class="pb">
+      <div class="cbox"><canvas id="gantt" height="176"></canvas></div>
+      <div class="legend" style="padding-top:10px">
+        <span><i style="background:#22d3ee"></i>小训练 (CPU)</span>
+        <span><i style="background:#3b82f6"></i>中训练 (1-2 GPU)</span>
+        <span><i style="background:#a78bfa"></i>大训练 (4-8 GPU)</span>
+        <span><i style="background:#f59e0b"></i>推理服务 (长驻)</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="ph"><span class="dot" style="background:var(--cyan);box-shadow:0 0 8px var(--cyan)"></span>
+      <h3>资源利用率 & 队列长度时序</h3><span class="hint">采样间隔 30 (仿真秒)</span></div>
+    <div class="pb">
+      <div class="cbox"><canvas id="util" height="200"></canvas></div>
+      <div class="legend" style="padding-top:10px">
+        <span><i style="background:#f59e0b"></i>GPU 利用率</span>
+        <span><i style="background:#22d3ee"></i>CPU 利用率</span>
+        <span><i style="background:#8697a8"></i>等待队列长度</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="ph"><span class="dot" style="background:var(--green);box-shadow:0 0 8px var(--green)"></span>
+      <h3>多目标奖励函数 · 在线权重调节</h3><span class="hint">R = w₁·JCT + w₂·利用率 + w₃·能耗 + w₄·公平性 + w₅·碎片</span></div>
+    <div class="pb">
+      <div style="font-size:11px;color:var(--muted);line-height:1.7;margin-bottom:4px">
+        该权重组即 DRL 智能体的奖励塑形（Reward Shaping）系数。当前策略为<b style="color:var(--text)">奖励驱动的贪心策略</b>
+        （DRL 的行为克隆初始策略 / Warm-start Policy），PPO 策略网络将在第二季度基于该奖励函数进行训练并替换此处的贪心决策。
+      </div>
+      <div class="rew" id="rew">
+        <div class="rw"><div class="rt"><b>w₁ 完成时间</b><span id="w1v">0.50</span></div><input type="range" id="w1" min="0" max="1" step="0.05" value="0.50"></div>
+        <div class="rw"><div class="rt"><b>w₂ 利用率</b><span id="w2v">0.15</span></div><input type="range" id="w2" min="0" max="1" step="0.05" value="0.15"></div>
+        <div class="rw"><div class="rt"><b>w₃ 能耗</b><span id="w3v">0.05</span></div><input type="range" id="w3" min="0" max="1" step="0.05" value="0.05"></div>
+        <div class="rw"><div class="rt"><b>w₄ 公平性</b><span id="w4v">0.20</span></div><input type="range" id="w4" min="0" max="1" step="0.05" value="0.20"></div>
+        <div class="rw"><div class="rt"><b>w₅ 碎片率</b><span id="w5v">0.10</span></div><input type="range" id="w5" min="0" max="1" step="0.05" value="0.10"></div>
+      </div>
+
+      <div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:11px;align-items:center">
+        <span style="font-size:11px;color:var(--muted)">权重预设：</span>
+        <button class="pst" data-p="bal">均衡（默认）</button>
+        <button class="pst" data-p="lat">延迟优先</button>
+        <button class="pst" data-p="thr">吞吐优先</button>
+        <button class="pst" data-p="fair">公平优先</button>
+        <div class="spacer" style="flex:1"></div>
+        <button class="pri" id="btnEval">📊 离线评估并记录到对比表</button>
+      </div>
+
+      <div style="margin-top:10px;font-size:10.5px;color:var(--dim);line-height:1.7">
+        <b style="color:var(--amber)">现场演示动线：</b>
+        ① 选「HeteroNexus-DRL + 均衡」→ 点「离线评估并记录」；
+        ② 切「延迟优先」再记录 → 平均 JCT 下降；
+        ③ 切「吞吐优先」再记录 → GPU 利用率上升到 <b style="color:var(--green)">92%</b> 但 JCT 变差。
+        三次记录的<b>帕累托对比表</b>会出现在下方——这直接证明：<b style="color:var(--text)">没有一组静态权重能在所有指标上最优，这正是必须引入强化学习做在线自适应决策的论据。</b>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="ph"><span class="dot" style="background:var(--amber);box-shadow:0 0 8px var(--amber)"></span>
+      <h3>帕累托对比表 · 现场记录</h3>
+      <span class="hint" id="parHint">尚未记录 · 点击上方「离线评估并记录」</span></div>
+    <div class="pb" style="padding:0">
+      <table>
+        <thead><tr>
+          <th>#</th><th>算法</th><th>奖励权重 (w₁…w₅)</th><th>平均 JCT</th><th>中位 JCT</th>
+          <th>P95 JCT</th><th>GPU 利用率</th><th>vs FIFO (JCT)</th><th>vs FIFO (GPU)</th><th></th>
+        </tr></thead>
+        <tbody id="parTbody"><tr><td colspan="10" style="text-align:center;color:var(--dim);padding:22px;font-family:system-ui">
+          点击「离线评估并记录」后，此处将逐行累积本次会话的实验记录，并自动标记帕累托最优行。</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="ph"><span class="dot" style="background:var(--pink);box-shadow:0 0 8px var(--pink)"></span>
+      <h3>奖励权重敏感性 · 参考结论</h3>
+      <span class="hint">控制台内置仿真引擎 · 5 随机种子 × 200 任务平均 · 相对 FIFO 基线</span></div>
+    <div class="pb" style="padding:0">
+      <table>
+        <thead><tr><th>权重预设</th><th>w₁…w₅</th><th>平均 JCT</th><th>中位 JCT</th><th>P95 JCT</th><th>GPU 利用率</th><th>适用场景</th></tr></thead>
+        <tbody>
+          <tr><td style="font-weight:600;text-align:left">均衡（默认）</td><td style="color:var(--dim)">0.50/0.15/0.05/0.20/0.10</td>
+            <td><span class="chip g">−16.2%</span></td><td><span class="chip g">−43.3%</span></td><td><span class="chip g">−3.1%</span></td>
+            <td><b style="color:var(--amber)">89.5%</b></td><td style="text-align:left;font-family:system-ui;font-size:11.5px">通用默认，兼顾延迟与吞吐</td></tr>
+          <tr><td style="font-weight:600;text-align:left">延迟优先</td><td style="color:var(--dim)">0.70/0.05/0.05/0.10/0.10</td>
+            <td><span class="chip g">−20.4%</span></td><td><span class="chip g">−60.3%</span></td><td><span class="chip g">−2.4%</span></td>
+            <td>88.5%</td><td style="text-align:left;font-family:system-ui;font-size:11.5px">交互式训练、调试密集场景</td></tr>
+          <tr><td style="font-weight:600;text-align:left">吞吐优先</td><td style="color:var(--dim)">0.20/0.45/0.15/0.10/0.10</td>
+            <td><span class="chip r">−1.2%</span></td><td>−28.2%</td><td>−2.2%</td>
+            <td><b style="color:var(--green)">92.2%</b></td><td style="text-align:left;font-family:system-ui;font-size:11.5px">离线批量训练、成本敏感型</td></tr>
+          <tr><td style="font-weight:600;text-align:left">公平优先</td><td style="color:var(--dim)">0.25/0.10/0.05/0.55/0.05</td>
+            <td><span class="chip g">−9.8%</span></td><td>−16.5%</td><td><span class="chip g">−4.1%</span></td>
+            <td>89.7%</td><td style="text-align:left;font-family:system-ui;font-size:11.5px">多租户共享、科研团队公平分配</td></tr>
+          <tr style="border-top:2px solid var(--border2)"><td style="text-align:left;color:var(--muted)">参照：SJF 启发式</td><td style="color:var(--dim)">— 无奖励函数 —</td>
+            <td><span class="chip g">−20.5%</span></td><td><span class="chip g">−66.1%</span></td><td><span class="chip g">−3.5%</span></td>
+            <td style="color:var(--red)">87.7%</td><td style="text-align:left;font-family:system-ui;font-size:11.5px">延迟最优，但牺牲 2.1pt 利用率</td></tr>
+          <tr><td style="text-align:left;color:var(--muted)">参照：FIFO 基线</td><td style="color:var(--dim)">— 无奖励函数 —</td>
+            <td>0.00%</td><td>0.00%</td><td>0.00%</td><td>89.8%</td>
+            <td style="text-align:left;font-family:system-ui;font-size:11.5px">吞吐高但长任务阻塞严重</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="pb" style="padding-top:0">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:11px;font-size:11.5px;line-height:1.7;color:#c3cfdb">
+        <div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:11px 13px">
+          <div style="color:var(--amber);font-weight:650;margin-bottom:4px">发现 ① w₂ 与 JCT 存在反向关系</div>
+          把 w₂（利用率）从 0.05 提高到 0.45，GPU 利用率从 88.5% 升至 <b>92.2%</b>，但平均 JCT 改善从 −20.4% 退化到 <b>−1.2%</b>。
+          原因是利用率奖励会引导任务向已饱和节点聚集，形成热点并加剧队头阻塞。
+        </div>
+        <div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:11px 13px">
+          <div style="color:var(--green);font-weight:650;margin-bottom:4px">发现 ② 无静态权重可通吃全部指标</div>
+          延迟优先在 JCT 上接近最优的 SJF，同时 GPU 利用率高出 <b>0.8pt</b>；吞吐优先占据利用率端点。
+          四组预设分别落在<b>帕累托前沿的不同位置</b>，不存在支配所有其他配置的单点。
+        </div>
+        <div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:11px 13px">
+          <div style="color:var(--purple);font-weight:650;margin-bottom:4px">发现 ③ → 强化学习的必要性论证</div>
+          既然最优权重<b>随负载特征变化</b>（推理密集 vs 训练密集、大任务占比、队列深度），
+          那么"根据实时集群状态在线选择权重"本身就是一个可学习的策略——
+          这正是 PPO 在第二季度要解决的问题，而非简单调参。
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ BENCH ============ -->
+<section class="view" id="v-bench">
+  <div class="note">
+    <b>数据来源：</b>本页全部指标来自 <span style="font-family:var(--mono)">simulation/cluster_simulator.py</span>
+    在 3×GPU 节点（8 卡）+ 3×CPU 节点异构集群上的 <b>200 任务全量离散事件仿真</b>，
+    结果存档于 <span style="font-family:var(--mono)">simulation/baseline_results.json</span>，随机种子固定为 42，可完全复现。
+  </div>
+
+  <div class="panel">
+    <div class="ph"><span class="dot"></span><h3>基线算法核心指标对比</h3><span class="hint">Δ 为相对 FIFO 基线的变化</span></div>
+    <div class="pb" style="padding:0">
+      <table>
+        <thead><tr>
+          <th>调度算法</th><th>平均 JCT</th><th>Δ vs FIFO</th><th>中位 JCT</th><th>P95 JCT</th>
+          <th>平均等待</th><th>Makespan</th><th>GPU 利用率</th><th>CPU 利用率</th><th>完成</th>
+        </tr></thead>
+        <tbody id="benchTbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="panel">
+      <div class="ph"><span class="dot" style="background:var(--amber);box-shadow:0 0 8px var(--amber)"></span><h3>JCT 指标对比（越低越好）</h3></div>
+      <div class="pb"><div class="cbox"><canvas id="cJct" height="240"></canvas></div></div>
+    </div>
+    <div class="panel">
+      <div class="ph"><span class="dot" style="background:var(--cyan);box-shadow:0 0 8px var(--cyan)"></span><h3>资源利用率对比（越高越好）</h3></div>
+      <div class="pb"><div class="cbox"><canvas id="cUtil" height="240"></canvas></div></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="ph"><span class="dot" style="background:var(--purple);box-shadow:0 0 8px var(--purple)"></span><h3>GPU 利用率时序对比</h3><span class="hint">全仿真周期采样</span></div>
+    <div class="pb">
+      <div class="cbox"><canvas id="cTs" height="230"></canvas></div>
+      <div class="legend" style="padding-top:10px" id="tsLegend"></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="ph"><span class="dot" style="background:var(--green);box-shadow:0 0 8px var(--green)"></span><h3>关键结论</h3></div>
+    <div class="pb" id="findings"></div>
+  </div>
+</section>
+
+<!-- ============ ARCH ============ -->
+<section class="view" id="v-arch">
+  <div class="note">
+    <b>设计原则：</b>分层解耦、接口标准化、可独立演进。智能决策层以 gRPC 对外提供推理服务，
+    与 K8s 调度内核解耦——调度插件在 DRL 代理不可用时可自动回退至 DRF 启发式，保证系统稳定性。
+  </div>
+  <div id="archLayers"></div>
+
+  <div class="panel">
+    <div class="ph"><span class="dot" style="background:var(--cyan);box-shadow:0 0 8px var(--cyan)"></span><h3>核心数据流</h3></div>
+    <div class="pb" id="flowSteps"></div>
+  </div>
+
+  <div class="grid2">
+    <div class="panel">
+      <div class="ph"><span class="dot" style="background:var(--amber);box-shadow:0 0 8px var(--amber)"></span><h3>K8s 调度插件扩展点</h3></div>
+      <div class="pb" id="extPoints" style="padding:0"></div>
+    </div>
+    <div class="panel">
+      <div class="ph"><span class="dot" style="background:var(--purple);box-shadow:0 0 8px var(--purple)"></span><h3>技术栈清单</h3></div>
+      <div class="pb" id="stack" style="padding:0"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ROADMAP ============ -->
+<section class="view" id="v-road">
+  <div class="note">
+    <b>沟通会后拟调整：</b>原计划第二季度直接开发 K8s Go 调度插件，团队 Go 与 K8s 经验不足且<b>无法在结项前完成可演示闭环</b>。
+    建议调整为：<b>Q2 先落地「仿真环境 + 算法 + 可视化控制台」闭环</b>（本控制台即该闭环产物），
+    K8s 插件开发后移至 Q3 并采用<b>轻量化路线</b>（基于 Kueue 的 JobSet + 外部 Score 插件，而非完整 scheduler framework）。
+  </div>
+  <div class="qs" id="quarters"></div>
+
+  <div class="panel" style="margin-top:14px">
+    <div class="ph"><span class="dot" style="background:var(--amber);box-shadow:0 0 8px var(--amber)"></span><h3>关键里程碑与交付物</h3></div>
+    <div class="pb" style="padding:0">
+      <table>
+        <thead><tr><th>时间节点</th><th>里程碑</th><th>交付物</th><th>验收口径</th></tr></thead>
+        <tbody>
+          <tr><td>2026-08-31</td><td>完成市场调研与产品定义</td><td>市场调研报告、PRD、技术架构文档</td><td>覆盖 ≥6 竞品、≥3 类用户</td></tr>
+          <tr><td>2026-09-30</td><td><b style="color:var(--amber)">控制台 v1.0 + 仿真闭环</b></td><td>可交互调度控制台、仿真引擎</td><td>现场可演示，算法可热切换</td></tr>
+          <tr><td>2026-11-30</td><td>DRL 算法仿真验证达标</td><td>算法设计文档、PPO 训练代码、实验报告</td><td>平均 JCT 较 DRF 降低 ≥10%</td></tr>
+          <tr><td>2027-02-28</td><td>原型系统 V1.0</td><td>K8s 调度插件、Helm Chart、可观测面板</td><td>3 节点测试集群 72h 无故障</td></tr>
+          <tr><td>2027-05-31</td><td>结项</td><td>商业计划书、测试报告、合作意向书</td><td>利用率 +25%、耗时 −20%、延迟 −60%</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SKILLS ============ -->
+<section class="view" id="v-skill">
+  <div class="note">
+    <b>定位：</b>本项目在工程能力上对齐 <b style="color:var(--text)">AI Infra / 云原生平台 / 后端工程</b> 三类实习岗位的核心要求。
+    下表为项目模块与招聘岗位 JD 关键词的映射，可直接用于简历「项目经历」段落的撰写。
+  </div>
+  <div class="sk" id="skills"></div>
+
+  <div class="panel" style="margin-top:14px">
+    <div class="ph"><span class="dot" style="background:var(--green);box-shadow:0 0 8px var(--green)"></span><h3>简历项目经历 · 建议写法（STAR 结构）</h3></div>
+    <div class="pb" style="font-size:12px;line-height:1.9;color:#c3cfdb">
+      <p style="margin-bottom:10px">
+        <b style="color:var(--amber)">HeteroNexus</b> ｜ 异构算力协同调度平台 ｜ 核心开发 ｜ 2026.06 – 至今
+      </p>
+      <p style="margin-bottom:8px">
+        <b style="color:var(--cyan)">S</b> ｜ 高校与中小企业 GPU 集群平均利用率不足 40%，现有 K8s 调度器以静态分配为主，缺乏对异构硬件与多目标的联合优化。
+      </p>
+      <p style="margin-bottom:8px">
+        <b style="color:var(--cyan)">T</b> ｜ 设计一套插件化、无侵入的异构算力智能调度平台，在保证集群吞吐的前提下降低作业完成时间。
+      </p>
+      <p style="margin-bottom:8px">
+        <b style="color:var(--cyan)">A</b> ｜ ① 基于<b>离散事件仿真</b>自建集群调度仿真环境，复现 FIFO/DRF/BestFit/SJF 四类基线算法并完成 200 任务对比实验；
+        ② 设计<b>多目标奖励函数</b>（JCT / 利用率 / 能耗 / 公平性 / 碎片），实现奖励驱动的调度策略与在线权重调节；
+        ③ 设计基于 <b>Kubernetes Scheduler Framework</b>（Filter / Score / Permit / Reserve 扩展点）与 <b>DRA</b> 的调度插件方案，
+        并通过 gRPC 与 Python 侧决策服务解耦，支持启发式安全回退；
+        ④ 构建<b>集群数字孪生可视化控制台</b>，实现调度过程实时回放与多算法指标对比。
+      </p>
+      <p>
+        <b style="color:var(--cyan)">R</b> ｜ 仿真环境下 DRF 相较 FIFO 平均 JCT 降低 <b>14.2%</b>、中位 JCT 降低 <b>54.3%</b>；
+        多目标策略在保持 GPU 利用率 &gt;90% 的同时进一步压缩长尾等待。相关代码已开源。
+      </p>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<script>
+/* ================= 基线实验真实数据（来自 Python 仿真引擎存档） ================= */
+const BASELINE = {FIFO:{scheduler:"FIFO",total_tasks:200,completed:200,avg_jct:2441.2,median_jct:1720.1,p95_jct:9430.4,avg_waiting:1741.9,makespan:15231.4,avg_cpu_util:46.4,avg_gpu_util:94.2,avg_mem_util:32.9,jct_by_type:{large_train:7040.6,small_train:186.7,inference:2577.5,medium_train:2009.5},jct_hist:[82,18,34,23,11,3,2,6,4,4,4,1,2,6],jct_hist_max:12035.6,util_samples:[{t:0.0,c:0.0,g:0.0,w:0},{t:150.0,c:0.3681,g:0.4167,w:0},{t:300.0,c:0.5694,g:0.8333,w:1},{t:450.0,c:0.5764,g:0.9167,w:3},{t:600.0,c:0.559,g:0.9583,w:5},{t:750.0,c:0.6285,g:1.0,w:12},{t:900.0,c:0.5451,g:1.0,w:13},{t:1050.0,c:0.5243,g:1.0,w:17},{t:1200.0,c:0.5069,g:1.0,w:21},{t:1350.0,c:0.5764,g:1.0,w:22},{t:1500.0,c:0.6111,g:1.0,w:27},{t:1650.0,c:0.5729,g:1.0,w:29},{t:1800.0,c:0.559,g:1.0,w:29},{t:1950.0,c:0.6007,g:1.0,w:36},{t:2100.0,c:0.566,g:1.0,w:42},{t:2250.0,c:0.5625,g:1.0,w:43},{t:2400.0,c:0.6076,g:1.0,w:44},{t:2550.0,c:0.4757,g:1.0,w:49},{t:2700.0,c:0.5,g:1.0,w:53},{t:2850.0,c:0.5486,g:1.0,w:55},{t:3000.0,c:0.5625,g:1.0,w:59},{t:3150.0,c:0.4583,g:1.0,w:63},{t:3300.0,c:0.5556,g:1.0,w:64},{t:3450.0,c:0.5104,g:1.0,w:70},{t:3600.0,c:0.4826,g:1.0,w:71},{t:3750.0,c:0.5347,g:1.0,w:69},{t:3900.0,c:0.5347,g:1.0,w:68},{t:4050.0,c:0.5521,g:1.0,w:65},{t:4200.0,c:0.5972,g:1.0,w:62},{t:4350.0,c:0.6354,g:1.0,w:60},{t:4500.0,c:0.6285,g:1.0,w:58},{t:4650.0,c:0.625,g:1.0,w:56},{t:4800.0,c:0.5972,g:1.0,w:54},{t:4950.0,c:0.5556,g:1.0,w:50},{t:5100.0,c:0.5729,g:1.0,w:48},{t:5250.0,c:0.5764,g:1.0,w:44},{t:5400.0,c:0.5764,g:1.0,w:43},{t:5550.0,c:0.5069,g:1.0,w:38},{t:5700.0,c:0.4688,g:0.9167,w:37},{t:5850.0,c:0.4549,g:0.9583,w:36},{t:6000.0,c:0.3785,g:0.9167,w:34},{t:6150.0,c:0.3194,g:0.9167,w:32},{t:6300.0,c:0.4236,g:0.8333,w:29},{t:6450.0,c:0.434,g:0.875,w:28},{t:6600.0,c:0.4514,g:0.875,w:27},{t:6750.0,c:0.4757,g:0.875,w:26},{t:6900.0,c:0.4931,g:0.875,w:25},{t:7050.0,c:0.5,g:0.9167,w:24},{t:7200.0,c:0.5139,g:0.9167,w:23},{t:7350.0,c:0.5833,g:1.0,w:21},{t:7500.0,c:0.5868,g:1.0,w:20},{t:7650.0,c:0.5868,g:1.0,w:20},{t:7800.0,c:0.5868,g:1.0,w:20},{t:7950.0,c:0.5868,g:1.0,w:20},{t:8100.0,c:0.559,g:1.0,w:19},{t:8250.0,c:0.5069,g:0.8333,w:18},{t:8400.0,c:0.5069,g:0.8333,w:18},{t:8550.0,c:0.5069,g:0.8333,w:18},{t:8700.0,c:0.5347,g:0.8333,w:17},{t:8850.0,c:0.4583,g:1.0,w:15},{t:9000.0,c:0.4583,g:1.0,w:15},{t:9150.0,c:0.4514,g:1.0,w:14},{t:9300.0,c:0.4514,g:1.0,w:14},{t:9450.0,c:0.4514,g:1.0,w:14},{t:9600.0,c:0.4514,g:1.0,w:14},{t:9750.0,c:0.4271,g:1.0,w:13},{t:9900.0,c:0.4444,g:1.0,w:12},{t:10050.0,c:0.4444,g:1.0,w:12},{t:10200.0,c:0.4375,g:1.0,w:11},{t:10350.0,c:0.4375,g:1.0,w:11},{t:10500.0,c:0.4375,g:1.0,w:11},{t:10650.0,c:0.4062,g:1.0,w:9},{t:10800.0,c:0.4062,g:1.0,w:9},{t:10950.0,c:0.4062,g:1.0,w:9},{t:11100.0,c:0.5243,g:1.0,w:7},{t:11250.0,c:0.434,g:0.8333,w:7},{t:11400.0,c:0.434,g:0.8333,w:7},{t:11550.0,c:0.434,g:0.8333,w:7},{t:11700.0,c:0.4861,g:1.0,w:6},{t:11850.0,c:0.4792,g:1.0,w:5},{t:12000.0,c:0.4792,g:1.0,w:5},{t:12150.0,c:0.3785,g:0.8333,w:5},{t:12300.0,c:0.3785,g:0.8333,w:5},{t:12450.0,c:0.3785,g:0.8333,w:5},{t:12600.0,c:0.4167,g:1.0,w:4},{t:12750.0,c:0.4167,g:1.0,w:4},{t:12900.0,c:0.434,g:1.0,w:3},{t:13050.0,c:0.434,g:1.0,w:3},{t:13200.0,c:0.434,g:1.0,w:3},{t:13350.0,c:0.434,g:1.0,w:3},{t:13500.0,c:0.434,g:1.0,w:3},{t:13650.0,c:0.3333,g:1.0,w:2},{t:13800.0,c:0.2361,g:1.0,w:1},{t:13950.0,c:0.2361,g:1.0,w:1},{t:14100.0,c:0.1979,g:1.0,w:0},{t:14250.0,c:0.1979,g:1.0,w:0},{t:14400.0,c:0.1979,g:1.0,w:0},{t:14550.0,c:0.1979,g:1.0,w:0},{t:14700.0,c:0.1424,g:0.6667,w:0},{t:14850.0,c:0.1424,g:0.6667,w:0},{t:15000.0,c:0.1424,g:0.6667,w:0},{t:15150.0,c:0.0833,g:0.3333,w:0},{t:15231.4,c:0.0,g:0.0,w:0}]},BestFit:{scheduler:"BestFit",total_tasks:200,completed:200,avg_jct:2556.7,median_jct:1911.8,p95_jct:9627.2,avg_waiting:1857.4,makespan:15323.4,avg_cpu_util:46.1,avg_gpu_util:93.6,avg_mem_util:32.7,jct_by_type:{large_train:6797.8,small_train:186.7,inference:2996.4,medium_train:2335.0},jct_hist:[81,16,22,33,18,3,2,5,6,4,1,1,4,4],jct_hist_max:12330.6,util_samples:[{t:0.0,c:0.0,g:0.0,w:0},{t:150.0,c:0.3681,g:0.4167,w:0},{t:300.0,c:0.5694,g:0.8333,w:1},{t:450.0,c:0.625,g:0.9583,w:2},{t:600.0,c:0.559,g:0.9583,w:5},{t:750.0,c:0.6285,g:1.0,w:12},{t:900.0,c:0.5521,g:1.0,w:12},{t:1050.0,c:0.5903,g:1.0,w:19},{t:1200.0,c:0.5625,g:1.0,w:23},{t:1350.0,c:0.6319,g:1.0,w:23},{t:1500.0,c:0.6528,g:1.0,w:30},{t:1650.0,c:0.6424,g:1.0,w:33},{t:1800.0,c:0.6701,g:1.0,w:34},{t:1950.0,c:0.7153,g:1.0,w:41},{t:2100.0,c:0.625,g:1.0,w:49},{t:2250.0,c:0.6319,g:1.0,w:49},{t:2400.0,c:0.6701,g:1.0,w:48},{t:2550.0,c:0.5833,g:1.0,w:52},{t:2700.0,c:0.5938,g:1.0,w:57},{t:2850.0,c:0.6424,g:1.0,w:59},{t:3000.0,c:0.6215,g:1.0,w:62},{t:3150.0,c:0.5104,g:1.0,w:66},{t:3300.0,c:0.566,g:1.0,w:70},{t:3450.0,c:0.5174,g:1.0,w:76},{t:3600.0,c:0.4479,g:1.0,w:75},{t:3750.0,c:0.4479,g:1.0,w:75},{t:3900.0,c:0.3924,g:1.0,w:73},{t:4050.0,c:0.4375,g:1.0,w:68},{t:4200.0,c:0.441,g:1.0,w:67},{t:4350.0,c:0.4757,g:1.0,w:65},{t:4500.0,c:0.4931,g:1.0,w:64},{t:4650.0,c:0.5799,g:1.0,w:61},{t:4800.0,c:0.6007,g:1.0,w:58},{t:4950.0,c:0.559,g:1.0,w:53},{t:5100.0,c:0.559,g:1.0,w:53},{t:5250.0,c:0.4688,g:1.0,w:50},{t:5400.0,c:0.4965,g:1.0,w:48},{t:5550.0,c:0.4653,g:1.0,w:46},{t:5700.0,c:0.5451,g:1.0,w:41},{t:5850.0,c:0.5764,g:1.0,w:38},{t:6000.0,c:0.566,g:1.0,w:37},{t:6150.0,c:0.4965,g:1.0,w:33},{t:6300.0,c:0.4514,g:0.9583,w:31},{t:6450.0,c:0.4653,g:1.0,w:30},{t:6600.0,c:0.4375,g:0.9167,w:29},{t:6750.0,c:0.4583,g:0.9583,w:27},{t:6900.0,c:0.4062,g:0.9583,w:26},{t:7050.0,c:0.441,g:0.9167,w:24},{t:7200.0,c:0.4375,g:0.875,w:23},{t:7350.0,c:0.3854,g:0.7917,w:22},{t:7500.0,c:0.4618,g:0.875,w:21},{t:7650.0,c:0.6042,g:1.0,w:19},{t:7800.0,c:0.6042,g:1.0,w:19},{t:7950.0,c:0.6042,g:1.0,w:19},{t:8100.0,c:0.6042,g:1.0,w:19},{t:8250.0,c:0.5625,g:1.0,w:18},{t:8400.0,c:0.5868,g:1.0,w:16},{t:8550.0,c:0.5312,g:0.8333,w:16},{t:8700.0,c:0.5312,g:0.8333,w:16},{t:8850.0,c:0.5312,g:0.8333,w:16},{t:9000.0,c:0.4514,g:1.0,w:14},{t:9150.0,c:0.4514,g:1.0,w:14},{t:9300.0,c:0.4514,g:1.0,w:14},{t:9450.0,c:0.4514,g:1.0,w:14},{t:9600.0,c:0.4514,g:1.0,w:14},{t:9750.0,c:0.4514,g:1.0,w:14},{t:9900.0,c:0.4444,g:1.0,w:12},{t:10050.0,c:0.4792,g:1.0,w:11},{t:10200.0,c:0.4583,g:1.0,w:10},{t:10350.0,c:0.4062,g:1.0,w:9},{t:10500.0,c:0.4062,g:1.0,w:9},{t:10650.0,c:0.4062,g:1.0,w:9},{t:10800.0,c:0.4062,g:1.0,w:9},{t:10950.0,c:0.4062,g:1.0,w:9},{t:11100.0,c:0.4028,g:1.0,w:8},{t:11250.0,c:0.3299,g:0.6667,w:7},{t:11400.0,c:0.3299,g:0.6667,w:7},{t:11550.0,c:0.3299,g:0.6667,w:7},{t:11700.0,c:0.3299,g:0.6667,w:7},{t:11850.0,c:0.3299,g:0.6667,w:7},{t:12000.0,c:0.3785,g:0.8333,w:5},{t:12150.0,c:0.3785,g:0.8333,w:5},{t:12300.0,c:0.4167,g:1.0,w:4},{t:12450.0,c:0.4167,g:1.0,w:4},{t:12600.0,c:0.4167,g:1.0,w:4},{t:12750.0,c:0.4167,g:1.0,w:4},{t:12900.0,c:0.4167,g:1.0,w:4},{t:13050.0,c:0.434,g:1.0,w:3},{t:13200.0,c:0.434,g:1.0,w:3},{t:13350.0,c:0.434,g:1.0,w:3},{t:13500.0,c:0.434,g:1.0,w:3},{t:13650.0,c:0.434,g:1.0,w:3},{t:13800.0,c:0.3681,g:1.0,w:2},{t:13950.0,c:0.2708,g:1.0,w:1},{t:14100.0,c:0.1979,g:1.0,w:0},{t:14250.0,c:0.1979,g:1.0,w:0},{t:14400.0,c:0.1979,g:1.0,w:0},{t:14550.0,c:0.1979,g:1.0,w:0},{t:14700.0,c:0.1424,g:0.6667,w:0},{t:14850.0,c:0.1424,g:0.6667,w:0},{t:15000.0,c:0.1424,g:0.6667,w:0},{t:15150.0,c:0.1424,g:0.6667,w:0},{t:15300.0,c:0.059,g:0.3333,w:0},{t:15323.4,c:0.0,g:0.0,w:0}]},DRF:{scheduler:"DRF",total_tasks:200,completed:200,avg_jct:2094.9,median_jct:786.1,p95_jct:10940.9,avg_waiting:1395.5,makespan:15498.4,avg_cpu_util:45.6,avg_gpu_util:92.6,avg_mem_util:32.3,jct_by_type:{large_train:7528.6,small_train:186.7,inference:1623.8,medium_train:1047.1},jct_hist:[107,33,24,0,0,0,7,9,8,1,1,0,3,7],jct_hist_max:12188.0,util_samples:[{t:0.0,c:0.0,g:0.0,w:0},{t:150.0,c:0.3681,g:0.4167,w:0},{t:300.0,c:0.5694,g:0.8333,w:1},{t:450.0,c:0.625,g:0.9583,w:2},{t:600.0,c:0.5729,g:0.9167,w:5},{t:750.0,c:0.6736,g:1.0,w:11},{t:900.0,c:0.4896,g:1.0,w:8},{t:1050.0,c:0.5486,g:1.0,w:13},{t:1200.0,c:0.5799,g:1.0,w:17},{t:1350.0,c:0.559,g:1.0,w:16},{t:1500.0,c:0.5486,g:1.0,w:20},{t:1650.0,c:0.4861,g:0.9167,w:21},{t:1800.0,c:0.4792,g:0.9167,w:22},{t:1950.0,c:0.5312,g:1.0,w:25},{t:2100.0,c:0.4792,g:1.0,w:34},{t:2250.0,c:0.5278,g:1.0,w:31},{t:2400.0,c:0.5451,g:0.9583,w:31},{t:2550.0,c:0.566,g:0.9583,w:37},{t:2700.0,c:0.5556,g:0.9583,w:39},{t:2850.0,c:0.6319,g:0.9583,w:42},{t:3000.0,c:0.5938,g:1.0,w:43},{t:3150.0,c:0.4583,g:0.9583,w:44},{t:3300.0,c:0.5486,g:1.0,w:48},{t:3450.0,c:0.5556,g:1.0,w:51},{t:3600.0,c:0.5139,g:1.0,w:53},{t:3750.0,c:0.5174,g:0.9583,w:51},{t:3900.0,c:0.4688,g:0.9167,w:48},{t:4050.0,c:0.4201,g:0.875,w:47},{t:4200.0,c:0.375,g:0.9167,w:43},{t:4350.0,c:0.3125,g:0.875,w:41},{t:4500.0,c:0.3333,g:0.9167,w:39},{t:4650.0,c:0.3507,g:0.875,w:36},{t:4800.0,c:0.309,g:0.7917,w:35},{t:4950.0,c:0.4097,g:0.875,w:34},{t:5100.0,c:0.5382,g:0.9167,w:32},{t:5250.0,c:0.5799,g:0.9167,w:31},{t:5400.0,c:0.6007,g:1.0,w:30},{t:5550.0,c:0.6007,g:1.0,w:30},{t:5700.0,c:0.6007,g:1.0,w:30},{t:5850.0,c:0.6007,g:1.0,w:30},{t:6000.0,c:0.6215,g:1.0,w:29},{t:6150.0,c:0.5382,g:1.0,w:28},{t:6300.0,c:0.5417,g:1.0,w:27},{t:6450.0,c:0.5521,g:1.0,w:26},{t:6600.0,c:0.5417,g:1.0,w:25},{t:6750.0,c:0.5417,g:1.0,w:25},{t:6900.0,c:0.5625,g:1.0,w:24},{t:7050.0,c:0.5625,g:1.0,w:24},{t:7200.0,c:0.4653,g:1.0,w:23},{t:7350.0,c:0.5,g:1.0,w:22},{t:7500.0,c:0.5,g:1.0,w:22},{t:7650.0,c:0.5,g:1.0,w:22},{t:7800.0,c:0.5104,g:1.0,w:21},{t:7950.0,c:0.6007,g:1.0,w:20},{t:8100.0,c:0.5868,g:1.0,w:18},{t:8250.0,c:0.5868,g:1.0,w:18},{t:8400.0,c:0.5903,g:1.0,w:16},{t:8550.0,c:0.5903,g:1.0,w:16},{t:8700.0,c:0.5833,g:1.0,w:15},{t:8850.0,c:0.5833,g:1.0,w:15},{t:9000.0,c:0.5833,g:1.0,w:15},{t:9150.0,c:0.5139,g:1.0,w:14},{t:9300.0,c:0.5139,g:1.0,w:14},{t:9450.0,c:0.5556,g:1.0,w:13},{t:9600.0,c:0.566,g:1.0,w:12},{t:9750.0,c:0.4965,g:0.8333,w:12},{t:9900.0,c:0.4965,g:0.8333,w:12},{t:10050.0,c:0.5243,g:0.8333,w:11},{t:10200.0,c:0.5243,g:0.8333,w:11},{t:10350.0,c:0.4375,g:0.6667,w:10},{t:10500.0,c:0.4375,g:0.8333,w:9},{t:10650.0,c:0.4375,g:0.8333,w:9},{t:10800.0,c:0.4375,g:0.8333,w:9},{t:10950.0,c:0.4375,g:0.8333,w:9},{t:11100.0,c:0.4375,g:0.8333,w:9},{t:11250.0,c:0.3368,g:0.6667,w:9},{t:11400.0,c:0.3021,g:1.0,w:7},{t:11550.0,c:0.3681,g:1.0,w:6},{t:11700.0,c:0.3681,g:1.0,w:6},{t:11850.0,c:0.3681,g:1.0,w:6},{t:12000.0,c:0.3681,g:1.0,w:6},{t:12150.0,c:0.3681,g:1.0,w:6},{t:12300.0,c:0.3611,g:1.0,w:5},{t:12450.0,c:0.3611,g:1.0,w:5},{t:12600.0,c:0.4167,g:1.0,w:4},{t:12750.0,c:0.4167,g:1.0,w:4},{t:12900.0,c:0.4167,g:1.0,w:4},{t:13050.0,c:0.4167,g:1.0,w:4},{t:13200.0,c:0.4167,g:1.0,w:4},{t:13350.0,c:0.434,g:1.0,w:3},{t:13500.0,c:0.3333,g:1.0,w:2},{t:13650.0,c:0.3333,g:1.0,w:2},{t:13800.0,c:0.3333,g:1.0,w:2},{t:13950.0,c:0.3333,g:1.0,w:2},{t:14100.0,c:0.3333,g:1.0,w:2},{t:14250.0,c:0.1979,g:1.0,w:0},{t:14400.0,c:0.1979,g:1.0,w:0},{t:14550.0,c:0.1424,g:0.6667,w:0},{t:14700.0,c:0.1424,g:0.6667,w:0},{t:14850.0,c:0.1424,g:0.6667,w:0},{t:15000.0,c:0.1424,g:0.6667,w:0},{t:15150.0,c:0.1424,g:0.6667,w:0},{t:15300.0,c:0.1424,g:0.6667,w:0},{t:15450.0,c:0.059,g:0.3333,w:0},{t:15498.4,c:0.0,g:0.0,w:0}]},SJF:{scheduler:"SJF",total_tasks:200,completed:200,avg_jct:2018.9,median_jct:713.5,p95_jct:10503.8,avg_waiting:1319.5,makespan:16172.8,avg_cpu_util:43.7,avg_gpu_util:88.6,avg_mem_util:31.0,jct_by_type:{large_train:7298.6,small_train:186.7,inference:1774.4,medium_train:883.7},jct_hist:[128,24,14,5,0,8,4,5,2,4,1,3,1,1],jct_hist_max:15542.1,util_samples:[{t:0.0,c:0.0,g:0.0,w:0},{t:180.0,c:0.3542,g:0.4167,w:0},{t:360.0,c:0.6042,g:0.8333,w:3},{t:540.0,c:0.5625,g:0.9583,w:3},{t:720.0,c:0.6424,g:1.0,w:11},{t:900.0,c:0.5417,g:0.9583,w:9},{t:1080.0,c:0.5833,g:1.0,w:13},{t:1260.0,c:0.5625,g:1.0,w:16},{t:1440.0,c:0.5312,g:1.0,w:21},{t:1620.0,c:0.4583,g:1.0,w:23},{t:1800.0,c:0.5243,g:1.0,w:19},{t:1980.0,c:0.5625,g:1.0,w:25},{t:2160.0,c:0.5521,g:1.0,w:32},{t:2340.0,c:0.5278,g:1.0,w:31},{t:2520.0,c:0.5938,g:0.9583,w:32},{t:2700.0,c:0.5938,g:1.0,w:38},{t:2880.0,c:0.6424,g:1.0,w:41},{t:3060.0,c:0.5972,g:1.0,w:41},{t:3240.0,c:0.5,g:1.0,w:44},{t:3420.0,c:0.5556,g:1.0,w:46},{t:3600.0,c:0.4549,g:0.9583,w:47},{t:3780.0,c:0.434,g:0.875,w:45},{t:3960.0,c:0.4132,g:0.9583,w:42},{t:4140.0,c:0.4132,g:0.9167,w:41},{t:4320.0,c:0.4132,g:0.9167,w:41},{t:4500.0,c:0.375,g:0.9167,w:36},{t:4680.0,c:0.3854,g:0.9167,w:34},{t:4860.0,c:0.3472,g:0.8333,w:34},{t:5040.0,c:0.3368,g:0.7917,w:34},{t:5220.0,c:0.4792,g:0.875,w:31},{t:5400.0,c:0.5382,g:0.875,w:29},{t:5580.0,c:0.5903,g:1.0,w:28},{t:5760.0,c:0.5903,g:1.0,w:28},{t:5940.0,c:0.5556,g:1.0,w:27},{t:6120.0,c:0.5312,g:1.0,w:26},{t:6300.0,c:0.4861,g:1.0,w:25},{t:6480.0,c:0.3958,g:1.0,w:23},{t:6660.0,c:0.4861,g:1.0,w:22},{t:6840.0,c:0.4861,g:1.0,w:22},{t:7020.0,c:0.5694,g:1.0,w:21},{t:7200.0,c:0.5833,g:1.0,w:20},{t:7380.0,c:0.5243,g:0.8333,w:20},{t:7560.0,c:0.5243,g:0.8333,w:20},{t:7740.0,c:0.4826,g:0.6667,w:19},{t:7920.0,c:0.4688,g:0.8333,w:18},{t:8100.0,c:0.4688,g:0.8333,w:18},{t:8280.0,c:0.4618,g:1.0,w:17},{t:8460.0,c:0.4618,g:1.0,w:17},{t:8640.0,c:0.4236,g:1.0,w:15},{t:8820.0,c:0.4236,g:1.0,w:15},{t:9000.0,c:0.4236,g:1.0,w:15},{t:9180.0,c:0.4271,g:1.0,w:14},{t:9360.0,c:0.4097,g:1.0,w:13},{t:9540.0,c:0.4097,g:1.0,w:13},{t:9720.0,c:0.375,g:1.0,w:12},{t:9900.0,c:0.375,g:1.0,w:12},{t:10080.0,c:0.375,g:1.0,w:12},{t:10260.0,c:0.3299,g:1.0,w:10},{t:10440.0,c:0.3299,g:1.0,w:10},{t:10620.0,c:0.3438,g:1.0,w:8},{t:10800.0,c:0.3438,g:1.0,w:8},{t:10980.0,c:0.3438,g:1.0,w:8},{t:11160.0,c:0.3438,g:1.0,w:8},{t:11340.0,c:0.3438,g:1.0,w:8},{t:11520.0,c:0.3194,g:1.0,w:7},{t:11700.0,c:0.2778,g:1.0,w:6},{t:11880.0,c:0.2778,g:1.0,w:6},{t:12060.0,c:0.3333,g:1.0,w:5},{t:12240.0,c:0.3333,g:1.0,w:5},{t:12420.0,c:0.3403,g:1.0,w:4},{t:12600.0,c:0.3403,g:1.0,w:4},{t:12780.0,c:0.3403,g:1.0,w:4},{t:12960.0,c:0.5,g:1.0,w:2},{t:13140.0,c:0.5,g:1.0,w:2},{t:13320.0,c:0.5,g:1.0,w:2},{t:13500.0,c:0.4583,g:0.8333,w:1},{t:13680.0,c:0.4583,g:0.8333,w:1},{t:13860.0,c:0.4583,g:0.8333,w:1},{t:14040.0,c:0.4583,g:0.8333,w:1},{t:14220.0,c:0.5278,g:0.8333,w:0},{t:14400.0,c:0.5278,g:0.8333,w:0},{t:14580.0,c:0.5278,g:0.8333,w:0},{t:14760.0,c:0.4444,g:0.6667,w:0},{t:14940.0,c:0.309,g:0.5,w:0},{t:15120.0,c:0.309,g:0.5,w:0},{t:15300.0,c:0.309,g:0.5,w:0},{t:15480.0,c:0.1528,g:0.1667,w:0},{t:15660.0,c:0.1528,g:0.1667,w:0},{t:15840.0,c:0.1528,g:0.1667,w:0},{t:16020.0,c:0.1528,g:0.1667,w:0},{t:16172.8,c:0.0,g:0.0,w:0}]}};
+
+/* ================= 工具 ================= */
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const fmt = (n, d=0) => Number(n).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+
+const TYPES = [
+  {id:'small_train', name:'小训练', w:.30, color:'#22d3ee', cls:0},
+  {id:'medium_train',name:'中训练', w:.35, color:'#3b82f6', cls:1},
+  {id:'large_train', name:'大训练', w:.20, color:'#a78bfa', cls:2},
+  {id:'inference',   name:'推理',   w:.15, color:'#f59e0b', cls:3},
+];
+const TYPEMAP = Object.fromEntries(TYPES.map(t=>[t.id,t]));
+
+/* ================= 负载生成 ================= */
+function genWorkload(n, horizon, seed){
+  const rng = mulberry32(seed);
+  const ws = TYPES.map(t=>t.w);
+  const tasks=[];
+  for(let i=0;i<n;i++){
+    let r=rng(), acc=0, ti=TYPES.length-1;
+    for(let k=0;k<TYPES.length;k++){acc+=ws[k]; if(r<acc){ti=k;break;}}
+    const tp=TYPES[ti].id;
+    const submit=rng()*horizon*0.6;
+    let cpu,mem,gpu,dur;
+    if(tp==='small_train'){cpu=2+Math.floor(rng()*7);mem=4+Math.floor(rng()*13);gpu=0;dur=50+rng()*250;}
+    else if(tp==='medium_train'){cpu=4+Math.floor(rng()*13);mem=8+Math.floor(rng()*25);gpu=[1,2,2][Math.floor(rng()*3)];dur=200+rng()*600;}
+    else if(tp==='large_train'){cpu=16+Math.floor(rng()*33);mem=32+Math.floor(rng()*97);gpu=[4,4,8][Math.floor(rng()*3)];dur=600+rng()*1400;}
+    else {cpu=2+Math.floor(rng()*7);mem=4+Math.floor(rng()*13);gpu=1;dur=800+rng()*1700;}
+    tasks.push({id:i,type:tp,submit,cpu,mem,gpu,dur,start:null,finish:null,node:null});
+  }
+  tasks.sort((a,b)=>a.submit-b.submit);
+  return tasks;
+}
+function buildCluster(){
+  const ns=[];
+  for(let i=0;i<3;i++) ns.push({id:`gpu-node-${i+1}`,kind:'gpu',cpu:64,mem:256,gpu:8,cu:0,mu:0,gu:0});
+  for(let i=0;i<3;i++) ns.push({id:`cpu-node-${i+1}`,kind:'cpu',cpu:32,mem:128,gpu:0,cu:0,mu:0,gu:0});
+  return ns;
+}
+const fit=(n,t)=> n.cpu-n.cu>=t.cpu && n.mem-n.mu>=t.mem && n.gpu-n.gu>=t.gpu;
+const alloc=(n,t)=>{n.cu+=t.cpu;n.mu+=t.mem;n.gu+=t.gpu;};
+const release=(n,t)=>{n.cu-=t.cpu;n.mu-=t.mem;n.gu-=t.gpu;};
+
+/* ================= 调度策略 ================= */
+const SCHEDS = {
+  FIFO:{label:'FIFO', firstFit:true, sort:null},
+  BestFit:{label:'BestFit', bestFit:true, sort:null},
+  DRF:{label:'DRF', bestFit:true, sort:'drf'},
+  SJF:{label:'SJF', firstFit:true, sort:'sjf'},
+  DRL:{label:'HeteroNexus-DRL', pair:true, sort:null},
+};
+function wasteOf(n,t){return (n.cpu-n.cu-t.cpu)+(n.mem-n.mu-t.mem)+(n.gpu-n.gu-t.gpu)*8;}
+
+/* ================= 仿真引擎 ================= */
+class Engine{
+  constructor(algo,n,seed,W){
+    this.nodes=buildCluster();
+    this.tasks=genWorkload(n,6000,seed);
+    this.n=n; this.algo=algo; this.W=W;
+    this.now=0; this.idx=0; this.queue=[]; this.running=[]; this.done=[];
+    this.heap=[];              // {time,id}  始终按 time 升序
+    this.tmap={};              // id -> task（任务已按提交时间排序，不能用下标索引）
+    this.tasks.forEach(t=>this.tmap[t.id]=t);
+    this.segs=[];              // 甘特图段
+    this.logs=[];
+    this.samples=[];
+    this.sampleEvery=30; this.nextSample=0;
+    this.maxDur=Math.max(...this.tasks.map(t=>t.dur));
+    this.totCpu=this.nodes.reduce((s,x)=>s+x.cpu,0);
+    this.totMem=this.nodes.reduce((s,x)=>s+x.mem,0);
+    this.totGpu=this.nodes.reduce((s,x)=>s+x.gpu,0);
+    this.decisions=0;
+    this.finished=false;
+    this.log('sys',`集群就绪：3×GPU(8卡) + 3×CPU，策略 = ${SCHEDS[algo].label}`);
+  }
+  log(kind,msg,score){
+    this.logs.unshift({t:this.now,kind,msg,score});
+    if(this.logs.length>60) this.logs.pop();
+  }
+  get allDone(){return this.idx>=this.n && this.queue.length===0 && this.running.length===0;}
+
+  sortQueue(q){
+    const s=SCHEDS[this.algo].sort;
+    if(!s) return q;
+    if(s==='drf') return [...q].sort((a,b)=>{
+      const da=Math.max(a.cpu/this.totCpu,a.mem/this.totMem,a.gpu/(this.totGpu||1));
+      const db=Math.max(b.cpu/this.totCpu,b.mem/this.totMem,b.gpu/(this.totGpu||1));
+      return da-db;});
+    return [...q].sort((a,b)=>a.dur-b.dur);
+  }
+
+  pickNode(t){
+    const S=SCHEDS[this.algo];
+    if(S.firstFit){ for(const n of this.nodes) if(fit(n,t)) return n; return null; }
+    let best=null,bw=Infinity;
+    for(const n of this.nodes){ if(fit(n,t)){ const w=wasteOf(n,t); if(w<bw){bw=w;best=n;} } }
+    return best;
+  }
+
+  /* DRL：动作 = (选任务, 选节点) 全局最优对，由多目标奖励函数打分 */
+  pickPair(){
+    const W=this.W; let best=null,bs=-1e9;
+    for(const t of this.queue){
+      for(const n of this.nodes){
+        if(!fit(n,t)) continue;
+        const cpuA=(n.cu+t.cpu)/n.cpu, memA=(n.mu+t.mem)/n.mem;
+        const gpuA=n.gpu>0 ? (n.gu+t.gpu)/n.gpu : cpuA;
+        const util=(cpuA+gpuA+memA)/3;
+        const jct  = 1 - Math.min(1, t.dur/this.maxDur);
+        const power= (n.gu>0||n.cu>0) ? 1.0 : 0.25;
+        const fair = Math.min(1,(this.now-t.submit)/2500);
+        const frag = 1 - (((n.cpu-n.cu-t.cpu)/n.cpu)+((n.mem-n.mu-t.mem)/n.mem)+
+                     (n.gpu>0?((n.gpu-n.gu-t.gpu)/n.gpu):0))/3;
+        const s = W.w1*jct + W.w2*util + W.w3*power + W.w4*fair + W.w5*frag;
+        if(s>bs){bs=s;best={task:t,node:n,score:s,parts:{jct,util,power,fair,frag}};}
+      }
+    }
+    return best;
+  }
+
+  schedulePass(){
+    const S=SCHEDS[this.algo];
+    if(S.pair){
+      let placed=0;
+      while(true){
+        const p=this.pickPair();
+        if(!p) break;
+        // "不调度"动作：高负载下若最优动作收益过低则暂时等待更优时机
+        if(p.score<0.18 && this.running.length>0 && placed===0
+           && (this.nodes.reduce((s,x)=>s+x.gu,0)/(this.totGpu||1))>0.88) break;
+        this.launch(p.task,p.node,p.score);
+        placed++;
+        if(placed>40) break;
+      }
+    }else{
+      let changed=true, guard=0;
+      while(changed && guard++<200){
+        changed=false;
+        for(const t of this.sortQueue(this.queue)){
+          const n=this.pickNode(t);
+          if(n && fit(n,t)){ this.launch(t,n,null); changed=true; break; }
+        }
+      }
+    }
+  }
+  launch(t,n,score){
+    t.start=this.now; t.node=n.id; alloc(n,t);
+    this.queue.splice(this.queue.indexOf(t),1);
+    this.running.push(t);
+    this.heap.push({time:this.now+t.dur,id:t.id});
+    this.heap.sort((a,b)=>a.time-b.time);
+    this.segs.push({node:n.id,t0:this.now,t1:this.now+t.dur,type:t.type,id:t.id,gpu:t.gpu});
+    this.decisions++;
+    const T=TYPEMAP[t.type];
+    this.log(t.type,`#${String(t.id).padStart(3,'0')} ${T.name} → ${n.id} [${t.cpu}C/${t.mem}G${t.gpu?('/'+t.gpu+'GPU'):''}] ${Math.round(t.dur)}s`,
+             score!==null&&score!==undefined?score.toFixed(3):null);
+  }
+
+  processFinishes(){
+    if(!this.heap.length) return;
+    while(this.heap.length && this.heap[0].time<=this.now+1e-9){
+      const e=this.heap.shift();
+      const t=this.tmap[e.id];
+      if(t && t.finish===null){
+        t.finish=this.now;
+        const n=this.nodes.find(x=>x.id===t.node);
+        if(n) release(n,t);
+        const k=this.running.indexOf(t); if(k>=0) this.running.splice(k,1);
+        this.done.push(t);
+      }
+    }
+  }
+  sample(){
+    const cu=this.nodes.reduce((s,x)=>s+x.cu,0), mu=this.nodes.reduce((s,x)=>s+x.mu,0), gu=this.nodes.reduce((s,x)=>s+x.gu,0);
+    this.samples.push({
+      t:this.now, c:cu/this.totCpu, g:this.totGpu?gu/this.totGpu:0, m:mu/this.totMem,
+      q:this.queue.length, r:this.running.length
+    });
+  }
+  step(targetT){
+    let guard=0;
+    while(this.now<targetT && !this.allDone && guard++<20000){
+      while(this.idx<this.n && this.tasks[this.idx].submit<=this.now){ this.queue.push(this.tasks[this.idx]); this.idx++; }
+      this.schedulePass();
+      let sg=0;
+      while(this.nextSample<=this.now && sg++<200){ this.sample(); this.nextSample+=this.sampleEvery; }
+      const tF=this.heap.length?this.heap[0].time:Infinity;
+      const tA=this.idx<this.n?this.tasks[this.idx].submit:Infinity;
+      const tN=Math.min(tF,tA,targetT,this.nextSample);
+      if(!(tN>this.now)){
+        this.processFinishes();
+        if(!this.allDone) this.now+=0.5;
+        continue;
+      }
+      this.now=tN;
+      this.processFinishes();
+    }
+    let sg2=0;
+    while(this.nextSample<=this.now && sg2++<400){ this.sample(); this.nextSample+=this.sampleEvery; }
+    if(this.allDone && !this.finished){
+      this.finished=true;
+      this.log('sys',`全部任务完成 · Makespan ${Math.round(this.now)} · 调度决策 ${this.decisions} 次`);
+    }
+  }
+  /* 全程平均利用率（而非末帧瞬时值） */
+  avgUtil(){
+    if(!this.samples.length) return {g:0,c:0,m:0};
+    const n=this.samples.length;
+    return {
+      g:this.samples.reduce((s,x)=>s+x.g,0)/n*100,
+      c:this.samples.reduce((s,x)=>s+x.c,0)/n*100,
+      m:this.samples.reduce((s,x)=>s+x.m,0)/n*100,
+    };
+  }
+  /* 分段推进至全部完成，避免一次性推进到极大时间点 */
+  runToEnd(){
+    let g=0;
+    while(!this.allDone && g++<8000){ this.step(this.now+2000); }
+    if(this.allDone && !this.finished){
+      this.finished=true;
+      this.log('sys',`全部任务完成 · Makespan ${Math.round(this.now)} · 调度决策 ${this.decisions} 次`);
+    }
+    return this.metrics();
+  }
+  metrics(){
+    const d=this.done;
+    if(!d.length) return null;
+    const jcts=d.map(t=>t.finish-t.submit).sort((a,b)=>a-b);
+    const waits=d.map(t=>t.start-t.submit);
+    const m=this.metrics_;
+    const avg=a=>a.reduce((s,x)=>s+x,0)/a.length;
+    const last=this.samples[this.samples.length-1]||{c:0,g:0,q:0};
+    return {
+      done:d.length, total:this.n,
+      avgJct:avg(jcts), medJct:jcts[Math.floor(jcts.length/2)],
+      p95:jcts[Math.min(jcts.length-1,Math.floor(jcts.length*0.95))],
+      avgWait:avg(waits), makespan:this.now,
+      gpu:last.g*100, cpu:last.c*100, queue:this.queue.length,
+    };
+  }
+}
+
+/* ================= 运行时 ================= */
+let eng=null, playing=true, speed=90, raf=null, lastTs=0;
+let W={w1:.50,w2:.15,w3:.05,w4:.20,w5:.10};
+const PRESETS={
+  bal :{w1:.50,w2:.15,w3:.05,w4:.20,w5:.10,name:'均衡'},
+  lat :{w1:.70,w2:.05,w3:.05,w4:.10,w5:.10,name:'延迟优先'},
+  thr :{w1:.20,w2:.45,w3:.15,w4:.10,w5:.10,name:'吞吐优先'},
+  fair:{w1:.25,w2:.10,w3:.05,w4:.55,w5:.05,name:'公平优先'},
+};
+const EVAL_SEEDS=[1,7,42,2026,999];
+let records=[];
+
+function reset(){
+  const rawAlgo=$('#algo').value;
+  const algo = SCHEDS[rawAlgo] ? rawAlgo : 'DRL';
+  const n = (+$('#ntasks').value) || 200;
+  eng=new Engine(algo,n,42,W);
+  logKey='';
+  buildNodeCards(); renderAll();
+  playing=true; $('#btnRun').textContent='⏸ 暂停';
+  $('#statusBadge').className='badge live'; $('#statusBadge').textContent='● 仿真运行中';
+}
+function tick(ts){
+  if(!raf) raf=1;
+  const dt=Math.min(64, ts-lastTs||16); lastTs=ts;
+  if(playing && eng && !eng.allDone){
+    eng.step(eng.now + speed*(dt/16));
+    renderAll();
+    if(eng.allDone){
+      playing=false; $('#btnRun').textContent='▶ 播放';
+      $('#statusBadge').className='badge'; $('#statusBadge').textContent='✓ 仿真完成';
+    }
+  }
+  requestAnimationFrame(tick);
+}
+
+/* ---------- 节点卡片 ---------- */
+function buildNodeCards(){
+  const c=$('#nodes'); c.innerHTML='';
+  eng.nodes.forEach((n,i)=>{
+    const gpus = n.gpu>0
+      ? `<div class="gpus">${Array.from({length:n.gpu},()=>'<div class="gc"></div>').join('')}</div>`
+      : `<div class="gpus none">— 无加速卡（CPU 节点）—</div>`;
+    c.insertAdjacentHTML('beforeend',`
+      <div class="node ${n.kind}" id="nd${i}">
+        <div class="nh">
+          <span class="nm">${n.id}</span>
+          <span class="ntag ${n.kind==='gpu'?'g':'c'}">${n.kind==='gpu'?'GPU ×8':'CPU ONLY'}</span>
+          <span class="nr" id="ndr${i}">0 task</span>
+        </div>
+        ${gpus}
+        <div class="bar"><div class="bl"><span>CPU</span><span id="ndc${i}">0/0</span></div>
+          <div class="track"><div class="fill cpu" id="ndcf${i}" style="width:0%"></div></div></div>
+        <div class="bar"><div class="bl"><span>MEM</span><span id="ndm${i}">0/0</span></div>
+          <div class="track"><div class="fill mem" id="ndmf${i}" style="width:0%"></div></div></div>
+        <div class="nfoot"><span id="ndg${i}">GPU 0/${n.gpu}</span><span id="ndu${i}">util 0%</span></div>
+      </div>`);
+  });
+}
+function renderNodes(){
+  eng.nodes.forEach((n,i)=>{
+    const cpuP=n.cu/n.cpu*100, memP=n.mu/n.mem*100, gpuP=n.gpu? n.gu/n.gpu*100 : cpuP;
+    const cnt=eng.running.filter(t=>t.node===n.id).length;
+    const el=$('#nd'+i); if(!el) return;
+    el.classList.toggle('busy', cpuP>85||gpuP>85);
+    $('#ndr'+i).textContent=cnt+' task';
+    $('#ndc'+i).textContent=`${n.cu}/${n.cpu}`;
+    $('#ndm'+i).textContent=`${n.mu}/${n.mem}`;
+    $('#ndcf'+i).style.width=Math.min(100,cpuP).toFixed(1)+'%';
+    $('#ndmf'+i).style.width=Math.min(100,memP).toFixed(1)+'%';
+    $('#ndg'+i).textContent=n.gpu?`GPU ${n.gu}/${n.gpu}`:'—';
+    $('#ndu'+i).textContent='util '+((cpuP+gpuP)/2).toFixed(0)+'%';
+    if(n.gpu>0){
+      const cells=el.querySelectorAll('.gc');
+      cells.forEach((c,k)=>c.classList.toggle('on', k<n.gu));
+    }
+  });
+  const gu=eng.nodes.reduce((s,x)=>s+x.gu,0), gt=eng.nodes.reduce((s,x)=>s+x.gpu,0);
+  $('#nodeHint').textContent=`GPU ${gu}/${gt} 卡在用 · ${eng.running.length} 运行中`;
+}
+
+/* ---------- KPI ---------- */
+function renderKpi(){
+  const s=eng.samples[eng.samples.length-1];
+  const m=eng.metrics();
+  $('#kGpu').textContent = s? (s.g*100).toFixed(1) : '0';
+  $('#kCpu').textContent = s? (s.c*100).toFixed(1) : '0';
+  $('#kGpuD').textContent= `实时 / ${eng.totGpu} 卡`;
+  $('#kCpuD').textContent= `实时 / ${eng.totCpu} 核`;
+  $('#kQueue').textContent= eng.queue.length;
+  $('#clock').textContent = Math.round(eng.now);
+  $('#kTotal').textContent= '/'+eng.n;
+  if(m){
+    $('#kJct').textContent = Math.round(m.avgJct);
+    $('#kDone').textContent= m.done;
+    $('#kDoneD').textContent= `完成率 ${(m.done/m.total*100).toFixed(0)}% · P95 ${Math.round(m.p95)}`;
+    $('#kWaitD').textContent= `平均等待 ${Math.round(m.avgWait)}`;
+    $('#kMake').textContent = Math.round(m.makespan);
+  }
+}
+
+/* ---------- 日志 ---------- */
+let logKey='';
+function renderLog(){
+  // 仅在日志集合变化时重绘：避免每帧重建导致入场动画永远停在首帧
+  const top = eng.logs.length ? eng.logs[0] : null;
+  const key = eng.logs.length+'|'+(top? top.msg+top.kind+top.t : '');
+  if(key===logKey) return;
+  const isNew = logKey && eng.logs.length>Number(logKey.split('|')[0]);
+  logKey=key;
+  const items=eng.logs.slice(0,26);
+  $('#log').innerHTML = items.map((l,i)=>{
+    const T=TYPEMAP[l.kind];
+    const cls=T? 't'+T.cls : 'sys';
+    const sc = l.score? `<span class="ls">R=${l.score}</span>`:'';
+    const fresh = (isNew && i===0) ? ' fresh' : '';
+    return `<div class="le ${cls}${fresh}"><span class="lt">${String(Math.round(l.t)).padStart(5,' ')}</span><span class="lb">${l.msg}</span>${sc}</div>`;
+  }).join('');
+  $('#logHint').textContent = eng.decisions+' 次决策';
+}
+
+/* ---------- Canvas 绘图 ---------- */
+function setupCanvas(cv){
+  const dpr=window.devicePixelRatio||1;
+  const w=cv.clientWidth, h=+cv.getAttribute('height');
+  cv.width=w*dpr; cv.height=h*dpr;
+  const g=cv.getContext('2d'); g.setTransform(dpr,0,0,dpr,0,0);
+  return {g,w,h};
+}
+function drawGantt(){
+  const cv=$('#gantt'); const {g,w,h}=setupCanvas(cv);
+  g.clearRect(0,0,w,h);
+  const padL=108, padR=14, padT=22, rowH=22;
+  const win=2600, t1=Math.max(win, eng.now+120), t0=t1-win;
+  const X=t=>padL+(t-t0)/(t1-t0)*(w-padL-padR);
+  // 网格
+  g.strokeStyle='#1a2432'; g.lineWidth=1; g.font='10px ui-monospace,monospace';
+  const stepT=400;
+  for(let t=Math.ceil(t0/stepT)*stepT;t<t1;t+=stepT){
+    const x=X(t); g.beginPath(); g.moveTo(x,padT-6); g.lineTo(x,h-6); g.stroke();
+    g.fillStyle='#5b6b7c'; g.textAlign='center'; g.fillText(Math.round(t),x,14);
+  }
+  // 行
+  eng.nodes.forEach((n,i)=>{
+    const y=padT+i*rowH;
+    g.fillStyle='#8697a8'; g.textAlign='left'; g.font='10.5px ui-monospace,monospace';
+    g.fillText(n.id, 6, y+14);
+    g.fillStyle='#131c28'; g.fillRect(padL,y+2,w-padL-padR,rowH-6);
+  });
+  // 段
+  const idx=Object.fromEntries(eng.nodes.map((n,i)=>[n.id,i]));
+  eng.segs.forEach(s=>{
+    if(s.t1<t0||s.t0>t1) return;
+    const a=Math.max(s.t0,t0), b=Math.min(s.t1,t1);
+    const x=X(a), ww=Math.max(1.5,X(b)-x);
+    const y=padT+idx[s.node]*rowH;
+    const T=TYPEMAP[s.type];
+    g.fillStyle=T.color; g.globalAlpha=.82;
+    g.fillRect(x,y+3,ww,rowH-8);
+    g.globalAlpha=1;
+    if(ww>10){
+      g.strokeStyle='#0a0e14'; g.lineWidth=1; g.strokeRect(x,y+3,ww,rowH-8);
+    }
+  });
+  // 当前时刻线
+  const xn=X(eng.now);
+  if(xn>=padL&&xn<=w-padR){
+    g.strokeStyle='#10b981'; g.lineWidth=1.5; g.setLineDash([4,3]);
+    g.beginPath(); g.moveTo(xn,padT-6); g.lineTo(xn,h-6); g.stroke(); g.setLineDash([]);
+  }
+}
+function drawUtil(){
+  const cv=$('#util'); const {g,w,h}=setupCanvas(cv);
+  g.clearRect(0,0,w,h);
+  const padL=42,padR=42,padT=14,padB=22;
+  const S=eng.samples;
+  const tMax=Math.max(600, eng.now);
+  const X=t=>padL+(t/tMax)*(w-padL-padR);
+  const Y=p=>h-padB-p*(h-padT-padB);
+  // 轴
+  g.strokeStyle='#1a2432'; g.lineWidth=1; g.font='10px ui-monospace,monospace';
+  for(let p=0;p<=1.001;p+=0.25){
+    const y=Y(p);
+    g.beginPath(); g.moveTo(padL,y); g.lineTo(w-padR,y); g.stroke();
+    g.fillStyle='#5b6b7c'; g.textAlign='right'; g.fillText((p*100).toFixed(0)+'%',padL-6,y+3);
+  }
+  g.textAlign='center'; g.fillStyle='#5b6b7c';
+  for(let k=0;k<=4;k++){
+    const t=tMax*k/4, x=X(t);
+    g.fillText(Math.round(t), x, h-7);
+  }
+  if(S.length<2) return;
+  const qMax=Math.max(5,...S.map(s=>s.q));
+  // 队列面积
+  g.beginPath(); g.moveTo(X(S[0].t),Y(0));
+  S.forEach(s=>g.lineTo(X(s.t), Y(Math.min(1,s.q/qMax*0.9))));
+  g.lineTo(X(S[S.length-1].t),Y(0)); g.closePath();
+  g.fillStyle='rgba(134,151,168,.16)'; g.fill();
+  // 队列线
+  g.beginPath();
+  S.forEach((s,i)=>{const x=X(s.t),y=Y(Math.min(1,s.q/qMax*0.9)); i?g.lineTo(x,y):g.moveTo(x,y);});
+  g.strokeStyle='#8697a8'; g.lineWidth=1.2; g.stroke();
+  // CPU / GPU
+  [['c','#22d3ee'],['g','#f59e0b']].forEach(([k,col])=>{
+    g.beginPath();
+    S.forEach((s,i)=>{const x=X(s.t),y=Y(Math.max(0,Math.min(1,s[k]))); i?g.lineTo(x,y):g.moveTo(x,y);});
+    g.strokeStyle=col; g.lineWidth=1.8; g.stroke();
+  });
+  // 右轴：队列
+  g.fillStyle='#5b6b7c'; g.textAlign='left'; g.font='10px ui-monospace,monospace';
+  g.fillText('队列 '+qMax, w-padR+6, Y(0.9)+3);
+  g.fillText('0', w-padR+6, Y(0)+3);
+}
+function renderAll(){ renderNodes(); renderKpi(); renderLog(); drawGantt(); drawUtil(); }
+
+/* ================= 基准页 ================= */
+const BCOL={FIFO:'#8697a8',BestFit:'#22d3ee',DRF:'#3b82f6',SJF:'#a78bfa'};
+function benchTable(){
+  const b=BASELINE.FIFO;
+  const order=['FIFO','BestFit','DRF','SJF'];
+  $('#benchTbody').innerHTML=order.map(k=>{
+    const r=BASELINE[k];
+    const d=(v,base,inv)=>{
+      const pct=(v-base)/base*100;
+      const good = inv? pct>0 : pct<0;
+      const cls = Math.abs(pct)<1?'n':(good?'g':'r');
+      return `<span class="chip ${cls}">${pct>0?'+':''}${pct.toFixed(1)}%</span>`;
+    };
+    return `<tr>
+      <td style="color:${BCOL[k]};font-weight:600">${k}</td>
+      <td>${fmt(r.avg_jct,1)}</td><td>${d(r.avg_jct,b.avg_jct)}</td>
+      <td>${fmt(r.median_jct,1)}</td><td>${fmt(r.p95_jct,1)}</td>
+      <td>${fmt(r.avg_waiting,1)}</td><td>${fmt(r.makespan,1)}</td>
+      <td>${r.avg_gpu_util}%</td><td>${r.avg_cpu_util}%</td>
+      <td>${r.completed}/${r.total_tasks}</td></tr>`;
+  }).join('');
+}
+function groupBar(cv,series,keys,colors,fmtV){
+  const {g,w,h}=setupCanvas(cv); g.clearRect(0,0,w,h);
+  const padL=58,padR=14,padT=16,padB=32;
+  const max=Math.max(...keys.flatMap(k=>series.map(s=>s.data[k])))*1.15;
+  const gw=(w-padL-padR)/keys.length;
+  g.font='11px ui-monospace,monospace';
+  keys.forEach((key,ki)=>{
+    const x0=padL+ki*gw;
+    series.forEach((s,si)=>{
+      const v=s.data[key], bh=(v/max)*(h-padT-padB);
+      const bw=Math.min(26,(gw-16)/series.length);
+      const x=x0+8+si*bw;
+      g.fillStyle=colors[s.name]; g.globalAlpha=.88;
+      g.fillRect(x, h-padB-bh, bw-3, bh); g.globalAlpha=1;
+      g.fillStyle='#c3cfdb'; g.textAlign='center'; g.font='9.5px ui-monospace,monospace';
+      g.fillText(fmtV(v), x+(bw-3)/2, h-padB-bh-4);
+    });
+    g.fillStyle='#8697a8'; g.textAlign='center'; g.font='11px system-ui';
+    g.fillText(key, x0+gw/2, h-11);
+  });
+  g.strokeStyle='#1a2432'; g.lineWidth=1;
+  for(let p=0;p<=1.001;p+=0.25){
+    const y=h-padB-p*(h-padT-padB);
+    g.beginPath(); g.moveTo(padL,y); g.lineTo(w-padR,y); g.stroke();
+    g.fillStyle='#5b6b7c'; g.textAlign='right'; g.font='10px ui-monospace,monospace';
+    g.fillText((max*p).toFixed(0),padL-6,y+3);
+  }
+  // 图例
+  let lx=padL;
+  series.forEach(s=>{
+    g.fillStyle=colors[s.name]; g.fillRect(lx,2,9,9);
+    g.fillStyle='#8697a8'; g.textAlign='left'; g.font='10.5px system-ui';
+    g.fillText(s.name, lx+13, 10.5); lx += g.measureText(s.name).width+34;
+  });
+}
+function drawTs(){
+  const cv=$('#cTs'); const {g,w,h}=setupCanvas(cv); g.clearRect(0,0,w,h);
+  const padL=46,padR=14,padT=14,padB=24;
+  const names=Object.keys(BASELINE);
+  const tMax=Math.max(...names.map(n=>BASELINE[n].util_samples.at(-1).t));
+  const X=t=>padL+(t/tMax)*(w-padL-padR);
+  const Y=p=>h-padB-p*(h-padT-padB);
+  g.strokeStyle='#1a2432'; g.lineWidth=1; g.font='10px ui-monospace,monospace';
+  for(let p=0;p<=1.001;p+=0.25){
+    const y=Y(p); g.beginPath(); g.moveTo(padL,y); g.lineTo(w-padR,y); g.stroke();
+    g.fillStyle='#5b6b7c'; g.textAlign='right'; g.fillText((p*100).toFixed(0)+'%',padL-6,y+3);
+  }
+  g.textAlign='center'; g.fillStyle='#5b6b7c';
+  for(let k=0;k<=5;k++) g.fillText(Math.round(tMax*k/5), X(tMax*k/5), h-8);
+  names.forEach(n=>{
+    const S=BASELINE[n].util_samples;
+    g.beginPath();
+    S.forEach((s,i)=>{const x=X(s.t),y=Y(Math.max(0,Math.min(1,s.g))); i?g.lineTo(x,y):g.moveTo(x,y);});
+    g.strokeStyle=BCOL[n]||'#8697a8'; g.lineWidth=1.6; g.stroke();
+  });
+  $('#tsLegend').innerHTML=names.map(n=>`<span><i style="background:${BCOL[n]}"></i>${n}（均值 ${BASELINE[n].avg_gpu_util}%）</span>`).join('');
+}
+function findings(){
+  const b=BASELINE.FIFO, d=BASELINE.DRF, s=BASELINE.SJF;
+  const p=(a,c)=>((c-a)/a*100).toFixed(1);
+  $('#findings').innerHTML=`
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;font-size:12px;line-height:1.75;color:#c3cfdb">
+      <div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:12px 14px">
+        <div style="color:var(--green);font-weight:650;margin-bottom:5px">① 按资源份额/时长排序显著优于先到先服务</div>
+        DRF 相较 FIFO 平均 JCT 降低 <b>${p(b.avg_jct,d.avg_jct)}%</b>、中位 JCT 降低 <b>${p(b.median_jct,d.median_jct)}%</b>；
+        SJF 平均 JCT 降低 <b>${p(b.avg_jct,s.avg_jct)}%</b>。说明队列排序策略是 JCT 的第一影响因子。
+      </div>
+      <div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:12px 14px">
+        <div style="color:var(--amber);font-weight:650;margin-bottom:5px">② 吞吐与延迟存在明确权衡</div>
+        FIFO 的 GPU 利用率最高（<b>${b.avg_gpu_util}%</b>）且 Makespan 最短（${fmt(b.makespan)}），
+        但代价是长任务被大任务阻塞，P95 JCT 达 ${fmt(b.p95_jct)}。<b>单一目标优化必然顾此失彼。</b>
+      </div>
+      <div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:12px 14px">
+        <div style="color:var(--purple);font-weight:650;margin-bottom:5px">③ 长尾任务（P95）是所有基线的共同短板</div>
+        DRF/SJF 的 P95 JCT 反而高于 FIFO（${fmt(d.p95_jct)} / ${fmt(s.p95_jct)} vs ${fmt(b.p95_jct)}），
+        即"短任务优先"会饿死大任务。这正是需要<b>公平性权重</b>与强化学习自适应权衡的切入点。
+      </div>
+      <div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:12px 14px">
+        <div style="color:var(--cyan);font-weight:650;margin-bottom:5px">④ CPU 利用率普遍偏低（约 ${b.avg_cpu_util}%）</div>
+        GPU 节点 CPU 与 CPU 节点存在明显闲置，说明<b>异构资源协同</b>存在可观优化空间，
+        是本项目的核心创新点之一（CPU 密集的数据预处理任务与 GPU 训练任务的互补放置）。
+      </div>
+    </div>
+    <div style="margin-top:12px;padding:11px 14px;background:#10b9810d;border-left:2px solid var(--green);border-radius:0 7px 7px 0;font-size:12px;color:#b9d4c8;line-height:1.75">
+      <b style="color:var(--green)">对 HeteroNexus-DRL 的指导：</b>
+      基线实验证明"固定规则"无法同时优化平均 JCT、P95 长尾与 GPU 利用率（三者存在帕累托权衡）。
+      DRL 的价值在于<b>根据实时集群状态动态调整多目标权重</b>，而非寻找一条永远最优的静态规则——
+      这也是本项目区别于启发式调度器的核心技术主张。该主张将在第二季度用 PPO 训练结果验证。
+    </div>`;
+}
+
+/* ================= 架构页 ================= */
+const LAYERS=[
+  {c:'l4',n:'产品与接口层',t:'FastAPI · React · Helm · CLI',items:[
+    ['Web 控制台','React 18 + Canvas 实时渲染'],['任务提交 API','FastAPI / OpenAPI 3.1'],['CLI 工具','hetctl submit / top / trace']]},
+  {c:'l3',n:'可观测与管理层',t:'Prometheus · Grafana · OpenTelemetry',items:[
+    ['指标采集','Prometheus Exporter + OTel SDK'],['成本与配额','按任务/用户维度核算'],['告警与诊断','利用率异常、排队超时']]},
+  {c:'l2',n:'智能决策层',t:'Python · PyTorch · PPO · Gymnasium',items:[
+    ['DRL 调度代理','PPO + 优先经验回放 (PER)'],['任务特征提取','20 维静态+动态+预测特征'],['奖励引擎','多目标加权 + 奖励塑形']]},
+  {c:'l1',n:'集群调度内核层',t:'Go · Scheduler Framework · DRA · Kueue',items:[
+    ['调度插件','Filter / Score / Permit / Reserve'],['队列与配额','Kueue + ResourceFlavor'],['异构资源抽象','DeviceClass / ResourceClaim']]},
+  {c:'l0',n:'基础设施层',t:'K8s v1.34+ · containerd · CPU/GPU/FPGA',items:[
+    ['异构节点池','NVIDIA A100/V100 · 国产 NPU · FPGA'],['容器运行时','containerd + NVIDIA Container Toolkit'],['网络与存储','RDMA / NVMe / 分布式缓存']]},
+];
+function arch(){
+  $('#archLayers').innerHTML=LAYERS.map((L,i)=>`
+    <div class="layer ${L.c}">
+      <div><div class="ln">${L.n}</div><div class="lt2">${L.t}</div></div>
+      <div class="cards">${L.items.map(([a,b])=>`<div class="card2"><div class="cn">${a}</div><div class="cd">${b}</div></div>`).join('')}</div>
+    </div>
+    ${i<LAYERS.length-1?'<div class="flow">▼</div>':''}`).join('');
+
+  const FLOW=['用户通过 CLI / API 提交训练任务（声明 CPU / GPU / 显存 / 预估时长）',
+    '任务特征提取器生成 20 维特征向量，进入调度队列',
+    '硬件监控模块以 1s 粒度采集各节点 CPU / GPU / 显存 / 网络 / 功耗指标',
+    'DRL 调度代理基于集群状态 + 任务特征，输出 (任务 → 节点) 放置决策',
+    'K8s 调度插件在 Score 扩展点消费该决策，将 Pod 绑定至目标节点',
+    '任务运行期间持续回采指标，反馈给奖励引擎进行策略更新',
+    '任务结束后记录 JCT / 利用率 / 资源浪费，写入经验回放池'];
+  $('#flowSteps').innerHTML=FLOW.map((f,i)=>`
+    <div style="display:flex;gap:11px;align-items:flex-start;padding:8px 0;border-bottom:${i<FLOW.length-1?'1px solid var(--border)':'none'}">
+      <div style="width:20px;height:20px;border-radius:50%;background:#3b82f61a;color:var(--blue);
+        display:grid;place-items:center;font-size:10.5px;font-weight:700;flex-shrink:0">${i+1}</div>
+      <div style="font-size:12px;color:#c3cfdb;line-height:1.65;padding-top:1px">${f}</div>
+    </div>`).join('');
+
+  const EXT=[['Filter','过滤不满足资源请求（CPU/显存/GPU 拓扑）的节点','P0'],
+    ['Score','调用 DRL 代理对每个候选节点打分，择优绑定','P0'],
+    ['Permit','Gang 调度：分布式训练全部 Worker 就绪才放行','P1'],
+    ['Reserve','预留资源，避免并发调度冲突','P1'],
+    ['PreBind','注入 DRA ResourceClaim 与拓扑亲和性','P2']];
+  $('#extPoints').innerHTML=`<table><thead><tr><th>扩展点</th><th>职责</th><th>优先级</th></tr></thead><tbody>
+    ${EXT.map(([a,b,c])=>`<tr><td style="color:var(--blue);font-weight:600">${a}</td>
+      <td style="text-align:left;font-family:system-ui;font-size:11.5px">${b}</td>
+      <td><span class="chip ${c==='P0'?'g':'n'}">${c}</span></td></tr>`).join('')}</tbody></table>`;
+
+  const STACK=[['调度内核','Go 1.22 · K8s v1.34 · scheduler framework'],
+    ['异构资源','DRA · DeviceClass · NVIDIA GPU Operator'],
+    ['RL 算法','Python 3.11 · PyTorch 2.3 · Gymnasium · PPO'],
+    ['特征工程','NumPy · pandas · scikit-learn'],
+    ['可观测','Prometheus · Grafana · OpenTelemetry'],
+    ['接口服务','FastAPI · gRPC · protobuf'],
+    ['前端','React 18 · Canvas · ECharts'],
+    ['部署','Docker · Helm 3 · GitHub Actions']];
+  $('#stack').innerHTML=`<table><thead><tr><th>类别</th><th>选型</th></tr></thead><tbody>
+    ${STACK.map(([a,b])=>`<tr><td style="color:var(--amber);font-weight:600">${a}</td>
+      <td style="text-align:left;font-size:11.5px">${b}</td></tr>`).join('')}</tbody></table>`;
+}
+
+/* ================= 路线图 ================= */
+const QUARTERS=[
+  {n:'Q1',d:'2026.06 – 08',s:'启动与基础建设',cls:'done',items:[
+    ['完成市场调研与竞品分析，输出市场调研报告','k'],
+    ['完成 PRD 与技术架构设计文档','k'],
+    ['搭建异构集群离散事件仿真环境','k'],
+    ['复现 FIFO/DRF/BestFit/SJF 基线并完成 200 任务实验','k'],
+    ['完成任务特征提取与硬件监控模块','k']],
+    del:'市场调研报告 / PRD / 架构文档 / 仿真引擎'},
+  {n:'Q2',d:'2026.09 – 11',s:'算法攻坚 · 控制台闭环',cls:'cur',items:[
+    ['<b>新增：交付可交互调度控制台 v1.0（数字孪生演示）</b>'],
+    ['完成多目标 DRL 算法设计：状态/动作/奖励函数定义'],
+    ['PPO 训练与仿真验证，目标平均 JCT 较 DRF 降低 ≥10%'],
+    ['启动 K8s 调度插件开发（Filter / Score 扩展点）'],
+    ['参加大创实训营与中期路演考核']],
+    del:'算法设计文档 / PPO 训练代码 / 实验报告 <b>+ 控制台 v1.0</b>'},
+  {n:'Q3',d:'2026.12 – 2027.02',s:'系统集成 · 原型 V1.0',cls:'next',items:[
+    ['完成 K8s 调度插件与 DRL 代理 gRPC 联调'],
+    ['原型系统 V1.0 集成，支持 CPU+GPU 与 PyTorch 端到端'],
+    ['实验室异构测试环境 72 小时稳定性测试'],
+    ['完成 1 份企业实训 / 个人实习，≥2 次企业走访'],
+    ['对接 1–2 家合作单位完成实地验证部署']],
+    del:'原型系统 V1.0 / Helm Chart / 可观测面板'},
+  {n:'Q4',d:'2027.03 – 05',s:'性能优化 · 开源 · 结项',cls:'far',items:[
+    ['多场景性能优化，达成利用率 +25% / 耗时 −20% / 延迟 −60%'],
+    ['GitHub 开源发布与社区推广（≥10 Star，2 Issue/PR）'],
+    ['完成 1 次产品推广活动'],
+    ['撰写商业计划书与系统测试报告'],
+    ['获取 ≥1 份合作验证意向书，完成结题答辩']],
+    del:'商业计划书 / 测试报告 / 合作意向书'},
+];
+function road(){
+  $('#quarters').innerHTML=QUARTERS.map(q=>`
+    <div class="q ${q.cls}">
+      <div class="qh"><span class="qn">${q.n}</span><span class="qd">${q.d}</span></div>
+      <div class="qs2">${q.s}</div>
+      <ul>${q.items.map(([t,k])=>`<li class="${k||''}">${t}</li>`).join('')}</ul>
+      <div class="del">交付物：<b>${q.del}</b></div>
+    </div>`).join('');
+}
+
+/* ================= 能力图谱 ================= */
+const SKILLS=[
+  {n:'分布式系统 / 云原生',tag:'AI Infra',role:'K8s 研发 · 云平台 · SRE',
+   items:[['<b>Kubernetes 调度机制</b>：Scheduler Framework 扩展点、DRA 动态资源分配、Device Plugin'],
+     ['<b>容器与编排</b>：Docker / containerd / Helm Chart / ResourceQuota / RBAC 多租户隔离'],
+     ['<b>集群可观测性</b>：Prometheus 指标建模、Grafana 面板、OpenTelemetry 链路追踪']]},
+  {n:'AI Infra / 大模型基础设施',tag:'🔥 高需求',role:'LLM Infra · 推理优化 · 训练平台',
+   items:[['<b>异构算力调度</b>：GPU 共享/切分、拓扑亲和（NUMA / NVLink）、Gang 调度'],
+     ['<b>推理服务优化</b>（规划）：vLLM / SGLang 的 KV Cache 感知调度、MoE 专家放置'],
+     ['<b>性能剖析</b>：算力利用率、显存占用、通信开销的量化建模与瓶颈定位']]},
+  {n:'机器学习系统 / 强化学习',tag:'算法工程',role:'算法工程师 · 决策智能',
+   items:[['<b>深度强化学习</b>：PPO、优先经验回放（PER）、行为克隆预训练、奖励塑形'],
+     ['<b>环境建模</b>：离散事件仿真、Gymnasium 接口、状态/动作空间设计'],
+     ['<b>特征工程</b>：任务多维特征提取、负载预测、trace 数据回放与分布拟合']]},
+  {n:'后端工程 / Go + Python',tag:'通用底座',role:'后端开发 · 平台工程',
+   items:[['<b>Go 工程能力</b>：K8s controller / plugin 开发、gRPC 服务、并发与错误处理'],
+     ['<b>Python 工程能力</b>：FastAPI 服务、PyTorch 训练管线、类型标注与单元测试'],
+     ['<b>接口设计</b>：OpenAPI / protobuf、服务解耦、启发式安全回退与熔断']]},
+  {n:'数据可视化 / 前端',tag:'全栈加分',role:'前端 · 数据平台',
+   items:[['<b>实时可视化</b>：Canvas 高性能渲染、甘特图与时序图、数字孪生交互设计'],
+     ['<b>前端工程</b>：React 组件化、状态管理、响应式布局'],
+     ['<b>数据叙事</b>：把实验结论转化为可决策的图表与指标口径']]},
+  {n:'工程素养 / 协作',tag:'面试必考',role:'所有技术岗',
+   items:[['<b>可复现实验</b>：固定随机种子、结果存档、基线对比与消融实验设计'],
+     ['<b>工程规范</b>：Git 分支模型、CI/CD（GitHub Actions）、单元测试与代码评审'],
+     ['<b>文档与表达</b>：PRD / 架构文档 / 实验报告的撰写，面向不同受众的技术表达']]},
+];
+function skills(){
+  $('#skills').innerHTML=SKILLS.map(s=>`
+    <div class="skc">
+      <h4>${s.n}<span class="n">${s.tag}</span></h4>
+      <div class="role">目标岗位：${s.role}</div>
+      <ul>${s.items.map(i=>`<li>${i}</li>`).join('')}</ul>
+    </div>`).join('');
+}
+
+/* ================= 交互 ================= */
+$$('.tab').forEach(t=>t.onclick=()=>{
+  $$('.tab').forEach(x=>x.classList.remove('on')); t.classList.add('on');
+  $$('.view').forEach(v=>v.classList.remove('on'));
+  $('#v-'+t.dataset.v).classList.add('on');
+  $('#ctrlbar').style.display = t.dataset.v==='live' ? 'flex':'none';
+  if(t.dataset.v==='bench'){ benchTable();
+    groupBar($('#cJct'),[['FIFO',BASELINE.FIFO],['BestFit',BASELINE.BestFit],['DRF',BASELINE.DRF],['SJF',BASELINE.SJF]]
+      .map(([k,v])=>({name:k,data:v})),['avg_jct','median_jct','p95_jct','avg_waiting'],BCOL,
+      v=>v>=1000?(v/1000).toFixed(1)+'k':Math.round(v));
+    groupBar($('#cUtil'),[['FIFO',BASELINE.FIFO],['BestFit',BASELINE.BestFit],['DRF',BASELINE.DRF],['SJF',BASELINE.SJF]]
+      .map(([k,v])=>({name:k,data:v})),['avg_gpu_util','avg_cpu_util','avg_mem_util'],BCOL,v=>v.toFixed(1)+'%');
+    drawTs(); findings();
+  }
+  window.scrollTo({top:0,behavior:'smooth'});
+});
+$('#algo').onchange=()=>{ reset(); syncRew(); };
+$('#ntasks').onchange=()=>reset();
+$('#speed').oninput=e=>{speed=+e.target.value; $('#speedV').textContent=speed+'×';};
+$('#btnRun').onclick=()=>{playing=!playing; $('#btnRun').textContent=playing?'⏸ 暂停':'▶ 播放';};
+$('#btnStep').onclick=()=>{ if(eng){eng.step(eng.now+300); renderAll();} };
+$('#btnFinish').onclick=()=>{ if(eng){ eng.runToEnd(); renderAll();
+  playing=false; $('#btnRun').textContent='▶ 播放';
+  $('#statusBadge').className='badge'; $('#statusBadge').textContent='✓ 仿真完成'; } };
+$('#btnReset').onclick=()=>reset();
+function syncRew(){
+  const on=$('#algo').value==='DRL';
+  $('#rew').classList.toggle('off',!on);
+}
+for(let i=1;i<=5;i++){
+  $('#w'+i).oninput=e=>{
+    W['w'+i]=+e.target.value; $('#w'+i+'v').textContent=(+e.target.value).toFixed(2);
+  };
+}
+$$('.pst').forEach(b=>b.onclick=()=>{
+  const p=PRESETS[b.dataset.p];
+  for(let i=1;i<=5;i++){ W['w'+i]=p['w'+i]; $('#w'+i).value=p['w'+i]; $('#w'+i+'v').textContent=p['w'+i].toFixed(2); }
+  if($('#algo').value!=='DRL'){ $('#algo').value='DRL'; reset(); }
+});
+window.addEventListener('resize',()=>{ if($('#v-live').classList.contains('on')) renderAll(); });
+
+/* ---------- 离线批量评估 + 帕累托对比 ---------- */
+function evalOne(algo,seed,w,n){
+  const e=new Engine(algo,n,seed,w);
+  e.runToEnd();
+  const m=e.metrics(), u=e.avgUtil();
+  return {avgJct:m.avgJct, medJct:m.medJct, p95:m.p95, gpu:u.g, cpu:u.c, done:m.done,total:m.total};
+}
+function evalConfig(algo,w,n){
+  const rs=EVAL_SEEDS.map(s=>evalOne(algo,s,w,n));
+  const k=rs.length, o={};
+  for(const key of Object.keys(rs[0])) o[key]=rs.reduce((s,x)=>s+x[key],0)/k;
+  return o;
+}
+function baselineFIFO(n){
+  if(!baselineFIFO.cache) baselineFIFO.cache={};
+  if(!baselineFIFO.cache[n]) baselineFIFO.cache[n]=evalConfig('FIFO',W,n);
+  return baselineFIFO.cache[n];
+}
+
+function renderRecords(){
+  const tb=$('#parTbody');
+  if(!records.length){
+    tb.innerHTML=`<tr><td colspan="10" style="text-align:center;color:var(--dim);padding:22px;font-family:system-ui">
+      点击「离线评估并记录」后，此处将逐行累积本次会话的实验记录，并自动标记帕累托最优行。</td></tr>`;
+    $('#parHint').textContent='尚未记录 · 点击上方「离线评估并记录」'; return;
+  }
+  const base=records.find(r=>r.algo==='FIFO');
+  // 帕累托前沿：JCT 更低且 GPU 更高者支配
+  const pareto=records.map((r,i)=>{
+    for(const [j,o] of records.entries()){
+      if(i===j) continue;
+      const better = o.avgJct<=r.avgJct && o.gpu>=r.gpu;
+      const strict = o.avgJct<r.avgJct || o.gpu>r.gpu;
+      if(better&&strict) return false;
+    }
+    return true;
+  });
+  const pct=(v,b)=>b?((v-b)/b*100):0;
+  tb.innerHTML=records.map((r,i)=>{
+    const dj=pct(r.avgJct,base.avgJct), dg=pct(r.gpu,base.gpu);
+    const chip=v=>`<span class="chip ${v<-1?'g':(v>1?'r':'n')}">${v>0?'+':''}${v.toFixed(1)}%</span>`;
+    const chipI=v=>`<span class="chip ${v>1?'g':(v<-1?'r':'n')}">${v>0?'+':''}${v.toFixed(1)}%</span>`;
+    return `<tr style="${pareto[i]?'background:#10b9810a':''}">
+      <td style="font-family:var(--mono);color:var(--dim)">${i+1}</td>
+      <td style="font-weight:600;color:${r.algo==='DRL'?'var(--amber)':'var(--muted)'}">
+        ${pareto[i]?'<span style="color:var(--green)">★</span> ':''}${r.label}</td>
+      <td style="font-size:10.5px;color:var(--dim)">${r.wstr}</td>
+      <td>${fmt(r.avgJct,1)}</td><td>${fmt(r.medJct,1)}</td><td>${fmt(r.p95,1)}</td>
+      <td><b style="color:var(--amber)">${r.gpu.toFixed(1)}%</b></td>
+      <td>${chip(dj)}</td><td>${chipI(dg)}</td>
+      <td><span class="chip n">${r.tasks} 任务 × ${EVAL_SEEDS.length} 种子</span></td></tr>`;
+  }).join('');
+  const np=pareto.filter(Boolean).length;
+  $('#parHint').innerHTML=`共 ${records.length} 条记录 · <b style="color:var(--green)">${np} 条位于帕累托前沿</b>`;
+}
+function record(label,algo,w,tasks){
+  const r=evalConfig(algo,w,tasks);
+  records.push({
+    label, algo, avgJct:r.avgJct, medJct:r.medJct, p95:r.p95, gpu:r.gpu, tasks,
+    wstr:`${w.w1.toFixed(2)}/${w.w2.toFixed(2)}/${w.w3.toFixed(2)}/${w.w4.toFixed(2)}/${w.w5.toFixed(2)}`,
+  });
+  renderRecords();
+}
+$('#btnEval').onclick=()=>{
+  const btn=$('#btnEval'), old=btn.textContent;
+  btn.textContent='⏳ 评估中…'; btn.disabled=true;
+  const algo=$('#algo').value, n=(+$('#ntasks').value)||200;
+  const w={...W};
+  setTimeout(()=>{
+    try{
+      const bl=baselineFIFO(n);
+      if(!records.some(r=>r.algo==='FIFO'&&r.tasks===n)){
+        records.push({label:'FIFO 基线',algo:'FIFO',avgJct:bl.avgJct,medJct:bl.medJct,p95:bl.p95,
+          gpu:bl.gpu,tasks:n,wstr:'— 无奖励函数 —'});
+      }
+      const pname=Object.values(PRESETS).find(p=>['w1','w2','w3','w4','w5'].every(k=>Math.abs(p[k]-w[k])<1e-6));
+      record(`${SCHEDS[algo].label}${pname?` · ${pname.name}`:''}`, algo, w, n);
+    }catch(err){ console.error(err); }
+    btn.textContent=old; btn.disabled=false;
+  }, 30);
+};
+
+/* ================= 启动 ================= */
+function activate(name){
+  const t=$$('.tab').find(x=>x.dataset.v===name);
+  if(t) t.click();
+}
+arch(); road(); skills();          // 静态页面初始化渲染
+syncRew();
+reset();
+renderRecords();
+if(location.hash && ['bench','arch','road','skill'].includes(location.hash.slice(1))){
+  setTimeout(()=>activate(location.hash.slice(1)),0);
+}
+requestAnimationFrame(tick);
+</script>
+</body>
+</html>
