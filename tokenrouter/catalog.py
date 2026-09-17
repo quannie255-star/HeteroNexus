@@ -122,3 +122,61 @@ def api_models(cat: LoadedCatalog) -> List[ModelExecutor]:
 
 def self_hosted_models(cat: LoadedCatalog) -> List[ModelExecutor]:
     return [e for e in cat.executors if e.kind == 'self_hosted_model']
+
+
+DEFAULT_CAPACITY = Path(__file__).resolve().parent / 'data' / 'capacity.json'
+
+
+@dataclass
+class Capacity:
+    """一个**部署**的容量约束 —— 不是模型固有属性，而是你在这个供应商的配额档位。"""
+    tpm_limit: float          # 每个窗口的 token 上限（API 按 in+out；自建按 in/eff+out）
+    rpm_limit: float          # 每个窗口的请求数上限
+    max_concurrency: int      # 同时在服务的请求数上限
+    ttft: float               # 首 token 延迟（秒）
+
+
+@dataclass
+class LoadedCapacity:
+    capacities: Dict[str, Capacity] = field(default_factory=dict)
+    window_seconds: float = 60.0
+    wait_timeout: float = 30.0
+    tier: str = 'team'
+    scale: Optional[float] = 1.0
+
+
+def load_capacity(tier: str = 'team', path: Optional[Path] = None) -> LoadedCapacity:
+    """加载配额档位。
+
+    tier='unlimited' 时 scale=None，三个上限全部取无穷 —— 用于验证孪生在无容量约束时
+    必须逐位退化为批量静态仿真（见 tests/test_twin.py 的退化不变式）。
+    """
+    p = Path(path) if path is not None else DEFAULT_CAPACITY
+    with open(p, 'r', encoding='utf-8') as f:
+        raw = json.load(f)
+
+    tiers = raw.get('tiers', {})
+    if tier not in tiers:
+        raise KeyError(f'未知配额档位: {tier}，可选 {list(tiers)}')
+    scale = tiers[tier].get('scale')
+
+    defaults = raw.get('defaults', {})
+    out = LoadedCapacity(
+        window_seconds=float(defaults.get('window_seconds', 60.0)),
+        wait_timeout=float(defaults.get('wait_timeout', 30.0)),
+        tier=tier,
+        scale=scale,
+    )
+    inf = float('inf')
+    for mid, c in raw.get('models', {}).items():
+        if scale is None:
+            out.capacities[mid] = Capacity(inf, inf, 10 ** 9, float(c.get('ttft', 0.4)))
+        else:
+            out.capacities[mid] = Capacity(
+                tpm_limit=float(c['tpm_limit']) * scale,
+                rpm_limit=float(c['rpm_limit']) * scale,
+                # 同 twin.generate_arrivals：+0.5 取整而非 round()，保证 JS 侧一致
+                max_concurrency=max(1, int(int(c['max_concurrency']) * scale + 0.5)),
+                ttft=float(c.get('ttft', 0.4)),
+            )
+    return out

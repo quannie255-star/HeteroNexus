@@ -1,0 +1,95 @@
+{
+  "_meta": {
+    "capacity_version": "2026.09-twin",
+    "created": "2026-09-17",
+    "description": "各执行资源的**部署配额**：TPM / RPM 上限、并发槽位、首 token 延迟。数字孪生用它把「批量计价」升级为「有时间、有容量、会排队」的仿真。",
+    "why_separate_from_catalog": [
+      "catalog.json 描述的是**模型固有属性**（能力分数、单价、吞吐），换供应商不变。",
+      "本文件描述的是**你在该供应商的配额档位**（TPM/RPM 随付费档变化，并发随自建副本数变化）。",
+      "两者生命周期不同：模型半年一换，配额随时可提。分开才能在不动内核的前提下做配额敏感性分析。"
+    ],
+    "model_note": "每个后端抽象为：并发槽位上限 + 每 60 秒固定窗口的 token/请求配额。请求需同时满足三者才可进入服务，否则排队。",
+    "calibration_note": "**全部为 ESTIMATE 工程量级估算**，不代表任何厂商的实际配额。真实配额随账户等级、地域、时段与模型版本剧烈变化。请按自己账户控制台的实际数字替换后重跑；结论的**定性方向**（自建容量是瓶颈、省钱方案在高峰期失效）对估算误差不敏感。",
+    "known_caveats": [
+      "TPM/RPM 采用**固定 60 秒窗口**而非滑动窗口。多数厂商实际实现（固定窗口或令牌桶）介于两者之间；固定窗口会在窗口边界产生阶跃，本仿真不平滑掉它，因为这正是真实系统里「整分时刻集体放行」的现象。",
+      "自建模型的并发槽位按「GPU 显存 / KV cache 占用」粗估，未建模批处理攒批策略与抢占。",
+      "自建模型按处理器共享近似：每槽位速度 = 总吞吐 ÷ 槽位数。真实服务的 per-request 速度随 batch 构成波动。",
+      "未建模重试、429 退避与多区域容灾 —— 这些都只会让容量约束更紧，不会更松。"
+    ]
+  },
+
+  "defaults": {
+    "window_seconds": 60,
+    "wait_timeout": 30.0,
+    "wait_timeout_note": "排队超过该秒数即丢弃（真实系统里表现为上游超时或用户放弃）。"
+  },
+
+  "models": {
+    "gpt-4o-mini": {
+      "tpm_limit": 2000000, "rpm_limit": 10000, "max_concurrency": 64, "ttft": 0.4,
+      "source": "ESTIMATE — OpenAI 中档付费额度工程量级"
+    },
+    "deepseek-v3": {
+      "tpm_limit": 1000000, "rpm_limit": 5000, "max_concurrency": 32, "ttft": 0.6,
+      "source": "ESTIMATE — 国内厂商中档额度工程量级"
+    },
+    "deepseek-r1": {
+      "tpm_limit": 500000, "rpm_limit": 2000, "max_concurrency": 16, "ttft": 1.2,
+      "source": "ESTIMATE — 推理型模型输出长、配额更紧；首 token 显著更慢"
+    },
+    "gpt-4o": {
+      "tpm_limit": 800000, "rpm_limit": 5000, "max_concurrency": 48, "ttft": 0.5,
+      "source": "ESTIMATE — OpenAI 中档付费额度工程量级"
+    },
+    "claude-3-5-sonnet": {
+      "tpm_limit": 400000, "rpm_limit": 4000, "max_concurrency": 32, "ttft": 0.6,
+      "source": "ESTIMATE — Anthropic 中档额度工程量级（其配额通常显著低于同档 OpenAI）"
+    },
+    "qwen-max": {
+      "tpm_limit": 600000, "rpm_limit": 3000, "max_concurrency": 32, "ttft": 0.6,
+      "source": "ESTIMATE — 国内厂商中档额度工程量级"
+    },
+
+    "self-gemma2-9b": {
+      "tpm_limit": 132000, "rpm_limit": 100000, "max_concurrency": 16, "ttft": 0.2,
+      "source": "ESTIMATE — tpm 由 throughput_tps 2200 × 60 折算；并发槽位按 24GB 显存粗估"
+    },
+    "self-llama31-8b": {
+      "tpm_limit": 120000, "rpm_limit": 100000, "max_concurrency": 16, "ttft": 0.2,
+      "source": "ESTIMATE — tpm 由 throughput_tps 2000 × 60 折算"
+    },
+    "self-qwen25-32b": {
+      "tpm_limit": 54000, "rpm_limit": 100000, "max_concurrency": 8, "ttft": 0.3,
+      "source": "ESTIMATE — tpm 由 throughput_tps 900 × 60 折算；32B 单卡槽位少"
+    },
+    "self-qwen25-72b": {
+      "tpm_limit": 31200, "rpm_limit": 100000, "max_concurrency": 6, "ttft": 0.5,
+      "source": "ESTIMATE — tpm 由 throughput_tps 520 × 60 折算；72B 两卡部署、槽位最少"
+    }
+  },
+
+  "tiers": {
+    "startup": {
+      "label": "初创 / 入门付费档",
+      "scale": 0.05,
+      "note": "约为团队档的 1/20。这一档下几乎所有后端都会撞限流，用于展示「省钱方案在配额不足时不成立」。"
+    },
+    "team": {
+      "label": "团队付费档（默认）",
+      "scale": 1.0,
+      "note": "上表数字即本档。"
+    },
+    "enterprise": {
+      "label": "企业档",
+      "scale": 20.0,
+      "note": "约团队档的 20 倍。自建一侧的扩容含义是「加卡 / 加副本」。"
+    },
+    "unlimited": {
+      "label": "无约束（正确性对照）",
+      "scale": null,
+      "note": "不设任何容量限制。用于验证：孪生在无约束时必须逐位退化为批量静态仿真的结果。"
+    }
+  },
+
+  "self_host_capacity_note": "自建模型的 tpm_limit 由 catalog 的 throughput_tps 折算而来，因此**容量与成本同源**：吞吐越高、单位 token 越便宜，但配额也就越大。这条耦合让「便宜的自建模型容量小」成为一个真实约束，而不是人为设置的障碍。"
+}

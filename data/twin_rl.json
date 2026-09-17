@@ -1,0 +1,172 @@
+{
+  "meta": {
+    "tier": "startup",
+    "scenario": "mixed",
+    "rate_rpm": 60.0,
+    "duration_s": 300.0,
+    "start_hour": 9,
+    "budget_ratio": 0.5,
+    "lam": 0.2,
+    "queue_penalty": 0.25,
+    "mask_capacity": true,
+    "cost_norm": "max",
+    "updates": 300,
+    "n_envs": 4,
+    "seed": 0,
+    "train_seeds": [
+      1,
+      7,
+      42
+    ],
+    "eval_seeds": [
+      999,
+      2026
+    ],
+    "n_train_episodes": 12,
+    "n_eval_episodes": 6,
+    "gpu_utilization": 0.35,
+    "executor_ids": [
+      "gpt-4o-mini",
+      "deepseek-v3",
+      "deepseek-r1",
+      "gpt-4o",
+      "claude-3-5-sonnet",
+      "qwen-max",
+      "self-gemma2-9b",
+      "self-llama31-8b",
+      "self-qwen25-32b",
+      "self-qwen25-72b"
+    ]
+  },
+  "results": {
+    "strongest": {
+      "served": 383,
+      "n": 2661,
+      "serve_rate": 0.14393085306275835,
+      "correct": 355,
+      "accuracy": 0.9268929503916449,
+      "cost": 6.5586400000000005,
+      "cost_per_1k": 17.124386422976503,
+      "dropped": 2278,
+      "timeout": 2278,
+      "budget_drop": 0,
+      "per_yuan_correct": 54.127075125330855
+    },
+    "cheapest": {
+      "served": 179,
+      "n": 2661,
+      "serve_rate": 0.06726794438181134,
+      "correct": 113,
+      "accuracy": 0.6312849162011173,
+      "cost": 0.226799,
+      "cost_per_1k": 1.2670335195530726,
+      "dropped": 2482,
+      "timeout": 2482,
+      "budget_drop": 0,
+      "per_yuan_correct": 498.2385283885731
+    },
+    "utility_greedy": {
+      "served": 1468,
+      "n": 2661,
+      "serve_rate": 0.5516723036452461,
+      "correct": 1343,
+      "accuracy": 0.9148501362397821,
+      "cost": 12.281581000000001,
+      "cost_per_1k": 8.366199591280655,
+      "dropped": 1193,
+      "timeout": 1193,
+      "budget_drop": 0,
+      "per_yuan_correct": 109.35074238406276
+    },
+    "capacity_greedy": {
+      "served": 1911,
+      "n": 2661,
+      "serve_rate": 0.7181510710259301,
+      "correct": 1634,
+      "accuracy": 0.8550497121925693,
+      "cost": 22.666686,
+      "cost_per_1k": 11.861164835164834,
+      "dropped": 750,
+      "timeout": 117,
+      "budget_drop": 633,
+      "per_yuan_correct": 72.08817380714588
+    },
+    "ppo_untrained": {
+      "served": 921,
+      "n": 2661,
+      "serve_rate": 0.3461104847801578,
+      "correct": 747,
+      "accuracy": 0.8110749185667753,
+      "cost": 23.38061,
+      "cost_per_1k": 25.386112920738327,
+      "dropped": 1740,
+      "timeout": 105,
+      "budget_drop": 1635,
+      "per_yuan_correct": 31.949551359010734
+    },
+    "ppo": {
+      "served": 1909,
+      "n": 2661,
+      "serve_rate": 0.7173994738819992,
+      "correct": 1597,
+      "accuracy": 0.8365636458878994,
+      "cost": 22.487097,
+      "cost_per_1k": 11.779516500785752,
+      "dropped": 752,
+      "timeout": 106,
+      "budget_drop": 646,
+      "per_yuan_correct": 71.01850452283814
+    }
+  },
+  "training_logs": [
+    {
+      "update": 1,
+      "mean_correct": 86.25,
+      "mean_spent": 3.8478287732254373,
+      "mean_served": 102.75,
+      "vf_loss": 31.133995657542542
+    },
+    {
+      "update": 50,
+      "mean_correct": 230.25,
+      "mean_spent": 3.4032716834573655,
+      "mean_served": 279.75,
+      "vf_loss": 49.67388165215347
+    },
+    {
+      "update": 100,
+      "mean_correct": 281.25,
+      "mean_spent": 3.8256463901991626,
+      "mean_served": 339.25,
+      "vf_loss": 32.83919247470059
+    },
+    {
+      "update": 150,
+      "mean_correct": 263.5,
+      "mean_spent": 3.186768295433373,
+      "mean_served": 322.5,
+      "vf_loss": 16.700087689339465
+    },
+    {
+      "update": 200,
+      "mean_correct": 264.25,
+      "mean_spent": 3.088092502215644,
+      "mean_served": 322.25,
+      "vf_loss": 15.758382334351564
+    },
+    {
+      "update": 250,
+      "mean_correct": 287.5,
+      "mean_spent": 3.443849514067044,
+      "mean_served": 350.25,
+      "vf_loss": 23.567876554120108
+    },
+    {
+      "update": 300,
+      "mean_correct": 266.0,
+      "mean_spent": 2.9562677192897215,
+      "mean_served": 322.75,
+      "vf_loss": 29.958742863376813
+    }
+  ]
+}

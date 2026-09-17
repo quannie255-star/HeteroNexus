@@ -271,6 +271,7 @@ tbody tr:hover{background:#ffffff05}
     <div class="tab" data-v="road">年度路线图</div>
     <div class="tab" data-v="skill">工程能力图谱</div>
     <div class="tab" data-v="token">模型路由方案</div>
+    <div class="tab" data-v="twin">Token 消耗孪生</div>
   </div>
 </header>
 
@@ -690,6 +691,89 @@ tbody tr:hover{background:#ffffff05}
     <div class="ph"><span class="dot" style="background:var(--red);box-shadow:0 0 8px var(--red)"></span>
       <h3>数据溯源与口径红线</h3></div>
     <div class="pb" id="tkProvenance"></div>
+  </div>
+</section>
+
+<section class="view" id="v-twin">
+  <div class="panel" style="margin-bottom:0">
+    <div class="ph"><span class="dot" style="background:var(--cyan);box-shadow:0 0 8px var(--cyan)"></span>
+      <h3>Token 消耗数字孪生</h3>
+      <span class="badge" id="twBadge">离散事件仿真 · 逐位可复现</span></div>
+    <div class="pb">
+      <p style="color:var(--muted);font-size:13px;margin:0 0 10px">
+        与「模型路由方案」页签的区别：那页是<b>批量静态仿真</b>（一批任务一共值多少钱，任务之间不抢资源）；
+        本页加了<b>时间、容量与排队</b> —— 每分钟烧多少 token、什么时候撞上 TPM/RPM 配额、
+        便宜的自建模型容量满了之后溢出到哪去。下方曲线是本页在浏览器里实时算出来的，与 Python 端逐位一致。
+      </p>
+      <div class="ctrlbar" style="display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end">
+        <div class="cg"><label>路由策略</label>
+          <select id="twMode">
+            <option value="strongest">全用最强模型（用户现状）</option>
+            <option value="cheapest">全用最便宜模型</option>
+            <option value="router" selected>路由方案 · 在线逐任务</option>
+            <option value="plan">路由方案 · 离线三档表</option>
+            <option value="oracle">理论最优 Oracle</option>
+          </select></div>
+        <div class="cg"><label>配额档位</label>
+          <select id="twTier">
+            <option value="startup">初创 / 入门档（团队档 1/20）</option>
+            <option value="team" selected>团队付费档</option>
+            <option value="enterprise">企业档（20×）</option>
+            <option value="unlimited">无约束（退化对照）</option>
+          </select></div>
+        <div class="cg"><label>溢出策略</label>
+          <select id="twOverflow">
+            <option value="wait" selected>原地排队（等配额）</option>
+            <option value="reroute">容量感知二次路由</option>
+          </select></div>
+        <div class="cg"><label>到达率 <b id="twRateV">150</b> 条/分</label>
+          <input type="range" id="twRate" min="20" max="400" step="10" value="150"></div>
+        <div class="cg"><label>仿真时长</label>
+          <select id="twDur">
+            <option value="1800">0.5 小时</option>
+            <option value="3600" selected>1 小时</option>
+            <option value="7200">2 小时</option>
+            <option value="28800">一个工作日 8h</option>
+          </select></div>
+        <div class="cg"><label>业务构成</label>
+          <select id="twScene">
+            <option value="daily_assistant">日常助手</option>
+            <option value="dev_copilot">研发 Copilot</option>
+            <option value="mixed" selected>混合负载</option>
+            <option value="analytics">分析推理</option>
+          </select></div>
+        <button id="twRun" class="btn">▶ 推进仿真</button>
+        <button id="twReset" class="btn">↺ 重置</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-top:14px">
+    <div class="ph"><h3>实时状态</h3><span class="badge" id="twClock">t = 0:00</span></div>
+    <div class="pb">
+      <div id="twKpi" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:12px"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div><div style="color:var(--muted);font-size:12px;margin-bottom:4px">累计花费 vs 预算燃尽</div>
+          <canvas id="twCost" height="180" style="width:100%"></canvas></div>
+        <div><div style="color:var(--muted);font-size:12px;margin-bottom:4px">队列深度 / 在途请求</div>
+          <canvas id="twQ" height="180" style="width:100%"></canvas></div>
+        <div><div style="color:var(--muted);font-size:12px;margin-bottom:4px">Token 消耗速率（千 token/分）</div>
+          <canvas id="twTok" height="180" style="width:100%"></canvas></div>
+        <div><div style="color:var(--muted);font-size:12px;margin-bottom:4px">各后端承载分布</div>
+          <canvas id="twBar" height="180" style="width:100%"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-top:14px">
+    <div class="ph"><h3>跑完之后的账</h3></div>
+    <div class="pb" id="twTable"></div>
+  </div>
+
+  <div class="panel" style="margin-top:14px">
+    <div class="ph"><span class="dot" style="background:var(--red);box-shadow:0 0 8px var(--red)"></span>
+      <h3>读这张图时必须避开的坑</h3></div>
+    <div class="pb" id="twCaveat"></div>
   </div>
 </section>
 
@@ -1436,6 +1520,7 @@ $$('.tab').forEach(t=>t.onclick=()=>{
   }
   // Token 侧懒初始化：首次进入才做 10000×10 的预计算，避免拖慢控制台首屏
   if(t.dataset.v==='token'){ setTimeout(tkInit,0); }
+  if(t.dataset.v==='twin'){ setTimeout(twInit,0); }
   window.scrollTo({top:0,behavior:'smooth'});
 });
 $('#algo').onchange=()=>{ reset(); syncRew(); };
@@ -1639,9 +1724,10 @@ function estimate(ex,t){
   else { perOut=ex.pout/1e6; perIn=ex.pin/1e6; }
   return {cost:t.out*perOut+t.in*perIn, lat:0.4+t.out/ex.speed, q:q};
 }
-function genWorkload(scene,seed){
+/* n 可指定：数字孪生需要「到达多少条就生成多少条任务」，与 tokenrouter/workload.py 一致 */
+function genWorkload(scene,seed,n){
   const P=PRESETS[scene]; const rng=mkRng(seed); const out=[];
-  for(let i=0;i<2000;i++){
+  for(let i=0;i<(n||2000);i++){
     const domain=rng.choices(DOMAINS,DOMAINS.map(d=>P.dw[d]));
     const band=rng.choices(['easy','medium','hard'],[P.bw.easy,P.bw.medium,P.bw.hard]);
     const lo=BANDS[band][0], hi=BANDS[band][1];
@@ -1672,49 +1758,58 @@ function planMap(execs,tasks,lam,minQ){
 function logNorm(v,lo,hi){ v=Math.max(v,FLOOR); lo=Math.max(lo,FLOOR); hi=Math.max(hi,lo*(1+1e-12));
   if(hi<=lo) return 0; return (Math.log(v)-Math.log(lo))/(Math.log(hi)-Math.log(lo)); }
 
+/* 路由决策抽成独立函数，批量仿真(runPolicy)与数字孪生(twinSim)**共用同一份**，
+   避免两处逻辑各自漂移。allowed = 候选下标数组，null 表示全池。
+   返回 -1 表示该策略无法在缩小后的候选池里决策（固定目标型策略：strongest/cheapest）。 */
+function buildPicker(execs,ix,mode,lam,minQ,tasks){
+  const m=ix.m,n=ix.n;
+  const aux={m:m,n:n,lam:lam,minQ:minQ,all:Array.from({length:m},(_,j)=>j)};
+  aux.strongIdx=execs.indexOf(globalStrongest(execs));
+  let cheapIdx=0; {let best=Infinity;
+    for(let j=0;j<m;j++){let s=0;for(let i=0;i<n;i++)s+=ix.C[i*m+j];if(s<best){best=s;cheapIdx=j;}}}
+  aux.cheapIdx=cheapIdx;
+  if(mode==='plan'){ aux.pmap=planMap(execs,tasks,lam,minQ);
+    aux.pidx={}; for(let j=0;j<m;j++) aux.pidx[execs[j].id]=j; }
+  return aux;
+}
+function pickIdx(i,t,execs,ix,mode,aux,allowed){
+  const m=ix.m; const list=allowed||aux.all;
+  const has=j=>(j>=0)&&(allowed?allowed.indexOf(j)>=0:true);
+  if(mode==='strongest') return has(aux.strongIdx)?aux.strongIdx:-1;
+  if(mode==='cheapest')  return has(aux.cheapIdx)?aux.cheapIdx:-1;
+  if(mode==='router'){
+    let lo=Infinity,hi=-Infinity;
+    for(const j of list){const c=ix.C[i*m+j];if(c<lo)lo=c;if(c>hi)hi=c;}
+    let bs=-Infinity,bj=-1,any=false;
+    for(const j of list){
+      const q=ix.Q[i*m+j];
+      if(aux.minQ>0 && q<aux.minQ-1e-12) continue;
+      any=true;
+      const nc=logNorm(ix.C[i*m+j],lo,hi);
+      const sc=1.0*q-aux.lam*nc;
+      if(sc>bs){bs=sc;bj=j;}
+    }
+    return any?bj:(allowed?allowed[0]:aux.strongIdx);
+  }
+  if(mode==='plan'){
+    const pid=aux.pmap[t.domain+'|'+bandOf(t.difficulty)];
+    const j=(pid!==undefined&&aux.pidx[pid]!==undefined)?aux.pidx[pid]:-1;
+    return has(j)?j:(allowed?allowed[0]:aux.strongIdx);
+  }
+  /* oracle */
+  let bc=Infinity,bj=-1;
+  for(const j of list){
+    const q=ix.Q[i*m+j];
+    const ok=detU(MASTER,t.id,crc32(execs[j].id),SALT_C)<q;
+    if(ok && ix.C[i*m+j]<bc){bc=ix.C[i*m+j];bj=j;}
+  }
+  return bj>=0?bj:(allowed?allowed[0]:aux.strongIdx);
+}
 function runPolicy(tasks,execs,ix,mode,lam,minQ){
   const m=ix.m; let cost=0,correct=0,calls=0; const usage={};
-  const cmin=new Float64Array(ix.n),cmax=new Float64Array(ix.n);
-  if(mode==='router'){
-    for(let i=0;i<ix.n;i++){let lo=Infinity,hi=-Infinity;
-      for(let j=0;j<m;j++){const c=ix.C[i*m+j];if(c<lo)lo=c;if(c>hi)hi=c;}
-      cmin[i]=lo;cmax[i]=hi;}
-  }
-  /* plan：只按离线三档表查表，不重新求解 —— 与 router 的差距即可解释性的代价 */
-  let pmap=null,pidx={};
-  if(mode==='plan'){ pmap=planMap(execs,tasks,lam,minQ);
-    for(let j=0;j<m;j++) pidx[execs[j].id]=j; }
-  const strongest=globalStrongest(execs);
-  const strongIdx=execs.indexOf(strongest);
-  let cheapIdx=0; {let best=Infinity;
-    for(let j=0;j<m;j++){let s=0;for(let i=0;i<ix.n;i++)s+=ix.C[i*m+j];if(s<best){best=s;cheapIdx=j;}}}
+  const aux=buildPicker(execs,ix,mode,lam,minQ,tasks);
   for(let i=0;i<ix.n;i++){
-    const t=tasks[i]; let idx;
-    if(mode==='strongest') idx=strongIdx;
-    else if(mode==='cheapest') idx=cheapIdx;
-    else if(mode==='router'){
-      let bs=-Infinity,bj=0,any=false;
-      for(let j=0;j<m;j++){
-        const q=ix.Q[i*m+j];
-        if(minQ>0 && q<minQ-1e-12) continue;
-        any=true;
-        const nc=logNorm(ix.C[i*m+j],cmin[i],cmax[i]);
-        const sc=1.0*q-lam*nc;
-        if(sc>bs){bs=sc;bj=j;}
-      }
-      idx=any?bj:strongIdx;
-    } else if(mode==='plan'){
-      const pid=pmap[t.domain+'|'+bandOf(t.difficulty)];
-      idx=(pid!==undefined&&pidx[pid]!==undefined)?pidx[pid]:strongIdx;
-    } else { /* oracle */
-      let bc=Infinity,bj=-1;
-      for(let j=0;j<m;j++){
-        const q=ix.Q[i*m+j];
-        const ok=detU(MASTER,t.id,crc32(execs[j].id),SALT_C)<q;
-        if(ok && ix.C[i*m+j]<bc){bc=ix.C[i*m+j];bj=j;}
-      }
-      idx=bj>=0?bj:strongIdx;
-    }
+    const t=tasks[i]; const idx=pickIdx(i,t,execs,ix,mode,aux,null);
     const q=ix.Q[i*m+idx];
     const ok=detU(MASTER,t.id,crc32(execs[idx].id),SALT_C)<q;
     cost+=ix.C[i*m+idx]; calls++; if(ok) correct++;
@@ -1766,7 +1861,11 @@ function utilCurve(){
   return rows;
 }
 return {runAll:runAll,buildPlan:buildPlan,utilCurve:utilCurve,BANDS:BANDS,DOMAINS:DOMAINS,
-  SEEDS:SEEDS,MODELS:MODELS,buildExec:buildExec,estimate:estimate,qualAt:qualAt};
+  SEEDS:SEEDS,MODELS:MODELS,buildExec:buildExec,estimate:estimate,qualAt:qualAt,
+  /* 数字孪生需要复用引擎内部对象：路由决策必须两侧同一份，不能另写一套 */
+  buildIndex:buildIndex,buildPicker:buildPicker,pickIdx:pickIdx,genWorkload:genWorkload,
+  detU:detU,crc32:crc32,MASTER:MASTER,SALT_C:SALT_C,PREFILL:PREFILL,
+  globalStrongest:globalStrongest,logNorm:logNorm,bandOf:bandOf};
 })();
 
 /* ---------- Token 页渲染 ---------- */
@@ -1924,6 +2023,322 @@ function tkInit(){
 }
 
 /* ================= 启动 ================= */
+/* ================= Token 消耗数字孪生（离散事件仿真） ================= */
+/* 复用 TK 引擎内部对象，保证与「模型路由方案」页签用的是同一份路由决策 */
+const {buildIndex,buildPicker,pickIdx,genWorkload:tkGenWorkload,buildExec:tkBuildExec,
+       detU,crc32,MASTER,SALT_C,PREFILL}=TK;
+const genWorkload=tkGenWorkload, buildExec=tkBuildExec;
+/* 全部为纯四则运算：到达时刻不用指数分布（需要 -ln(u)，JS 与 Python 的 Math.log
+   不保证逐位一致），时段系数用查表而非 sin。这样才能与 Python 端逐位对拍。 */
+const DIURNAL=[0.25,0.15,0.10,0.10,0.12,0.20,0.35,0.60,
+               0.90,1.20,1.50,1.45,1.10,1.00,1.35,1.50,
+               1.40,1.20,1.00,0.90,0.80,0.60,0.40,0.30];
+const CAP={
+  'gpt-4o-mini':{tpm:2000000,rpm:10000,conc:64,ttft:0.4},
+  'deepseek-v3':{tpm:1000000,rpm:5000,conc:32,ttft:0.6},
+  'deepseek-r1':{tpm:500000,rpm:2000,conc:16,ttft:1.2},
+  'gpt-4o':{tpm:800000,rpm:5000,conc:48,ttft:0.5},
+  'claude-3-5-sonnet':{tpm:400000,rpm:4000,conc:32,ttft:0.6},
+  'qwen-max':{tpm:600000,rpm:3000,conc:32,ttft:0.6},
+  'self-gemma2-9b':{tpm:132000,rpm:100000,conc:16,ttft:0.2},
+  'self-llama31-8b':{tpm:120000,rpm:100000,conc:16,ttft:0.2},
+  'self-qwen25-32b':{tpm:54000,rpm:100000,conc:8,ttft:0.3},
+  'self-qwen25-72b':{tpm:31200,rpm:100000,conc:6,ttft:0.5}
+};
+const TIERS={startup:0.05,team:1.0,enterprise:20.0,unlimited:null};
+function capOf(id,tier){
+  const c=CAP[id], s=TIERS[tier];
+  if(s===null) return {tpm:Infinity,rpm:Infinity,conc:1e9,ttft:c.ttft};
+  return {tpm:c.tpm*s,rpm:c.rpm*s,conc:Math.max(1,Math.floor(c.conc*s+0.5)),ttft:c.ttft};
+}
+function genArrivals(durationS,rateRpm,startHour,burstProb,burstMult,seed){
+  const rng=mulberry32(seed); const out=[]; const nMin=Math.floor(durationS/60)+1;
+  for(let m=0;m<nMin;m++){
+    const hour=(startHour+Math.floor(m/60))%24;
+    const base=rateRpm*DIURNAL[hour];
+    let shock=1.0;
+    if(rng()<burstProb) shock=1.0+rng()*burstMult;
+    const nm=Math.floor(base*shock+0.5);
+    const offs=[]; for(let k=0;k<nm;k++) offs.push(rng()*60);
+    offs.sort((a,b)=>a-b);
+    const t0=m*60;
+    for(const o of offs){ const t=t0+o; if(t<durationS) out.push(t); }
+  }
+  out.sort((a,b)=>a-b);
+  return out;
+}
+/* ---- 最小堆：按 (t, seq) 排序，与 Python heapq 的元组比较同序 ---- */
+function hpush(h,x){ h.push(x); let i=h.length-1;
+  while(i>0){ const p=(i-1)>>1;
+    if(h[p].t<h[i].t||(h[p].t===h[i].t&&h[p].seq<h[i].seq)) break;
+    const tmp=h[p];h[p]=h[i];h[i]=tmp; i=p; } }
+function hpop(h){ const top=h[0]; const last=h.pop();
+  if(h.length){ h[0]=last; let i=0;
+    for(;;){ const l=2*i+1,r=l+1; let s=i;
+      if(l<h.length&&(h[l].t<h[s].t||(h[l].t===h[s].t&&h[l].seq<h[s].seq))) s=l;
+      if(r<h.length&&(h[r].t<h[s].t||(h[r].t===h[s].t&&h[r].seq<h[s].seq))) s=r;
+      if(s===i) break; const tmp=h[s];h[s]=h[i];h[i]=tmp; i=s; } }
+  return top; }
+
+function twinCreate(mode,o){
+  const execs=o.execs, ix=o.ix, tasks=o.tasks, arrivals=o.arrivals, m=execs.length;
+  const caps=execs.map(e=>capOf(e.id,o.tier));
+  const aux=buildPicker(execs,ix,mode,o.lam,0.0,tasks);
+  const S={
+    execs,ix,tasks,arrivals,m,caps,aux,mode,o,
+    inflight:new Int32Array(m), winTok:new Float64Array(m), winReq:new Int32Array(m),
+    qs:Array.from({length:m},()=>[]), qh:new Int32Array(m),
+    served:new Int32Array(m), correctM:new Int32Array(m), costM:new Float64Array(m),
+    tokM:new Float64Array(m), tmoM:new Int32Array(m), rrM:new Int32Array(m), qmax:new Int32Array(m),
+    heap:[], seq:0, aidx:0,
+    spent:0, servedN:0, correctN:0, tokens:0, nTimeout:0, nQueued:0, nReroute:0,
+    waits:[], lats:[], samples:[], t:0, done:false, nextSample:0
+  };
+  for(let i=0;i<arrivals.length;i++) hpush(S.heap,{t:arrivals[i],seq:S.seq++,kind:0,b:0,ri:i});
+  const W=S.caps[0]?60:60;
+  for(let k=0;k<Math.floor(o.durationS/W)+2;k++) hpush(S.heap,{t:(k+1)*W,seq:S.seq++,kind:2,b:0,ri:-1});
+  return S;
+}
+function twWork(S,j,task){
+  return S.execs[j].kind==='self' ? task.in/PREFILL+task.out : task.in+task.out;
+}
+function twDur(S,j,task){
+  const c=S.caps[j];
+  if(S.execs[j].kind==='self'){
+    const tps=c.tpm/60/Math.max(c.conc,1);
+    return c.ttft+(task.in/PREFILL+task.out)/Math.max(tps,1e-6);
+  }
+  return c.ttft+task.out/Math.max(S.execs[j].speed,1e-6);
+}
+function twCanAdmit(S,j,task){
+  const c=S.caps[j];
+  return S.inflight[j]<c.conc && S.winTok[j]+twWork(S,j,task)<=c.tpm && S.winReq[j]+1<=c.rpm;
+}
+function twStart(S,j,task,cost,ok,enq,now){
+  S.inflight[j]++; S.winTok[j]+=twWork(S,j,task); S.winReq[j]++;
+  S.spent+=cost; S.servedN++; S.served[j]++; S.costM[j]+=cost;
+  const wt=twWork(S,j,task); S.tokM[j]+=wt; S.tokens+=wt;
+  if(ok){ S.correctN++; S.correctM[j]++; }
+  const w=now-enq; S.waits.push(w);
+  const d=twDur(S,j,task); S.lats.push(w+d);
+  hpush(S.heap,{t:now+d,seq:S.seq++,kind:1,b:j,ri:-1});
+}
+function twDrain(S,j,now){
+  const q=S.qs[j];
+  while(S.qh[j]<q.length){
+    const p=q[S.qh[j]];
+    if(now-p.enq>S.o.waitTimeout){ S.qh[j]++; S.tmoM[j]++; S.nTimeout++; continue; }
+    if(!twCanAdmit(S,j,p.task)) break;
+    S.qh[j]++; twStart(S,j,p.task,p.cost,p.ok,p.enq,now);
+  }
+  if(S.qh[j]>q.length/2&&S.qh[j]>64){ S.qs[j]=q.slice(S.qh[j]); S.qh[j]=0; }
+}
+function twinStep(S,tmax){
+  while(S.heap.length){
+    const e=S.heap[0];
+    if(e.t>tmax) break;
+    hpop(S.heap); const now=e.t; S.t=now;
+    if(e.kind===2){
+      for(let j=0;j<S.m;j++){ S.winTok[j]=0; S.winReq[j]=0; }
+      for(let j=0;j<S.m;j++) twDrain(S,j,now);
+    } else if(e.kind===1){
+      S.inflight[e.b]--; twDrain(S,e.b,now);
+    } else {
+      const task=S.tasks[e.ri];
+      let j=pickIdx(e.ri,task,S.execs,S.ix,S.mode,S.aux,null);
+      if(S.o.overflow==='reroute'&&!twCanAdmit(S,j,task)){
+        const pool=[];
+        for(let k=0;k<S.m;k++) if(twCanAdmit(S,k,task)) pool.push(k);
+        if(pool.length){ const j2=pickIdx(e.ri,task,S.execs,S.ix,S.mode,S.aux,pool);
+          if(j2>=0&&pool.indexOf(j2)>=0){ if(j2!==j){S.nReroute++;S.rrM[j2]++;} j=j2; } }
+      }
+      if(twCanAdmit(S,j,task)){
+        const ok=detU(MASTER,task.id,crc32(S.execs[j].id),SALT_C)<S.ix.Q[e.ri*S.m+j];
+        twStart(S,j,task,S.ix.C[e.ri*S.m+j],ok,now,now);
+      } else {
+        const ok=detU(MASTER,task.id,crc32(S.execs[j].id),SALT_C)<S.ix.Q[e.ri*S.m+j];
+        S.qs[j].push({task:task,cost:S.ix.C[e.ri*S.m+j],ok:ok,enq:now});
+        S.nQueued++;
+        S.qmax[j]=Math.max(S.qmax[j],S.qs[j].length-S.qh[j]);
+      }
+    }
+    while(S.nextSample<=now){
+      let q=0,f=0;
+      for(let k=0;k<S.m;k++){ q+=S.qs[k].length-S.qh[k]; f+=S.inflight[k]; }
+      S.samples.push({t:S.nextSample,cost:S.spent,served:S.servedN,q:q,f:f,dropped:S.nTimeout});
+      S.nextSample+=S.o.sampleInterval;
+    }
+  }
+  if(!S.heap.length) S.done=true;
+  if(S.heap.length&&S.heap[0].t>tmax) S.t=tmax;
+}
+function twinFinish(S){
+  const n=S.tasks.length;
+  const pct=(a,q)=>{ if(!a.length) return 0; a=a.slice().sort((x,y)=>x-y);
+    return a[Math.min(a.length-1,Math.round((a.length-1)*q))]; };
+  return {n:n, served:S.servedN, serveRate:n?S.servedN/n:0, cost:S.spent,
+    costPer1k:S.servedN?S.spent/S.servedN*1000:0, correct:S.correctN,
+    acc:S.servedN?S.correctN/S.servedN:0, timeout:S.nTimeout,
+    queueRate:n?S.nQueued/n:0, rerouteRate:n?S.nReroute/n:0,
+    waitP95:pct(S.waits,0.95), latP95:pct(S.lats,0.95), tokens:S.tokens,
+    perModel:S.execs.map((e,j)=>({id:e.id,served:S.served[j],cost:S.costM[j],
+      timeout:S.tmoM[j],reroute:S.rrM[j],qmax:S.qmax[j]}))};
+}
+
+/* ---- 页面 ---- */
+let TWS=null, twPlaying=false;
+function twBuild(){
+  const mode=$('#twMode').value, tier=$('#twTier').value, ov=$('#twOverflow').value;
+  const dur=+$('#twDur').value, rate=+$('#twRate').value, scene=$('#twScene').value;
+  const util=+$('#tkUtil').value, pool=$('#tkPool').value;
+  let execs=buildExec(util); if(pool==='api') execs=execs.filter(e=>e.kind==='api');
+  const arrivals=genArrivals(dur,rate,9,0.12,3.0,42);
+  const tasks=genWorkload(scene,42,arrivals.length);
+  const ix=buildIndex(tasks,execs);
+  TWS=twinCreate(mode,{execs,ix,tasks,arrivals,tier,overflow:ov,lam:+$('#tkLam').value,
+    durationS:dur,waitTimeout:30,sampleInterval:Math.max(15,dur/240)});
+  /* 参考线：同样的流量全部交给最强模型要花多少 —— 用它当「预算参照」 */
+  const sa=buildPicker(execs,ix,'strongest',+$('#tkLam').value,0.0,tasks);
+  let ref=0; for(let i=0;i<tasks.length;i++) ref+=ix.C[i*execs.length+sa.strongIdx];
+  TWS.refCost=ref;
+  TWS.meta={mode,tier,ov,dur,rate,scene};
+  twPlaying=false; $('#twRun').textContent='▶ 推进仿真';
+  twRender();
+}
+function twRender(){
+  if(!TWS) return;
+  const S=TWS, r=twinFinish(S);
+  const hh=Math.floor(S.t/3600), mm=Math.floor(S.t%3600/60);
+  $('#twClock').textContent=`t = ${hh}:${String(mm).padStart(2,'0')}  到达 ${S.tasks.length} · 队列 ${S.samples.length?S.samples[S.samples.length-1].q:0}`;
+  const kp=[['成功服务',fmt(r.served),'条'],['服务率',(r.serveRate*100).toFixed(1),'%'],
+    ['累计花费','¥'+r.cost.toFixed(1),''],['每千次','¥'+r.costPer1k.toFixed(2),''],
+    ['排队超时',fmt(r.timeout),'条'],['P95 等待',r.waitP95.toFixed(1),'s']];
+  $('#twKpi').innerHTML=kp.map(([k,v,u])=>
+    `<div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:10px">
+      <div style="color:var(--dim);font-size:11px">${k}</div>
+      <div style="font-size:18px;color:var(--text);font-family:var(--mono)">${v}<span style="font-size:11px;color:var(--muted)">${u}</span></div></div>`).join('');
+  twChart($('#twCost'),S,r,'cost');
+  twChart($('#twQ'),S,r,'q');
+  twChart($('#twTok'),S,r,'tok');
+  twBar($('#twBar'),S,r);
+  $('#twTable').innerHTML=twTable(S,r);
+}
+function twChart(cv,S,r,kind){
+  const {g,w,h}=setupCanvas(cv); g.clearRect(0,0,w,h);
+  const sm=S.samples; if(sm.length<2){ g.fillStyle='#5b6b7c'; g.font='12px sans-serif';
+    g.fillText('推进仿真后显示',10,h/2); return; }
+  const padL=52,padB=22,padT=10, W=w-padL-12, H=h-padB-padT;
+  let mx=0; for(const s of sm){ const v=kind==='cost'?s.cost:(kind==='q'?(s.q+s.f):s.cost); if(v>mx)mx=v; }
+  if(kind==='tok'){ mx=0; for(let i=1;i<sm.length;i++){
+    const dt=sm[i].t-sm[i-1].t; const dv=(sm[i].cost-sm[i-1].cost); if(dt>0) mx=Math.max(mx,dv); } mx=mx||1; }
+  const X=i=>padL+W*i/(sm.length-1);
+  g.strokeStyle='#1d2836'; g.lineWidth=1;
+  for(let k=0;k<=4;k++){ const y=padT+H*k/4; g.beginPath();g.moveTo(padL,y);g.lineTo(w-12,y);g.stroke();
+    g.fillStyle='#5b6b7c'; g.font='10px sans-serif'; g.textAlign='right';
+    g.fillText((mx*(1-k/4)).toFixed(mx>100?0:1),padL-6,y+3); }
+  const series=(fn,color,fill)=>{
+    g.beginPath();
+    for(let i=0;i<sm.length;i++){ const y=padT+H*(1-fn(sm[i],i)/mx); i?g.lineTo(X(i),y):g.moveTo(X(i),y); }
+    g.strokeStyle=color; g.lineWidth=2; g.stroke();
+    if(fill){ g.lineTo(X(sm.length-1),padT+H); g.lineTo(X(0),padT+H); g.closePath();
+      g.fillStyle=fill; g.fill(); }
+  };
+  if(kind==='cost'){
+    series(s=>s.cost,'#22d3ee','rgba(34,211,238,.10)');
+    g.setLineDash([5,4]); g.strokeStyle='#ef4444'; g.lineWidth=1.5;
+    const ref=TWS.refCost||0; if(ref>0){ const y=padT+H*(1-ref/mx);
+      g.beginPath();g.moveTo(padL,y);g.lineTo(w-12,y);g.stroke(); }
+    g.setLineDash([]);
+  } else if(kind==='q'){
+    series(s=>s.q+s.f,'#f59e0b',null);
+    g.beginPath();
+    for(let i=0;i<sm.length;i++){ const y=padT+H*(1-sm[i].q/Math.max(mx,1)); i?g.lineTo(X(i),y):g.moveTo(X(i),y); }
+    g.strokeStyle='#ef4444'; g.lineWidth=1.5; g.stroke();
+  } else {
+    g.beginPath();
+    for(let i=1;i<sm.length;i++){ const dt=sm[i].t-sm[i-1].t; const dv=dt>0?(sm[i].cost-sm[i-1].cost)/dt*60:0;
+      const y=padT+H*(1-dv/mx); i>1?g.lineTo(X(i),y):g.moveTo(X(i),y); }
+    g.strokeStyle='#a78bfa'; g.lineWidth=1.5; g.stroke();
+  }
+  g.fillStyle='#5b6b7c'; g.font='10px sans-serif'; g.textAlign='center';
+  for(let k=0;k<=4;k++){ const i=Math.round((sm.length-1)*k/4);
+    g.fillText(Math.round(sm[i].t/60)+'m',X(i),h-6); }
+}
+function twBar(cv,S,r){
+  const {g,w,h}=setupCanvas(cv); g.clearRect(0,0,w,h);
+  const d=r.perModel.filter(x=>x.served>0).sort((a,b)=>b.served-a.served).slice(0,8);
+  if(!d.length){ g.fillStyle='#5b6b7c'; g.font='12px sans-serif'; g.fillText('推进仿真后显示',10,h/2); return; }
+  const mx=d[0].served||1, padL=112, W=w-padL-46;
+  d.forEach((x,i)=>{
+    const y=14+i*20, bw=W*x.served/mx;
+    g.fillStyle=i===0?'#22d3ee':'#3b82f6'; g.fillRect(padL,y,bw,13);
+    g.fillStyle='#8697a8'; g.font='10px sans-serif'; g.textAlign='right';
+    g.fillText(x.id.length>16?x.id.slice(0,15)+'…':x.id,padL-6,y+10);
+    g.textAlign='left'; g.fillStyle='#e6edf3'; g.fillText(fmt(x.served),padL+bw+5,y+10);
+  });
+}
+function twTable(S,r){
+  const m=S.meta;
+  const rows=r.perModel.filter(x=>x.served>0||x.timeout>0).sort((a,b)=>b.served-a.served);
+  const ok=r.serveRate>=0.99;
+  return `<table class="tbl"><tr><th>指标</th><th>值</th></tr>
+   <tr><td>到达请求</td><td>${fmt(r.n)} 条</td></tr>
+   <tr><td>成功服务</td><td>${fmt(r.served)} 条（${(r.serveRate*100).toFixed(1)}%）</td></tr>
+   <tr><td>排队超时丢弃</td><td>${fmt(r.timeout)} 条</td></tr>
+   <tr><td>总花费</td><td>¥${r.cost.toFixed(2)}</td></tr>
+   <tr><td>每千次成功服务</td><td>¥${r.costPer1k.toFixed(2)}</td></tr>
+   <tr><td>正确率（已服务）</td><td>${(r.acc*100).toFixed(1)}%</td></tr>
+   <tr><td>P95 端到端延迟</td><td>${r.latP95.toFixed(1)} s</td></tr>
+   <tr><td>排队率 / 改道率</td><td>${(r.queueRate*100).toFixed(1)}% / ${(r.rerouteRate*100).toFixed(1)}%</td></tr>
+   </table>
+   <div style="margin-top:10px;padding:10px;border-radius:8px;background:${ok?'rgba(16,185,129,.08)':'rgba(239,68,68,.08)'};
+     border:1px solid ${ok?'rgba(16,185,129,.35)':'rgba(239,68,68,.35)'};font-size:13px">
+     ${ok?'服务率 99% 以上，这个「每千次花费」可以直接拿去和别的策略比。'
+         :'⚠ 服务率不足 99% —— 它的花费低，有相当一部分来自「请求被丢掉了」。'
+          +'丢掉的请求既不计花费也不计答对，所以此时<b>不能</b>拿总花费去和全服务的策略比省钱。'}
+   </div>
+   <div style="margin-top:12px;color:var(--muted);font-size:12px">各后端承载（消耗 token ${fmt(r.tokens/1000)}k）：</div>
+   <table class="tbl" style="margin-top:6px"><tr><th>后端</th><th>服务</th><th>花费</th><th>超时</th><th>峰值队列</th></tr>
+   ${rows.map(x=>`<tr><td>${x.id}</td><td>${fmt(x.served)}</td><td>¥${x.cost.toFixed(2)}</td>
+     <td>${fmt(x.timeout)}</td><td>${fmt(x.qmax)}</td></tr>`).join('')}</table>`;
+}
+function twInit(){
+  const bind=(id,fn)=>{ const el=$(id); if(el&&!el._tw){ el._tw=1; el.onchange=fn; el.oninput=fn; } };
+  bind('#twMode',()=>{TWS=null;twBuild();});
+  bind('#twTier',()=>{TWS=null;twBuild();});
+  bind('#twOverflow',()=>{TWS=null;twBuild();});
+  bind('#twDur',()=>{TWS=null;twBuild();});
+  bind('#twScene',()=>{TWS=null;twBuild();});
+  const rt=$('#twRate'); if(rt&&!rt._tw){ rt._tw=1;
+    rt.oninput=e=>{ $('#twRateV').textContent=e.target.value; };
+    rt.onchange=()=>{TWS=null;twBuild();}; }
+  const br=$('#twRun'); if(br&&!br._tw){ br._tw=1; br.onclick=()=>{
+    if(TWS&&TWS.done){TWS=null;twBuild();}
+    twPlaying=!twPlaying; br.textContent=twPlaying?'⏸ 暂停':'▶ 推进仿真';
+    if(twPlaying) requestAnimationFrame(twFrame); }; }
+  const rs=$('#twReset'); if(rs&&!rs._tw){ rs._tw=1; rs.onclick=()=>{TWS=null;twBuild();}; }
+  if(!TWS){ twBuild(); }
+  $('#twCaveat').innerHTML=`
+   <b style="color:var(--red)">1. 别只看总花费。</b>排队超时与预算耗尽的请求既不计花费也不计答对，
+   所以「把请求丢掉」在账面上永远显得最省钱。本页因此同时给出<b>服务率</b>与
+   <b>每千次成功服务的花费</b>；服务率不足 99% 时，上方会直接判定其花费不可比。<br><br>
+   <b style="color:var(--red)">2. 便宜 ≠ 能用满。</b>自建小模型的每 token 成本最低，但容量也最小
+   （一张卡就那么点吞吐）。把「全用最便宜模型」打到 230 条/分钟的流量上，
+   它只能服务不到一半 —— 省下来的钱是丢掉的请求换来的。<br><br>
+   <b style="color:var(--red)">3. 这是仿真，不是测量。</b>TPM/RPM 与并发槽位取自
+   <code>tokenrouter/data/capacity.json</code>，全部标注 ESTIMATE。请按自己账户控制台的
+   实际配额替换后重跑；结论的定性方向对估算误差不敏感，具体数字会变。<br><br>
+   <b style="color:var(--red)">4. 无约束档是正确性对照。</b>把配额档切到「无约束」，
+   本页的数字必须退化为「模型路由方案」页签的结果 —— 这是同源校验脚本每次都在守的不变式。`;
+}
+function twFrame(){
+  if(!twPlaying||!TWS||TWS.done){ if(TWS) twRender(); return; }
+  const chunk=TWS.meta.dur/200;
+  twinStep(TWS,TWS.t+chunk);
+  twRender();
+  if(!TWS.done) requestAnimationFrame(twFrame); else { twPlaying=false; $('#twRun').textContent='▶ 推进仿真'; }
+}
+
 function activate(name){
   const t=$$('.tab').find(x=>x.dataset.v===name);
   if(t) t.click();
@@ -1932,7 +2347,7 @@ arch(); road(); skills();          // 静态页面初始化渲染
 syncRew();
 reset();
 renderRecords();
-if(location.hash && ['bench','arch','road','skill','token'].includes(location.hash.slice(1))){
+if(location.hash && ['bench','arch','road','skill','token','twin'].includes(location.hash.slice(1))){
   setTimeout(()=>activate(location.hash.slice(1)),0);
 }
 requestAnimationFrame(tick);

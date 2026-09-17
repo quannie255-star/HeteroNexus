@@ -12,7 +12,10 @@ HeteroNexus Token 侧执行体 —— 「场景外扩」新增的场景
     就能定量给出「省钱的方案」，并標明质量代价。
 """
 
-from .catalog import LoadedCatalog, load_catalog, api_models, self_hosted_models
+from .catalog import (
+    LoadedCatalog, load_catalog, api_models, self_hosted_models,
+    Capacity, LoadedCapacity, load_capacity,
+)
 from .workload import WorkloadSpec, generate_workload, summarize_workload, get_preset, PRESETS
 from .policies import (
     Policy, StrongestPolicy, CheapestPolicy, DifficultyRouterPolicy,
@@ -25,9 +28,11 @@ from .planfile import (
     build_plan_dict, render_plan_yaml, load_plan, apply_plan, plan_rules_as_table,
     PlanFilePolicy, band_of,
 )
+from .twin import TwinSpec, TwinResult, generate_arrivals, run_twin, DIURNAL_24
 
 __all__ = [
     'LoadedCatalog', 'load_catalog', 'api_models', 'self_hosted_models',
+    'Capacity', 'LoadedCapacity', 'load_capacity',
     'WorkloadSpec', 'generate_workload', 'summarize_workload', 'get_preset', 'PRESETS',
     'Policy', 'StrongestPolicy', 'CheapestPolicy', 'DifficultyRouterPolicy',
     'OfflineTablePolicy', 'CascadePolicy', 'OraclePolicy', 'build_policies',
@@ -36,4 +41,5 @@ __all__ = [
     'SweepPoint', 'sweep_cost_weight', 'knee_point', 'utilization_sensitivity',
     'build_plan_dict', 'render_plan_yaml', 'load_plan', 'apply_plan',
     'plan_rules_as_table', 'PlanFilePolicy', 'band_of',
+    'TwinSpec', 'TwinResult', 'generate_arrivals', 'run_twin', 'DIURNAL_24',
 ]
