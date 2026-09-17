@@ -33,7 +33,10 @@ from tokenrouter import (
 from tokenrouter.policies import (
     _stable_hash, realized_correct, judge_accepts,
     StrongestPolicy, CheapestPolicy, DifficultyRouterPolicy,
-    CascadePolicy, OraclePolicy, global_strongest,
+    OfflineTablePolicy, CascadePolicy, OraclePolicy, global_strongest,
+)
+from tokenrouter.planfile import (
+    build_plan_dict, render_plan_yaml, load_plan, apply_plan, PlanFilePolicy, band_of,
 )
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -432,3 +435,61 @@ class TestCoreAbstraction:
         labels = {p[0] for p in front}
         assert 'b' not in labels        # 被 a 支配
         assert 'a' in labels and 'c' in labels
+
+
+# ============================================================
+# 方案文件的导出—执行闭环
+# ============================================================
+
+class TestPlanFile:
+    """导出的方案必须能被装回来执行，且结果与生成它的策略逐位一致。
+
+    这一组守住的是「方案」这个交付物的可信度：一个看起来能落地、
+    但照它执行拿不到承诺收益的 YAML，比没有方案更糟。
+    """
+
+    def test_导出的文件装回执行与策略一致(self, tasks, executors):
+        pol = OfflineTablePolicy(executors, min_quality=0.0, cost_weight=0.2)
+        plan = build_plan_dict(pol, {'scenario': 'daily_assistant', 'cost_weight': 0.2})
+        r_ref = run_policy(pol, tasks, executors, 42)
+        r_file = run_policy(PlanFilePolicy(load_plan(render_plan_yaml(plan))),
+                            tasks, executors, 42)
+        assert r_file.total_cost == pytest.approx(r_ref.total_cost, abs=1e-9)
+        assert r_file.accuracy == pytest.approx(r_ref.accuracy, abs=1e-12)
+
+    def test_规则覆盖全部_域_难度组合(self, executors):
+        pol = OfflineTablePolicy(executors, cost_weight=0.2)
+        plan = build_plan_dict(pol, {'scenario': 'mixed'})
+        assert len(plan['rules']) == 12
+        assert {(r['when']['domain'], r['when']['difficulty_band']) for r in plan['rules']} == \
+            {(d, b) for d in ('general', 'knowledge', 'coding', 'reasoning')
+             for b in ('easy', 'medium', 'hard')}
+
+    def test_未命中时走_fallback(self, executors):
+        pol = OfflineTablePolicy(executors, cost_weight=0.2)
+        plan = build_plan_dict(pol, {'scenario': 'mixed'})
+        loaded = load_plan(render_plan_yaml(plan))
+        # 不存在的域必须落到 fallback，而不是抛异常或返回 None
+        assert apply_plan(loaded, 'no_such_domain', 0.5) == plan['fallback']
+        assert plan['fallback'] in {e.id for e in executors}
+
+    def test_难度边界归入正确的档(self):
+        """边界取「先命中的档」：0.35 同时落在 easy 上界与 medium 下界，归入 easy。
+
+        这不是实现细节 —— 策略侧 DifficultyRouterPolicy.band_of 与浏览器端
+        bandOf 必须采用同一约定，否则导出的表与实测用的表会对不上。
+        """
+        assert band_of(0.10) == 'easy'
+        assert band_of(0.35) == 'easy'
+        assert band_of(0.36) == 'medium'
+        assert band_of(0.95) == 'hard'
+        assert band_of(0.99) == 'medium'     # 出界时退到中间档，不抛异常
+
+    def test_YAML_可被标准解析器读回(self, executors):
+        pol = OfflineTablePolicy(executors, cost_weight=0.2)
+        plan = build_plan_dict(pol, {'scenario': 'mixed', 'cost_weight': 0.2})
+        loaded = load_plan(render_plan_yaml(plan))
+        assert loaded['meta']['scenario'] == 'mixed'
+        assert loaded['meta']['cost_weight'] == 0.2
+        # 头部是注释，不能污染解析结果
+        assert not any(k.startswith('#') for k in loaded)

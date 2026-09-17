@@ -191,6 +191,50 @@ GPU 租金与吞吐为工程量级估算，**默认按 0.35 的有效负载率�
 
 > **口径红线**：对外表述时必须同时给出省钱比例与质量代价。只讲省 92% 而不讲正确率掉到 67%，等同于误导。
 
+### 4.4 场景二进阶：预算约束下的 PPO 路由（Q2 算法增量）
+
+**为什么必须有预算这一维**：4.3 里的问题是「每个请求各花多少」，而任务相互独立时，
+「逐任务贪心地最大化 q − λ·cost」**本身就已经是最优解** —— RL 只能把它重学一遍，
+拿不出增量。这不是实现问题，是问题定义问题：**没有跨任务耦合，就没有序贯决策**。
+
+真实的耦合来自预算：企业面对的是「这个月就这么多钱，花完就没了」。一旦预算有限、
+花完之后剩下的请求无法服务，「这一轮该不该上好模型」就与「后面还剩多少任务、
+多少钱」耦合起来 —— 这是背包式的序贯决策，贪心不再最优。
+
+**设定**：每批 150 个任务，预算 = 「全用最强模型跑完这批」花费的 50%。
+训练批次取种子 1/7/42，评估批次取种子 999/2026（**与训练不重叠**）。
+
+| 策略 | 答对数 | 服务率 | 花费 | 每元答对数 |
+|---|---|---|---|---|
+| 全用最强模型 | 1414 | 52.6% | ¥26.48 | 53.4 |
+| 全用最便宜模型 | 1961 | 100% | ¥4.05 | 484.4 |
+| 逐任务效用贪心（4.3 的路由） | 2639 | 100% | ¥23.19 | 113.8 |
+| 预算感知贪心（人均份额内挑最强） | 2648 | 100% | ¥24.42 | 108.4 |
+| **PPO（本项目）** | **2567** | **100%** | **¥11.13** | **230.7** |
+| PPO 未训练（随机初始策略） | 427 | 18.5% | ¥26.48 | 16.1 |
+
+**结论（两个数字必须一起读）**
+
+1. **PPO 用 46% 的钱拿到了 97% 的答对数**：每元答对数 230.7，是预算感知贪心的 **2.13 倍**。
+   它学会的是「把钱花在边际收益高的任务上」，而不是「把预算花光」。
+2. **但在「预算必须花光」的口径下，绝对答对数少 3.1%**（2567 vs 2648）。
+   这一点必须如实写出 —— 只报每元答对数会让人误以为 PPO 全面占优。
+   反过来说，「把预算花光」本身从来不是业务目标：多花 ¥13.3 只多答对 81 题（1.6 题/元），
+   而 PPO 在 ¥4 到 ¥11 这段区间里的边际效率是 86 题/元。
+
+学习本身确实发生了：随机初始策略只答对 427 题（服务率 18.5% —— 它把预算一次性花光就结束了），
+训练后 2567 题，**提升 6.0 倍**。
+
+**实现说明**：PPO 为纯 NumPy 手写实现（`tokenrouter/ppo.py`，含 GAE、裁剪代理目标、
+熵正则、Adam、全局梯度裁剪）。不引 torch 的理由是可复现性优先 —— 自实现只有一个随机源，
+而大型框架会带进 cuDNN 非确定性与多线程归约顺序等不可控因素；且 10 个离散动作、
+9 维状态的小问题在 CPU 上几十秒即收敛。代价是这部分需要 numpy，已单独成测试文件
+（`tests/test_rl_routing.py`），在没有 numpy 的环境里整组跳过，不影响零依赖部分。
+
+> **踩过的坑（保留为记录）**：`grads()` 最初把策略项的符号写反、漏了 `ratio` 因子、
+> 熵项写成 −p·(log p + 1)（应为 −p·(log p + H)）。症状是训练曲线单调下行、
+> 智能体越学越差。`tests/test_rl_routing.py::TestPPO::test_训练后优于未训练` 是它的回归网。
+
 ## 五、快速开始
 
 ### 运行基线实验
@@ -220,7 +264,7 @@ open console/index.html
 ### 运行测试
 
 ```bash
-pytest tests/ -v      # 83 项：算力侧 40 项 + Token 侧 43 项
+pytest tests/ -v      # 99 项：算力侧 40 项 + Token 侧 59 项（含 RL 16 项）
 ```
 
 ### 场景二：Token 侧路由评估（模型层）
@@ -244,6 +288,12 @@ python scripts/run_token_experiments.py --gpu-utilization 1.0
 # 生成图表 → figures/token_*.svg
 python scripts/generate_token_charts.py
 
+# 导出可执行的方案文件（YAML），并当场验证「装回执行」与策略一致
+python scripts/export_plan.py --scenario dev_copilot --out plans/plan_dev.yaml
+
+# 预算约束下的 PPO 路由（需要 numpy）
+python scripts/run_rl_routing.py --budget 0.3
+
 # 校验控制台（浏览器内 JS）与 Python 端是否仍然逐位一致
 python scripts/verify_console_sync.py
 ```
@@ -265,12 +315,17 @@ HeteroNexus/
 │   ├── prng.py                       # mulberry32 移植（与浏览器端逐位一致）
 │   ├── policies.py                   # 6 类策略（含可交付的离线三档推荐表）
 │   ├── engine.py                     # 离线路由仿真
-│   └── pareto.py                     # 帕累托前沿与负载率敏感性
+│   ├── pareto.py                     # 帕累托前沿与负载率敏感性
+│   ├── planfile.py                   # 方案文件的导出与装回执行
+│   ├── rl_env.py                     # 预算约束路由环境（需 numpy）
+│   └── ppo.py                        # PPO 纯 NumPy 实现（需 numpy）
 ├── console/
 │   └── index.html                    # 调度控制台（单文件离线应用）
+├── plans/                            # 导出的可执行路由方案（YAML）
 ├── figures/                          # Token 侧实验图表（SVG）
 └── data/
-    └── token_experiments.json        # Token 侧全量实验结果
+    ├── token_experiments.json        # Token 侧全量实验结果
+    └── rl_routing.json               # 预算约束 PPO 实验结果
 ├── simulation/
 │   ├── cluster_simulator.py          # 离散事件仿真引擎 + 4 类基线调度器
 │   ├── generate_svg_charts.py        # 实验图表生成
@@ -284,7 +339,8 @@ HeteroNexus/
 │   └── verify_console_sync.py        # 控制台 ↔ Python 同源校验（防漂移）
 ├── tests/
 │   ├── test_simulator.py             # 仿真引擎单元测试
-│   └── test_tokenrouter.py           # Token 侧路由单元测试
+│   ├── test_tokenrouter.py           # Token 侧路由单元测试
+│   └── test_rl_routing.py            # 预算约束 + PPO（需 numpy，无则整组跳过）
 ├── docs/                             # 项目文档
 └── .github/workflows/ci.yml          # CI 流水线
 ```

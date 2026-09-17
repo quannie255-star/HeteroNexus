@@ -16,16 +16,24 @@ from .catalog import LoadedCatalog, load_catalog, api_models, self_hosted_models
 from .workload import WorkloadSpec, generate_workload, summarize_workload, get_preset, PRESETS
 from .policies import (
     Policy, StrongestPolicy, CheapestPolicy, DifficultyRouterPolicy,
-    CascadePolicy, OraclePolicy, build_policies, RouteOutcome, Attempt,
+    OfflineTablePolicy, CascadePolicy, OraclePolicy, build_policies,
+    RouteOutcome, Attempt,
 )
 from .engine import PolicyResult, run_policy, run_experiment, run_multi_seed
 from .pareto import SweepPoint, sweep_cost_weight, knee_point, utilization_sensitivity
+from .planfile import (
+    build_plan_dict, render_plan_yaml, load_plan, apply_plan, plan_rules_as_table,
+    PlanFilePolicy, band_of,
+)
 
 __all__ = [
     'LoadedCatalog', 'load_catalog', 'api_models', 'self_hosted_models',
     'WorkloadSpec', 'generate_workload', 'summarize_workload', 'get_preset', 'PRESETS',
     'Policy', 'StrongestPolicy', 'CheapestPolicy', 'DifficultyRouterPolicy',
-    'CascadePolicy', 'OraclePolicy', 'build_policies', 'RouteOutcome', 'Attempt',
+    'OfflineTablePolicy', 'CascadePolicy', 'OraclePolicy', 'build_policies',
+    'RouteOutcome', 'Attempt',
     'PolicyResult', 'run_policy', 'run_experiment', 'run_multi_seed',
     'SweepPoint', 'sweep_cost_weight', 'knee_point', 'utilization_sensitivity',
+    'build_plan_dict', 'render_plan_yaml', 'load_plan', 'apply_plan',
+    'plan_rules_as_table', 'PlanFilePolicy', 'band_of',
 ]

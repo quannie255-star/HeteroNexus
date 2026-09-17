@@ -1,0 +1,143 @@
+{
+  "meta": {
+    "scenario": "mixed",
+    "budget_ratio": 0.5,
+    "episode_len": 150,
+    "train_seeds": [
+      1,
+      7,
+      42
+    ],
+    "eval_seeds": [
+      999,
+      2026
+    ],
+    "n_train_episodes": 60,
+    "n_eval_episodes": 20,
+    "updates": 200,
+    "n_envs": 8,
+    "seed": 0,
+    "gpu_utilization": 0.35,
+    "api_only": false,
+    "executor_ids": [
+      "gpt-4o-mini",
+      "deepseek-v3",
+      "deepseek-r1",
+      "gpt-4o",
+      "claude-3-5-sonnet",
+      "qwen-max",
+      "self-gemma2-9b",
+      "self-llama31-8b",
+      "self-qwen25-32b",
+      "self-qwen25-72b"
+    ]
+  },
+  "results": {
+    "strongest": {
+      "correct": 1414,
+      "served": 1578,
+      "n_tasks": 3000,
+      "accuracy_over_all": 0.4713333333333333,
+      "accuracy_over_served": 0.8960709759188846,
+      "cost": 26.479158733044766,
+      "correct_per_yuan": 53.40048806895792
+    },
+    "cheapest": {
+      "correct": 1961,
+      "served": 3000,
+      "n_tasks": 3000,
+      "accuracy_over_all": 0.6536666666666666,
+      "accuracy_over_served": 0.6536666666666666,
+      "cost": 4.048738816738807,
+      "correct_per_yuan": 484.3483585289785
+    },
+    "utility_greedy": {
+      "correct": 2639,
+      "served": 2999,
+      "n_tasks": 3000,
+      "accuracy_over_all": 0.8796666666666667,
+      "accuracy_over_served": 0.8799599866622208,
+      "cost": 23.192631919191964,
+      "correct_per_yuan": 113.78613730407288
+    },
+    "budget_greedy": {
+      "correct": 2648,
+      "served": 3000,
+      "n_tasks": 3000,
+      "accuracy_over_all": 0.8826666666666667,
+      "accuracy_over_served": 0.8826666666666667,
+      "cost": 24.419175519999982,
+      "correct_per_yuan": 108.43936961881512
+    },
+    "ppo_untrained": {
+      "correct": 427,
+      "served": 555,
+      "n_tasks": 3000,
+      "accuracy_over_all": 0.14233333333333334,
+      "accuracy_over_served": 0.7693693693693694,
+      "cost": 26.482545364357858,
+      "correct_per_yuan": 16.12382775617512
+    },
+    "ppo": {
+      "correct": 2567,
+      "served": 3000,
+      "n_tasks": 3000,
+      "accuracy_over_all": 0.8556666666666667,
+      "accuracy_over_served": 0.8556666666666667,
+      "cost": 11.12764212,
+      "correct_per_yuan": 230.68678632162909
+    }
+  },
+  "training_logs": [
+    {
+      "update": 1,
+      "mean_correct": 29.25,
+      "mean_spent": 1.2999952311299092,
+      "mean_served": 35.875,
+      "vf_loss": 19.858457990058632
+    },
+    {
+      "update": 33,
+      "mean_correct": 47.75,
+      "mean_spent": 1.3385909684766673,
+      "mean_served": 62.125,
+      "vf_loss": 23.150657615167795
+    },
+    {
+      "update": 66,
+      "mean_correct": 103.0,
+      "mean_spent": 1.3251188584683526,
+      "mean_served": 127.375,
+      "vf_loss": 59.005246378027024
+    },
+    {
+      "update": 99,
+      "mean_correct": 116.25,
+      "mean_spent": 1.3013975852940578,
+      "mean_served": 144.625,
+      "vf_loss": 45.17163204499013
+    },
+    {
+      "update": 132,
+      "mean_correct": 127.0,
+      "mean_spent": 1.0921652229140917,
+      "mean_served": 150.0,
+      "vf_loss": 15.334149325519396
+    },
+    {
+      "update": 165,
+      "mean_correct": 125.375,
+      "mean_spent": 0.7117271727029761,
+      "mean_served": 150.0,
+      "vf_loss": 3.1770167866688563
+    },
+    {
+      "update": 198,
+      "mean_correct": 128.0,
+      "mean_spent": 0.6566411589124865,
+      "mean_served": 150.0,
+      "vf_loss": 2.086851341666273
+    }
+  ],
+  "delta_vs_best_baseline": -81
+}

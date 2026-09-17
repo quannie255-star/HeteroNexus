@@ -10,9 +10,16 @@ pytest>=8.0.0
 pytest-cov>=5.0.0
 
 # --- Q2 起启用：DRL 调度代理 ---
-# torch>=2.3.0
-# gymnasium>=0.29.0
-# numpy>=1.26.0
+# 预算约束下的 PPO 路由（scripts/run_rl_routing.py）只需要 numpy：
+# PPO 为纯 NumPy 手写实现（tokenrouter/ppo.py），刻意不引 torch ——
+# 自实现只有一个随机源，训练结果可精确复现。
+numpy>=1.26.0
+
+# 方案文件导出（scripts/export_plan.py）需要 YAML 支持
+PyYAML>=6.0
+
+# torch>=2.3.0          # 暂不启用：当前问题规模无需 GPU，且会引入不可复现因素
+# gymnasium>=0.29.0     # 暂不启用：环境直接实现在 tokenrouter/rl_env.py
 # fastapi>=0.110.0
 # uvicorn>=0.29.0
 # grpcio>=1.62.0

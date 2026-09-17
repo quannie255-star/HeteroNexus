@@ -1,0 +1,134 @@
+# HeteroNexus 模型路由方案
+#
+# 用法：按请求的「能力域 + 难度档」查 rules，use 即推荐模型；
+#      难度无法判定或没有命中任何规则时，用 fallback。
+#
+# 生成条件：场景=mixed  成本权重 λ=0.2  GPU负载率=0.35
+# 预期收益：省钱 0.507  正确率 0.8907  （基线「全用最强模型」正确率 0.9059）
+#
+# ⚠ 省钱比例必须与质量代价同时引用。只讲省了多少而不讲掉了多少正确率，等同于误导。
+meta:
+  generated_at: '2026-09-17T21:31:11'
+  scenario: mixed
+  cost_weight: 0.2
+  min_quality: 0.0
+  gpu_utilization: 0.35
+  api_only: false
+  catalog_version: 2026.09-scenario-expansion
+  n_tasks_evaluated: 10000
+  expected_cost_saving: 0.507
+  expected_accuracy: 0.8907
+  baseline_accuracy: 0.9059
+  baseline_cost_yuan: 175.8908
+  expected_cost_yuan: 86.7172
+  caveat: 省钱比例与质量代价必须同时引用；本表按难度档中点决策，非逐任务最优。
+fallback: deepseek-r1
+rules:
+- when:
+    domain: general
+    difficulty_band: easy
+    difficulty_range:
+    - 0.1
+    - 0.35
+  use: gpt-4o-mini
+  expected_quality: 0.9366
+  quality_target_met: true
+- when:
+    domain: general
+    difficulty_band: medium
+    difficulty_range:
+    - 0.35
+    - 0.65
+  use: deepseek-r1
+  expected_quality: 0.9098
+  quality_target_met: true
+- when:
+    domain: general
+    difficulty_band: hard
+    difficulty_range:
+    - 0.65
+    - 0.95
+  use: deepseek-r1
+  expected_quality: 0.7522
+  quality_target_met: true
+- when:
+    domain: knowledge
+    difficulty_band: easy
+    difficulty_range:
+    - 0.1
+    - 0.35
+  use: self-gemma2-9b
+  expected_quality: 0.8869
+  quality_target_met: true
+- when:
+    domain: knowledge
+    difficulty_band: medium
+    difficulty_range:
+    - 0.35
+    - 0.65
+  use: deepseek-v3
+  expected_quality: 0.885
+  quality_target_met: true
+- when:
+    domain: knowledge
+    difficulty_band: hard
+    difficulty_range:
+    - 0.65
+    - 0.95
+  use: deepseek-r1
+  expected_quality: 0.7483
+  quality_target_met: true
+- when:
+    domain: coding
+    difficulty_band: easy
+    difficulty_range:
+    - 0.1
+    - 0.35
+  use: gpt-4o-mini
+  expected_quality: 0.9526
+  quality_target_met: true
+- when:
+    domain: coding
+    difficulty_band: medium
+    difficulty_range:
+    - 0.35
+    - 0.65
+  use: gpt-4o-mini
+  expected_quality: 0.87
+  quality_target_met: true
+- when:
+    domain: coding
+    difficulty_band: hard
+    difficulty_range:
+    - 0.65
+    - 0.95
+  use: gpt-4o-mini
+  expected_quality: 0.6684
+  quality_target_met: true
+- when:
+    domain: reasoning
+    difficulty_band: easy
+    difficulty_range:
+    - 0.1
+    - 0.35
+  use: deepseek-r1
+  expected_quality: 0.9647
+  quality_target_met: true
+- when:
+    domain: reasoning
+    difficulty_band: medium
+    difficulty_range:
+    - 0.35
+    - 0.65
+  use: deepseek-r1
+  expected_quality: 0.901
+  quality_target_met: true
+- when:
+    domain: reasoning
+    difficulty_band: hard
+    difficulty_range:
+    - 0.65
+    - 0.95
+  use: deepseek-r1
+  expected_quality: 0.7327
+  quality_target_met: true
