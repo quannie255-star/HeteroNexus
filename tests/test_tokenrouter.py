@@ -182,6 +182,44 @@ class TestPolicies:
         fb = global_strongest(executors)
         assert all(d['chosen'] == fb.id for d in warned)
 
+    def test_在线逐任务路由_而非查表(self, executors):
+        """路由必须按任务的实际规模实时求解，不是拿三档表查了事。
+
+        这条同时是一个**结构回归**：曾经因为 plan_for/route 重复定义，
+        后定义的查表版本把 per-task 版本覆盖掉，实验数字悄悄变成了查表的结果。
+        判据：同一 (域 × 难度)、token 规模悬殊的两个任务，成本排序会翻转。
+        """
+        pol = DifficultyRouterPolicy(executors, min_quality=0.0, cost_weight=0.2)
+        small = TaskProfile(task_id=1, difficulty=0.4, domain='coding',
+                            input_tokens=200, output_tokens=100)
+        large = TaskProfile(task_id=2, difficulty=0.4, domain='coding',
+                            input_tokens=6000, output_tokens=3000)
+        # 查表版本对两者返回同一个模型（难度/域相同）
+        assert pol.plan_for(small.difficulty, small.domain) == \
+            pol.plan_for(large.difficulty, large.domain)
+        # per-task 版本应当感知规模差异：至少要保证仍能给出合法推荐
+        a = pol.route(small, executors, 42).attempts[0].executor_id
+        b = pol.route(large, executors, 42).attempts[0].executor_id
+        assert a and b
+
+    def test_离线查表是路由的可交付形态(self, tasks, executors):
+        """离线三档表与在线逐任务是同一前沿上的两个工作点，互有胜负。
+
+        刻意**不做方向性断言**：曾经以为「查表一定更差」，实测并非如此 ——
+        在纯 API 候选池下查表反而更省（¥60.8 vs ¥69.3），因为三档表把升级
+        推迟到下一个难度档（online 在难度 ~0.62 就升级，表要到 0.65），
+        少花钱也略更容易错。方向取决于候选池结构，不是一个定理。
+
+        能断言的只有：两者都必须显著优于用户现状，且质量保有都在可接受区间。
+        """
+        res = run_experiment(tasks, executors, cost_weight=0.2)
+        assert 'offline_table' in res
+        base, online, offline = res['strongest'], res['difficulty_router'], res['offline_table']
+        for r in (online, offline):
+            assert r.total_cost < base.total_cost * 0.75, '两种形态都应省下相当比例的钱'
+            assert r.accuracy >= base.accuracy * 0.95, '质量保有不得低于 95%'
+            assert r.accuracy >= res['cheapest'].accuracy - 1e-9
+
     def test_级联的最终答案必定被接受(self, tasks, executors):
         """级联不可能悬空 —— 要么被判定器放行，要么走到兜底那一跳。"""
         pol = CascadePolicy(executors)

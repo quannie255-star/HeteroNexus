@@ -270,6 +270,7 @@ tbody tr:hover{background:#ffffff05}
     <div class="tab" data-v="arch">系统架构</div>
     <div class="tab" data-v="road">年度路线图</div>
     <div class="tab" data-v="skill">工程能力图谱</div>
+    <div class="tab" data-v="token">模型路由方案</div>
   </div>
 </header>
 
@@ -598,6 +599,97 @@ tbody tr:hover{background:#ffffff05}
         多目标策略在保持 GPU 利用率 &gt;90% 的同时进一步压缩长尾等待。相关代码已开源。
       </p>
     </div>
+  </div>
+</section>
+
+<section class="view" id="v-token">
+  <div class="kpis">
+    <div class="kpi"><div class="k">方案总花费</div><div class="v">¥<span id="tkCost">—</span></div><div class="d" id="tkCostD">—</div></div>
+    <div class="kpi g"><div class="k">省下的钱</div><div class="v"><span id="tkSave">—</span><span class="u">%</span></div><div class="d">相对「全用最强模型」</div></div>
+    <div class="kpi c"><div class="k">整体正确率</div><div class="v"><span id="tkAcc">—</span><span class="u">%</span></div><div class="d" id="tkAccD">—</div></div>
+    <div class="kpi p"><div class="k">质量保有</div><div class="v"><span id="tkRet">—</span><span class="u">%</span></div><div class="d">相对用户现状</div></div>
+    <div class="kpi s"><div class="k">成本权重 λ</div><div class="v" id="tkLam">0.20</div><div class="d" id="tkLamD">膝点 —</div></div>
+    <div class="kpi"><div class="k">理论最优 Oracle</div><div class="v"><span id="tkOr">—</span><span class="u">%</span></div><div class="d">省钱上界（知道答案）</div></div>
+  </div>
+
+  <div class="panel">
+    <div class="ph"><span class="dot" style="background:var(--purple);box-shadow:0 0 8px var(--purple)"></span>
+      <h3>决策参数</h3>
+      <span class="hint">与 Python 端 tokenrouter/ 同源 · 随机数与结果逐位一致</span></div>
+    <div class="pb">
+      <div class="rew" style="grid-template-columns:repeat(4,1fr)">
+        <div class="rw"><div class="rt"><b>业务场景</b></div>
+          <select id="tkScene" style="width:100%">
+            <option value="mixed">mixed 混合负载</option>
+            <option value="daily_assistant">daily_assistant 日常助手</option>
+            <option value="dev_copilot">dev_copilot 研发 Copilot</option>
+            <option value="analytics">analytics 分析推理</option>
+          </select></div>
+        <div class="rw"><div class="rt"><b>成本权重 λ</b><span id="tkLamV">0.20</span></div>
+          <input type="range" id="tkLamS" min="0.05" max="1.50" step="0.05" value="0.20" style="width:100%"></div>
+        <div class="rw"><div class="rt"><b>自建 GPU 负载率</b></div>
+          <select id="tkUtil" style="width:100%">
+            <option value="0.35" selected>0.35（保守默认）</option>
+            <option value="0.60">0.60</option>
+            <option value="1.00">1.00（理想满载）</option>
+            <option value="0.20">0.20</option>
+          </select></div>
+        <div class="rw"><div class="rt"><b>候选资源池</b></div>
+          <select id="tkPool" style="width:100%">
+            <option value="all" selected>全部（API + 自建）</option>
+            <option value="api">仅商用 API</option>
+          </select></div>
+      </div>
+      <div class="legend" style="padding:10px 2px 0">
+        <span>λ 越大越省钱、质量相应下降。0.05–0.5 是业务上有意义的区间；λ&gt;1 时正确率通常跌破 80%，实用价值有限。</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="split">
+    <div class="panel">
+      <div class="ph"><span class="dot" style="background:var(--cyan);box-shadow:0 0 8px var(--cyan)"></span>
+        <h3>成本 — 质量帕累托前沿</h3><span class="hint" id="tkFrontHint">—</span></div>
+      <div class="pb"><div class="cbox"><canvas id="tkFront" height="330"></canvas></div></div>
+      <div class="legend">
+        <span><i style="background:#3b82f6"></i>可调前沿</span>
+        <span><i style="background:#f59e0b"></i>当前配置</span>
+        <span><i style="background:#ef4444"></i>用户现状（全用最强）</span>
+        <span><i style="background:#10b981"></i>Oracle 理论最优</span>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="ph"><span class="dot" style="background:var(--green);box-shadow:0 0 8px var(--green)"></span>
+        <h3>可交付推荐表</h3><span class="hint">能力域 × 难度档</span></div>
+      <div class="pb" style="padding:0">
+        <table><thead><tr><th>能力域</th><th>难度档</th><th>推荐模型</th><th>预期正确率</th></tr></thead>
+          <tbody id="tkPlan"></tbody></table>
+      </div>
+      <div class="legend"><span>这张表就是交付给用户的方案本身 —— 可直接落成一条路由规则。</span></div>
+      <div class="legend" id="tkPlanExec" style="border-top:1px solid var(--line);margin-top:0;padding-top:10px">—</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="ph"><span class="dot"></span><h3>候选执行资源 · 单位成本与画像</h3>
+      <span class="hint" id="tkPoolHint">—</span></div>
+    <div class="pb" style="padding:0">
+      <table><thead><tr><th>模型</th><th>形态</th><th>元/百万 output</th><th>综合正确率</th><th>当前方案用量</th></tr></thead>
+        <tbody id="tkPoolTable"></tbody></table>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="ph"><span class="dot" style="background:var(--amber);box-shadow:0 0 8px var(--amber)"></span>
+      <h3>自建划不划算，取决于能把 GPU 喂到多满</h3><span class="hint">算力侧与 Token 侧的耦合点</span></div>
+    <div class="pb"><div class="cbox"><canvas id="tkUtilChart" height="230"></canvas></div></div>
+    <div class="legend"><span>自建成本 = GPU 时租金 ÷ 3600 ÷（吞吐 × 负载率）。负载率由算力侧调度决定，反过来决定这里的单位 token 成本。</span></div>
+  </div>
+
+  <div class="panel">
+    <div class="ph"><span class="dot" style="background:var(--red);box-shadow:0 0 8px var(--red)"></span>
+      <h3>数据溯源与口径红线</h3></div>
+    <div class="pb" id="tkProvenance"></div>
   </div>
 </section>
 
@@ -1342,6 +1434,8 @@ $$('.tab').forEach(t=>t.onclick=()=>{
       .map(([k,v])=>({name:k,data:v})),['avg_gpu_util','avg_cpu_util','avg_mem_util'],BCOL,v=>v.toFixed(1)+'%');
     drawTs(); findings();
   }
+  // Token 侧懒初始化：首次进入才做 10000×10 的预计算，避免拖慢控制台首屏
+  if(t.dataset.v==='token'){ setTimeout(tkInit,0); }
   window.scrollTo({top:0,behavior:'smooth'});
 });
 $('#algo').onchange=()=>{ reset(); syncRew(); };
@@ -1451,6 +1545,384 @@ $('#btnEval').onclick=()=>{
   }, 30);
 };
 
+/* ================= Token 侧路由 · 场景二 =================
+   本段是 tokenrouter/ 的浏览器复刻，与 Python 端逐位同源：
+     随机数  mulberry32（见 tokenrouter/prng.py 的移植要点）
+     正确性  确定性 FNV 哈希 + zlib.crc32，不用内置随机
+   任何一侧改动算法，都必须同步另一侧并跑 scripts/verify_console_sync.py。
+=========================================================== */
+const TK = (function(){
+'use strict';
+const SEEDS=[1,7,42,999,2026];
+const BANDS={easy:[0.10,0.35],medium:[0.35,0.65],hard:[0.65,0.95]};
+const DOMAINS=['general','knowledge','coding','reasoning'];
+const COLMAP={knowledge:'mmlu',reasoning:'math',coding:'humaneval'};
+const GAMMA=4.0, BASEDIFF=0.5, FLOOR=1e-9, MASTER=42;
+const SALT_C=101;
+
+const GPU={'rtx-4090':3.0,'l20':6.0,'a100-80g':10.0,'h800':20.0};
+const PREFILL=3.0;
+/* catalog 与 tokenrouter/data/catalog.json 保持一致（由 verify_console_sync.py 校验） */
+const MODELS=[
+ {id:'gpt-4o-mini',name:'GPT-4o mini',kind:'api',pin:0.84,pout:3.36,speed:1200,cap:{mmlu:0.820,math:0.702,humaneval:0.870,gsm8k:0.932}},
+ {id:'deepseek-v3',name:'DeepSeek V3',kind:'api',pin:2,pout:8,speed:900,cap:{mmlu:0.885,math:0.759,humaneval:0.826,gsm8k:0.928}},
+ {id:'deepseek-r1',name:'DeepSeek R1',kind:'api',pin:4,pout:16,speed:420,cap:{mmlu:0.908,math:0.901,humaneval:0.857,gsm8k:0.973}},
+ {id:'gpt-4o',name:'GPT-4o',kind:'api',pin:17.5,pout:70,speed:1000,cap:{mmlu:0.887,math:0.766,humaneval:0.871,gsm8k:0.953}},
+ {id:'claude-3-5-sonnet',name:'Claude 3.5 Sonnet',kind:'api',pin:21,pout:105,speed:900,cap:{mmlu:0.888,math:0.783,humaneval:0.892,gsm8k:0.951}},
+ {id:'qwen-max',name:'通义千问 Max',kind:'api',pin:20,pout:60,speed:1000,cap:{mmlu:0.853,math:0.721,humaneval:0.765,gsm8k:0.918}},
+ {id:'self-gemma2-9b',name:'自建 Gemma 2 9B',kind:'self',gpu:'rtx-4090',gc:1,tps:2200,cap:{mmlu:0.723,math:0.441,humaneval:0.548,gsm8k:0.765}},
+ {id:'self-llama31-8b',name:'自建 Llama 3.1 8B',kind:'self',gpu:'rtx-4090',gc:1,tps:2000,cap:{mmlu:0.684,math:0.519,humaneval:0.626,gsm8k:0.774}},
+ {id:'self-qwen25-32b',name:'自建 Qwen2.5 32B',kind:'self',gpu:'a100-80g',gc:1,tps:900,cap:{mmlu:0.812,math:0.645,humaneval:0.718,gsm8k:0.883}},
+ {id:'self-qwen25-72b',name:'自建 Qwen2.5 72B',kind:'self',gpu:'a100-80g',gc:2,tps:520,cap:{mmlu:0.853,math:0.721,humaneval:0.765,gsm8k:0.918}}
+];
+const PRESETS={
+ mixed:{dw:{'general':0.50,'knowledge':0.20,'coding':0.20,'reasoning':0.10},bw:{easy:0.55,medium:0.30,hard:0.15},in:[400,3000],out:[150,1200]},
+ daily_assistant:{dw:{'general':0.70,'knowledge':0.20,'coding':0.05,'reasoning':0.05},bw:{easy:0.70,medium:0.22,hard:0.08},in:[300,1500],out:[120,600]},
+ dev_copilot:{dw:{'general':0.20,'knowledge':0.15,'coding':0.55,'reasoning':0.10},bw:{easy:0.35,medium:0.40,hard:0.25},in:[800,4000],out:[200,1600]},
+ analytics:{dw:{'general':0.15,'knowledge':0.25,'coding':0.15,'reasoning':0.45},bw:{easy:0.20,medium:0.35,hard:0.45},in:[1000,5000],out:[400,2000]}
+};
+
+/* ---- 随机源：与 tokenrouter/prng.py 逐位一致 ---- */
+function mkRng(seed){
+  let a=seed|0;
+  const f=function(){
+    a=(a+0x6D2B79F5)|0;
+    let t=Math.imul(a^(a>>>15),1|a);
+    t=(t+Math.imul(t^(t>>>7),61|t))^t;
+    return ((t^(t>>>14))>>>0)/4294967296;
+  };
+  return {r:f,
+    uniform:(lo,hi)=>lo+(hi-lo)*f(),
+    randint:(lo,hi)=>lo+Math.floor(f()*(hi-lo+1)),
+    choices:(items,w)=>{let s=0;const c=[];for(const x of w){s+=x;c.push(s);}
+      const r=f()*s;for(let i=0;i<items.length;i++) if(c[i]>r) return items[i];return items[items.length-1];}};
+}
+/* ---- 确定性哈希：crc32 + FNV，替代带随机种子的内置 hash ---- */
+function crc32(str){
+  const b=new TextEncoder().encode(str); let c,crc=0xFFFFFFFF;
+  for(let i=0;i<b.length;i++){ c=(crc^b[i])&0xFF;
+    for(let k=0;k<8;k++) c=(c&1)?(0xEDB88320^(c>>>1)):(c>>>1);
+    crc=(crc>>>8)^c; }
+  return (crc^0xFFFFFFFF)>>>0;
+}
+function detU(){
+  let h=2166136261;
+  for(let i=0;i<arguments.length;i++){ h=(h^Math.imul(arguments[i],2654435761))>>>0; h=Math.imul(h,16777619)>>>0; }
+  return ((h>>>8)&0xFFFFFF)/16777216;
+}
+/* ---- 质量模型：难度校准 logistic，基准难度上还原公开榜单分数 ---- */
+function capLogit(p){const q=Math.min(1-1e-3,Math.max(1e-3,p));return Math.log(q/(1-q));}
+function sgmd(x){ if(x>=0) return 1/(1+Math.exp(-x)); const e=Math.exp(x); return e/(1+e); }
+function qualAt(base,diff){ const v=sgmd(capLogit(base)+GAMMA*(BASEDIFF-diff)); return Math.min(1,Math.max(0,v)); }
+
+function buildExec(util){
+  return MODELS.map(m=>{
+    const ex=Object.assign({},m);
+    if(m.kind==='self'){
+      const hourly=GPU[m.gpu]*(m.gc||1);
+      ex.perTok=hourly/3600/(m.tps*Math.max(util,1e-3));
+      ex.unit=ex.perTok*1e6;
+    } else { ex.unit=m.pout; }
+    return ex;
+  });
+}
+function ability(ex,domain){
+  const col=COLMAP[domain];
+  if(col && ex.cap[col]!==undefined) return ex.cap[col];
+  const vs=Object.values(ex.cap); return vs.reduce((a,b)=>a+b,0)/vs.length;
+}
+function meanCap(ex){const vs=Object.values(ex.cap);return vs.reduce((a,b)=>a+b,0)/vs.length;}
+function estimate(ex,t){
+  const q=qualAt(ability(ex,t.domain),t.difficulty);
+  let perOut,perIn;
+  if(ex.kind==='self'){ perOut=ex.perTok; perIn=perOut/PREFILL; }
+  else { perOut=ex.pout/1e6; perIn=ex.pin/1e6; }
+  return {cost:t.out*perOut+t.in*perIn, lat:0.4+t.out/ex.speed, q:q};
+}
+function genWorkload(scene,seed){
+  const P=PRESETS[scene]; const rng=mkRng(seed); const out=[];
+  for(let i=0;i<2000;i++){
+    const domain=rng.choices(DOMAINS,DOMAINS.map(d=>P.dw[d]));
+    const band=rng.choices(['easy','medium','hard'],[P.bw.easy,P.bw.medium,P.bw.hard]);
+    const lo=BANDS[band][0], hi=BANDS[band][1];
+    out.push({id:i,difficulty:rng.uniform(lo,hi),domain:domain,
+      in:rng.randint(P.in[0],P.in[1]),out:rng.randint(P.out[0],P.out[1]),band:band});
+  }
+  return out;
+}
+/* 预计算 (任务 × 候选) 的质量 / 成本 / 延迟矩阵，之后调 λ 只需查表 */
+function buildIndex(tasks,execs){
+  const n=tasks.length,m=execs.length;
+  const Q=new Float64Array(n*m),C=new Float64Array(n*m),L=new Float64Array(n*m);
+  for(let i=0;i<n;i++) for(let j=0;j<m;j++){
+    const e=estimate(execs[j],tasks[i]); const k=i*m+j;
+    Q[k]=e.q; C[k]=e.cost; L[k]=e.lat;
+  }
+  return {Q,C,L,n,m};
+}
+function globalStrongest(execs){ let b=execs[0]; for(const e of execs) if(meanCap(e)>meanCap(b)) b=e; return b; }
+function bandOf(d){ for(const b of ['easy','medium','hard'])
+  if(d>=BANDS[b][0]&&d<=BANDS[b][1]) return b; return 'medium'; }
+/* 离线三档表的实际执行效果 —— 必须单独测，不能只报在线逐任务的上界 */
+function planMap(execs,tasks,lam,minQ){
+  const m={};
+  for(const r of buildPlan(execs,tasks,lam,minQ)) m[r.domain+'|'+r.band]=r.model.id;
+  return m;
+}
+function logNorm(v,lo,hi){ v=Math.max(v,FLOOR); lo=Math.max(lo,FLOOR); hi=Math.max(hi,lo*(1+1e-12));
+  if(hi<=lo) return 0; return (Math.log(v)-Math.log(lo))/(Math.log(hi)-Math.log(lo)); }
+
+function runPolicy(tasks,execs,ix,mode,lam,minQ){
+  const m=ix.m; let cost=0,correct=0,calls=0; const usage={};
+  const cmin=new Float64Array(ix.n),cmax=new Float64Array(ix.n);
+  if(mode==='router'){
+    for(let i=0;i<ix.n;i++){let lo=Infinity,hi=-Infinity;
+      for(let j=0;j<m;j++){const c=ix.C[i*m+j];if(c<lo)lo=c;if(c>hi)hi=c;}
+      cmin[i]=lo;cmax[i]=hi;}
+  }
+  /* plan：只按离线三档表查表，不重新求解 —— 与 router 的差距即可解释性的代价 */
+  let pmap=null,pidx={};
+  if(mode==='plan'){ pmap=planMap(execs,tasks,lam,minQ);
+    for(let j=0;j<m;j++) pidx[execs[j].id]=j; }
+  const strongest=globalStrongest(execs);
+  const strongIdx=execs.indexOf(strongest);
+  let cheapIdx=0; {let best=Infinity;
+    for(let j=0;j<m;j++){let s=0;for(let i=0;i<ix.n;i++)s+=ix.C[i*m+j];if(s<best){best=s;cheapIdx=j;}}}
+  for(let i=0;i<ix.n;i++){
+    const t=tasks[i]; let idx;
+    if(mode==='strongest') idx=strongIdx;
+    else if(mode==='cheapest') idx=cheapIdx;
+    else if(mode==='router'){
+      let bs=-Infinity,bj=0,any=false;
+      for(let j=0;j<m;j++){
+        const q=ix.Q[i*m+j];
+        if(minQ>0 && q<minQ-1e-12) continue;
+        any=true;
+        const nc=logNorm(ix.C[i*m+j],cmin[i],cmax[i]);
+        const sc=1.0*q-lam*nc;
+        if(sc>bs){bs=sc;bj=j;}
+      }
+      idx=any?bj:strongIdx;
+    } else if(mode==='plan'){
+      const pid=pmap[t.domain+'|'+bandOf(t.difficulty)];
+      idx=(pid!==undefined&&pidx[pid]!==undefined)?pidx[pid]:strongIdx;
+    } else { /* oracle */
+      let bc=Infinity,bj=-1;
+      for(let j=0;j<m;j++){
+        const q=ix.Q[i*m+j];
+        const ok=detU(MASTER,t.id,crc32(execs[j].id),SALT_C)<q;
+        if(ok && ix.C[i*m+j]<bc){bc=ix.C[i*m+j];bj=j;}
+      }
+      idx=bj>=0?bj:strongIdx;
+    }
+    const q=ix.Q[i*m+idx];
+    const ok=detU(MASTER,t.id,crc32(execs[idx].id),SALT_C)<q;
+    cost+=ix.C[i*m+idx]; calls++; if(ok) correct++;
+    usage[execs[idx].id]=(usage[execs[idx].id]||0)+1;
+  }
+  return {cost:cost,acc:correct/ix.n,callsPerTask:calls/ix.n,usage:usage};
+}
+function runAll(scene,util,pool,lam,minQ){
+  const execs=buildExec(util).filter(e=>pool==='api'?e.kind==='api':true);
+  const tasks=[]; for(const s of SEEDS){ for(const t of genWorkload(scene,s)) tasks.push(t); }
+  const ix=buildIndex(tasks,execs);
+  return {execs:execs,tasks:tasks,ix:ix,
+    strongest:runPolicy(tasks,execs,ix,'strongest',lam,minQ),
+    cheapest:runPolicy(tasks,execs,ix,'cheapest',lam,minQ),
+    router:runPolicy(tasks,execs,ix,'router',lam,minQ),
+    plan:runPolicy(tasks,execs,ix,'plan',lam,minQ),
+    oracle:runPolicy(tasks,execs,ix,'oracle',lam,minQ)};
+}
+function buildPlan(execs,tasks,lam,minQ){
+  const avgIn=Math.max(1,Math.round(tasks.reduce((a,t)=>a+t.in,0)/tasks.length));
+  const avgOut=Math.max(1,Math.round(tasks.reduce((a,t)=>a+t.out,0)/tasks.length));
+  const rows=[];
+  for(const d of DOMAINS) for(const b of ['easy','medium','hard']){
+    const mid=(BANDS[b][0]+BANDS[b][1])/2;
+    const t={id:-1,difficulty:mid,domain:d,in:avgIn,out:avgOut};
+    let cs=[],lo=Infinity,hi=-Infinity;
+    for(const e of execs){const es=estimate(e,t);cs.push(es);if(es.cost<lo)lo=es.cost;if(es.cost>hi)hi=es.cost;}
+    let bj=0,bs=-Infinity,any=false;
+    cs.forEach((es,j)=>{
+      if(minQ>0 && es.q<minQ-1e-12) return;
+      any=true; const sc=es.q-lam*logNorm(es.cost,lo,hi);
+      if(sc>bs){bs=sc;bj=j;}
+    });
+    const chosen=any?execs[bj]:globalStrongest(execs);
+    rows.push({domain:d,band:b,mid:mid,model:chosen,q:cs[execs.indexOf(chosen)].q,warn:!any});
+  }
+  return rows;
+}
+function utilCurve(){
+  const self=MODELS.filter(m=>m.kind==='self');
+  const api=MODELS.filter(m=>m.kind==='api');
+  const mean=m=>Object.values(m.cap).reduce((a,b)=>a+b,0)/Object.values(m.cap).length;
+  let rep=self[0]; for(const m of self) if(mean(m)>mean(rep)) rep=m;
+  let ref=api[0]; for(const m of api) if(Math.abs(mean(m)-mean(rep))<Math.abs(mean(ref)-mean(rep))) ref=m;
+  const rows=[];
+  for(const u of [1.0,0.8,0.6,0.5,0.4,0.3,0.2,0.1]){
+    rows.push({u:u,cost:GPU[rep.gpu]*rep.gc/3600/(rep.tps*u)*1e6,ref:ref.pout,refName:ref.name,repName:rep.name});
+  }
+  return rows;
+}
+return {runAll:runAll,buildPlan:buildPlan,utilCurve:utilCurve,BANDS:BANDS,DOMAINS:DOMAINS,
+  SEEDS:SEEDS,MODELS:MODELS,buildExec:buildExec,estimate:estimate,qualAt:qualAt};
+})();
+
+/* ---------- Token 页渲染 ---------- */
+let tkState=null, tkReady=false;
+function tkCompute(){
+  const scene=$('#tkScene').value, util=parseFloat($('#tkUtil').value),
+        pool=$('#tkPool').value, lam=parseFloat($('#tkLamS').value);
+  const st=TK.runAll(scene,util,pool,lam,0.0);
+  st.scene=scene; st.util=util; st.pool=pool; st.lam=lam;
+  const grid=[0.05,0.1,0.15,0.2,0.25,0.3,0.4,0.5,0.7,1.0,1.5];
+  st.front=grid.map(l=>({lam:l,r:TK.runAll(scene,util,pool,l,0.0).router}));
+  st.plan=TK.buildPlan(st.execs,st.tasks,lam,0.0);
+  return st;
+}
+function tkRender(){
+  const t0=performance.now();
+  tkState=tkCompute(); const st=tkState;
+  const base=st.strongest, r=st.router, o=st.oracle;
+  const save=1-r.cost/base.cost, ret=r.acc/base.acc;
+  $('#tkCost').textContent=r.cost.toFixed(2);
+  $('#tkCostD').textContent=`用户现状 ¥${base.cost.toFixed(2)}`;
+  $('#tkSave').textContent=(save*100).toFixed(1);
+  $('#tkAcc').textContent=(r.acc*100).toFixed(1);
+  $('#tkAccD').textContent=`现状 ${(base.acc*100).toFixed(1)}%`;
+  $('#tkRet').textContent=(ret*100).toFixed(1);
+  $('#tkLam').textContent=st.lam.toFixed(2);
+  $('#tkOr').textContent=((1-o.cost/base.cost)*100).toFixed(1);
+  /* 膝点：离「最低成本 + 最高正确率」理想点最近，但先过质量保有 ≥95% 的闸门。
+     纯几何膝点会选到 λ=0.4（保有 94%），那种「更便宜但明显更容易错」的推荐
+     对多数业务是事故而不是优化 —— 先划可接受区间，再在区间里谈省钱。 */
+  const RET=0.95;
+  const eligible=st.front.filter(f=>f.r.acc/base.acc>=RET-1e-12);
+  const pool=eligible.length?eligible:[st.front.reduce((a,b)=>b.r.acc>a.r.acc?b:a)];
+  const cs=st.front.map(f=>f.r.cost), as=st.front.map(f=>f.r.acc);
+  const cmin=Math.min(...cs),cmax=Math.max(...cs),amin=Math.min(...as),amax=Math.max(...as);
+  let knee=pool[0],kd=Infinity;
+  for(const f of pool){
+    const d=Math.hypot((f.r.cost-cmin)/((cmax-cmin)||1),(amax-f.r.acc)/((amax-amin)||1));
+    if(d<kd){kd=d;knee=f;}
+  }
+  $('#tkLamD').textContent=
+    `膝点 λ=${knee.lam.toFixed(2)}（省 ${((1-knee.r.cost/base.cost)*100).toFixed(0)}% · 保有 ${(knee.r.acc/base.acc*100).toFixed(0)}%）`;
+  $('#tkFrontHint').textContent=`${st.tasks.length} 任务 · ${st.execs.length} 候选 · ${TK.SEEDS.length} 种子`;
+  $('#tkPoolHint').textContent=`${st.execs.length} 个候选 · 自建按 ${st.util} 负载率折算`;
+  /* 诚实披露：交付的是这张三档表，它不是在线逐任务求解的上界 */
+  const pl=st.plan;
+  const psave=(1-pl.cost/base.cost)*100, pacc=pl.acc*100;
+  $('#tkPlanExec').innerHTML=
+    `<b>照这张表执行</b>：省 ${psave.toFixed(1)}% · 正确率 ${pacc.toFixed(1)}%`+
+    `　<span style="opacity:.75">（同一前沿上，在线逐任务求解：省 ${(save*100).toFixed(1)}% · `+
+    `正确率 ${(r.acc*100).toFixed(1)}%。三档表按档中点决策，会把升级推迟到下一档，`+
+    `所以两者互有胜负 —— 它的价值是可解释、可审计、可直接落成一条规则，不是最优性）</span>`;
+  drawTkFront(st,knee); renderTkPlan(st); renderTkPool(st); drawTkUtil(); renderTkProv();
+  console.log('[token] 重算耗时 '+(performance.now()-t0).toFixed(0)+'ms');
+}
+function drawTkFront(st,knee){
+  const cv=$('#tkFront'); const {g,w,h}=setupCanvas(cv);
+  g.clearRect(0,0,w,h);
+  const L=54,R=14,T=16,B=34;
+  const xs=st.front.map(f=>f.r.cost), ys=st.front.map(f=>f.r.acc*100);
+  const lo=0, hi=Math.max(st.strongest.cost,...xs)*1.08;
+  const ylo=Math.min(...ys,st.cheapest.acc*100)-4, yhi=100;
+  const X=v=>L+(v-lo)/((hi-lo)||1)*(w-L-R), Y=v=>h-B-(v-ylo)/((yhi-ylo)||1)*(h-T-B);
+  g.strokeStyle='#1d2836';g.fillStyle='#5b6b7c';g.font='10px ui-monospace,monospace';
+  for(let i=0;i<=4;i++){const v=lo+(hi-lo)*i/4;const x=X(v);
+    g.beginPath();g.moveTo(x,T);g.lineTo(x,h-B);g.stroke();
+    g.textAlign='center';g.fillText(v.toFixed(0),x,h-B+16);}
+  for(let i=0;i<=4;i++){const v=ylo+(yhi-ylo)*i/4;const y=Y(v);
+    g.beginPath();g.moveTo(L,y);g.lineTo(w-R,y);g.stroke();
+    g.textAlign='right';g.fillText(v.toFixed(0)+'%',L-6,y+3);}
+  g.strokeStyle='#2a3849';g.beginPath();g.moveTo(L,h-B);g.lineTo(w-R,h-B);g.moveTo(L,T);g.lineTo(L,h-B);g.stroke();
+  /* 用户现状十字线 */
+  g.strokeStyle='#ef4444';g.setLineDash([5,4]);
+  g.beginPath();g.moveTo(X(st.strongest.cost),T);g.lineTo(X(st.strongest.cost),h-B);
+  g.moveTo(L,Y(st.strongest.acc*100));g.lineTo(w-R,Y(st.strongest.acc*100));g.stroke();g.setLineDash([]);
+  /* 前沿 */
+  const pts=st.front.map(f=>[X(f.r.cost),Y(f.r.acc*100)]).sort((a,b)=>a[0]-b[0]);
+  g.strokeStyle='#3b82f6';g.lineWidth=2;
+  g.beginPath();pts.forEach((p,i)=>i?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1]));g.stroke();
+  pts.forEach(p=>{g.fillStyle='#3b82f6';g.beginPath();g.arc(p[0],p[1],3.2,0,7);g.fill();});
+  /* Oracle */
+  g.fillStyle='#10b981';g.beginPath();g.arc(X(st.oracle.cost),Y(st.oracle.acc*100),6,0,7);g.fill();
+  /* 当前 */
+  const cx=X(st.router.cost),cy=Y(st.router.acc*100);
+  g.strokeStyle='#f59e0b';g.lineWidth=2;g.beginPath();g.arc(cx,cy,9,0,7);g.stroke();
+  g.fillStyle='#f59e0b';g.beginPath();g.arc(cx,cy,4.5,0,7);g.fill();
+  g.fillStyle='#e6edf3';g.font='11px ui-monospace,monospace';g.textAlign='left';
+  g.fillText(`当前 λ=${st.lam.toFixed(2)}`,cx+13,cy-6);
+  g.fillStyle='#5b6b7c';g.textAlign='center';
+  g.fillText('总花费（元） →',(L+w-R)/2,h-6);
+}
+function renderTkPlan(st){
+  const tb=$('#tkPlan'); tb.innerHTML='';
+  for(const r of st.plan){
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${r.domain}</td><td>${r.band}</td><td>${r.model.name}</td>`+
+      `<td>${(r.q*100).toFixed(1)}%${r.warn?' <span class="chip r" style="font-size:9px">约束不可满足</span>':''}</td>`;
+    tb.appendChild(tr);
+  }
+}
+function renderTkPool(st){
+  const tb=$('#tkPoolTable'); tb.innerHTML='';
+  const total=Object.values(st.router.usage).reduce((a,b)=>a+b,0);
+  for(const e of st.execs){
+    const n=st.router.usage[e.id]||0;
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${e.name}</td><td>${e.kind==='self'?'自建':'API'}</td>`+
+      `<td>${e.unit.toFixed(2)}</td>`+
+      `<td>${(Object.values(e.cap).reduce((a,b)=>a+b,0)/4*100).toFixed(1)}%</td>`+
+      `<td>${(n/total*100).toFixed(1)}%</td>`;
+    tb.appendChild(tr);
+  }
+}
+function drawTkUtil(){
+  const cv=$('#tkUtilChart'); const {g,w,h}=setupCanvas(cv);
+  g.clearRect(0,0,w,h);
+  const rows=TK.utilCurve(); const L=64,R=16,T=14,B=30;
+  const yhi=Math.max(...rows.map(r=>r.cost))*1.1;
+  const X=i=>L+i/(rows.length-1)*(w-L-R), Y=v=>h-B-v/yhi*(h-T-B);
+  g.strokeStyle='#1d2836';g.fillStyle='#5b6b7c';g.font='10px ui-monospace,monospace';
+  rows.forEach((r,i)=>{g.textAlign='center';g.fillText((r.u*100).toFixed(0)+'%',X(i),h-B+16);});
+  for(let i=0;i<=4;i++){const v=yhi*i/4;const y=Y(v);
+    g.beginPath();g.moveTo(L,y);g.lineTo(w-R,y);g.stroke();g.textAlign='right';g.fillText(v.toFixed(0),L-6,y+3);}
+  const ref=rows[0].ref;
+  g.strokeStyle='#ec4899';g.lineWidth=2;
+  g.beginPath();g.moveTo(L,Y(ref));g.lineTo(w-R,Y(ref));g.stroke();
+  g.fillStyle='#ec4899';g.textAlign='right';g.fillText(rows[0].refName+' ¥'+ref.toFixed(0)+'/M',w-R-2,Y(ref)-8);
+  g.strokeStyle='#a78bfa';g.lineWidth=2;g.beginPath();
+  rows.forEach((r,i)=>{const x=X(i),y=Y(r.cost);i?g.lineTo(x,y):g.moveTo(x,y);});g.stroke();
+  rows.forEach((r,i)=>{g.fillStyle=r.cost<ref?'#10b981':'#ef4444';g.beginPath();g.arc(X(i),Y(r.cost),3.6,0,7);g.fill();});
+  const cross=rows.find(r=>r.cost>=ref);
+  if(cross){const i=rows.indexOf(cross);
+    g.strokeStyle='#f59e0b';g.setLineDash([4,3]);
+    g.beginPath();g.moveTo(X(i),T);g.lineTo(X(i),h-B);g.stroke();g.setLineDash([]);
+    g.fillStyle='#f59e0b';g.textAlign='left';g.font='11px system-ui';
+    g.fillText(`临界点 ≈ ${(cross.u*100).toFixed(0)}%`,X(i)+6,T+12);}
+  g.fillStyle='#5b6b7c';g.font='10px ui-monospace,monospace';g.textAlign='center';
+  g.fillText('GPU 有效负载率 →',(L+w-R)/2,h-4);
+}
+function renderTkProv(){
+  $('#tkProvenance').innerHTML=
+   '<p style="line-height:1.7;color:#8697a8">'+
+   '<b style="color:#e6edf3">价格</b> as_of 2026-08-17（API 价格汇总）· '+
+   '<b style="color:#e6edf3">能力</b> as_of 2026-04-10（AI Model Benchmark Tracker）。'+
+   '闭源旗舰缺同口径榜单时以同系列分数代理，已在源码中逐项标注。<br>'+
+   '<b style="color:#e6edf3">自建成本</b> = GPU 时租金 ÷ 3600 ÷（吞吐 × 负载率）；GPU 租金与吞吐为工程量级估算，'+
+   '默认按 0.35 负载率折算（宁可低估自建的吸引力）。<br>'+
+   '<b style="color:#f59e0b">口径红线</b>：对外讲省钱必须同时讲质量代价 —— 全用最便宜模型能省 92%，但正确率会掉到 67% 左右。</p>';
+}
+function tkInit(){
+  if(tkReady) return; tkReady=true;
+  $('#tkLamS').addEventListener('input',e=>{$('#tkLamV').textContent=parseFloat(e.target.value).toFixed(2);tkRender();});
+  ['tkScene','tkUtil','tkPool'].forEach(id=>$('#'+id).addEventListener('change',tkRender));
+  tkRender();
+}
+
 /* ================= 启动 ================= */
 function activate(name){
   const t=$$('.tab').find(x=>x.dataset.v===name);
@@ -1460,7 +1932,7 @@ arch(); road(); skills();          // 静态页面初始化渲染
 syncRew();
 reset();
 renderRecords();
-if(location.hash && ['bench','arch','road','skill'].includes(location.hash.slice(1))){
+if(location.hash && ['bench','arch','road','skill','token'].includes(location.hash.slice(1))){
   setTimeout(()=>activate(location.hash.slice(1)),0);
 }
 requestAnimationFrame(tick);

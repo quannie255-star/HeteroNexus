@@ -13,11 +13,11 @@
 
 from __future__ import annotations
 
-import random
 from dataclasses import dataclass, field
 from typing import Dict, List, Tuple
 
 from core.resource import TaskProfile
+from .prng import Mulberry32
 
 DEFAULT_SEED = 42
 
@@ -77,8 +77,14 @@ def get_preset(name: str) -> WorkloadSpec:
 
 
 def generate_workload(spec: WorkloadSpec) -> List[TaskProfile]:
-    """生成可完全复现的任务流（自持 Random 实例，不受全局随机状态影响）。"""
-    rng = random.Random(spec.seed)
+    """生成可完全复现的任务流。
+
+    随机源用 Mulberry32 而不是 random.Random：后者是 Mersenne Twister，
+    randint/choices 依赖 getrandbits 与 bisect 的内部细节，几乎无法在浏览器里
+    忠实复刻。控制台需要在 JS 里重算同一批任务，两侧必须逐位一致
+    （见 tokenrouter/prng.py 的说明）。
+    """
+    rng = Mulberry32(spec.seed)
     domains = list(spec.domain_weights.keys())
     dw = [spec.domain_weights[d] for d in domains]
     bands = list(spec.difficulty_weights.keys())
@@ -86,13 +92,15 @@ def generate_workload(spec: WorkloadSpec) -> List[TaskProfile]:
 
     tasks: List[TaskProfile] = []
     for tid in range(spec.n_tasks):
-        domain = rng.choices(domains, weights=dw, k=1)[0]
-        band = rng.choices(bands, weights=bw, k=1)[0]
+        domain = rng.choices(domains, dw)
+        band = rng.choices(bands, bw)
         lo, hi = DIFFICULTY_BANDS[band]
+        # 不要 round：难度会进入 logistic 质量模型，任何截断都会让
+        # Python 与控制台算出不同的任务流（verify_console_sync.py 会拦下）
         difficulty = rng.uniform(lo, hi)
         tasks.append(TaskProfile(
             task_id=tid,
-            difficulty=round(difficulty, 4),
+            difficulty=difficulty,
             domain=domain,
             input_tokens=rng.randint(*spec.input_tokens),
             output_tokens=rng.randint(*spec.output_tokens),

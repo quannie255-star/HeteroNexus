@@ -271,19 +271,34 @@ class DifficultyRouterPolicy(Policy):
                 return band
         return 'medium'
 
-    def plan_for(self, difficulty: float, domain: str) -> str:
-        return self.table.get((domain, self.band_of(difficulty)),
-                              self.table.get(('general', 'medium')))
-
-    def route(self, task, executors, master_seed) -> RouteOutcome:
-        eid = self.plan_for(task.difficulty, task.domain)
-        att = _make_attempt(task, _by_index(executors)[eid], master_seed)
-        att.accepted = True
-        return RouteOutcome(task.task_id, [att])
-
     def export_table(self) -> List[Dict]:
         """导出可直接落地为路由配置的推荐表。"""
         return [{'domain': d, 'band': b, 'model': m} for (d, b), m in sorted(self.table.items())]
+
+
+class OfflineTablePolicy(DifficultyRouterPolicy):
+    """**可交付形态**：只用离线生成的 (能力域 × 难度档) 推荐表做路由。
+
+    与父类（在线逐任务决策）的差别只有一处：运行时不重新求解，直接查表。
+    为什么要单独测它：
+
+    - 父类是「效果上界」，但它要求调用方把每个任务的难度/规模估出来再实时求解；
+    - 本类是「落地版本」，用户拿到的就是一张 4×3 的表，可以写成 YAML 规则、
+      塞进网关，甚至人工执行 —— 可解释、可审计、无运行时依赖。
+
+    两者的差距就是**可解释性的代价**，必须在报告里如实给出，不能只报上界。
+    """
+
+    name = 'offline_table'
+    description = '离线生成的 (能力域 × 难度档) 推荐表查表路由（可交付形态）'
+
+    def route(self, task, executors, master_seed) -> RouteOutcome:
+        pool = _by_index(executors) if executors else _by_index(self.executors)
+        eid = self.plan_for(task.difficulty, task.domain)
+        ex = pool.get(eid) or global_strongest(list(pool.values()))
+        att = _make_attempt(task, ex, master_seed)
+        att.accepted = True
+        return RouteOutcome(task.task_id, [att])
 
 
 class CascadePolicy(Policy):
@@ -370,5 +385,7 @@ def build_policies(executors: Sequence[ModelExecutor], min_quality: float = 0.0,
         CascadePolicy(executors, avg_in=avg_in, avg_out=avg_out),
         DifficultyRouterPolicy(executors, min_quality=min_quality, cost_weight=cost_weight,
                                avg_in=avg_in, avg_out=avg_out),
+        OfflineTablePolicy(executors, min_quality=min_quality, cost_weight=cost_weight,
+                           avg_in=avg_in, avg_out=avg_out),
         OraclePolicy(),
     ]

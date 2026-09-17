@@ -174,12 +174,16 @@ def chart_pareto(payload: Dict) -> Canvas:
 
 def chart_policies(payload: Dict) -> Canvas:
     pc = payload['policy_comparison']
-    order = ['strongest', 'cheapest', 'cascade', 'difficulty_router', 'oracle']
+    # 两种交付形态都画：只画在线版会让人误以为那就是用户拿到的东西
+    order = ['strongest', 'cheapest', 'cascade', 'difficulty_router',
+             'offline_table', 'oracle']
     labels = {'strongest': '全用最强\n(用户现状)', 'cheapest': '全用最便宜\n(省钱下界)',
-              'cascade': '级联升级', 'difficulty_router': '路由方案\n(本项目)',
+              'cascade': '级联升级', 'difficulty_router': '路由方案\n(在线逐任务)',
+              'offline_table': '路由方案\n(离线三档表)',
               'oracle': '理论最优\nOracle'}
     colors = {'strongest': '#888780', 'cheapest': '#D4537E', 'cascade': '#7F77DD',
-              'difficulty_router': '#185FA5', 'oracle': '#639922'}
+              'difficulty_router': '#185FA5', 'offline_table': '#0F9D58',
+              'oracle': '#639922'}
 
     W, H = 900, 520
     L, R, T, B = 90, 60, 90, 110

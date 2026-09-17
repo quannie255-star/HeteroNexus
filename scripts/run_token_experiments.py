@@ -78,12 +78,26 @@ def run(args) -> Dict:
     tasks = task_sets[2] if len(task_sets) > 2 else task_sets[0]   # seed=42 主样本
     workload_summary = summarize_workload(tasks)
 
-    results = run_multi_seed(task_sets, cat.executors,
-                             min_quality=min_quality, cost_weight=args.cost_weight)
+    # 全报告统一用「5 份业务流拼接」的单一任务流：策略对比、前沿扫描、控制台
+    # 三者必须是同一把尺子，否则同一份报告里 λ=0.2 会印出两个不同的省钱比例。
+    all_tasks = [t for ts in task_sets for t in ts]
+    avg_in, avg_out = _avg_tokens(all_tasks)
+    results = run_experiment(all_tasks, cat.executors, min_quality=min_quality,
+                             master_seed=args.seed, avg_in=avg_in, avg_out=avg_out,
+                             cost_weight=args.cost_weight)
+
+    # 跨样本离散度：证明结论不是某一份业务流的偶然（只作稳健性证据，不影响主结论）
+    spread = {}
+    for ts in task_sets:
+        ai, ao = _avg_tokens(ts)
+        r = run_experiment(ts, cat.executors, min_quality=min_quality, master_seed=args.seed,
+                           avg_in=ai, avg_out=ao, cost_weight=args.cost_weight)
+        for name, pr in r.items():
+            spread.setdefault(name, []).append(pr.cost_saving)
 
     # 用户现状基线：全部走最强模型。所有「省了多少」都以它为分母
     baseline = results.get('strongest')
-    sweep = sweep_cost_weight(tasks, cat.executors, master_seed=args.seed,
+    sweep = sweep_cost_weight(all_tasks, cat.executors, master_seed=args.seed,
                               min_quality=min_quality, baseline=baseline)
 
     raw_catalog = json.loads((ROOT / 'tokenrouter' / 'data' / 'catalog.json').read_text(encoding='utf-8'))
@@ -157,6 +171,15 @@ def run(args) -> Dict:
         ),
         'deliverable_plan': plan,
         'utilization_sensitivity': util_sens,
+        # 结论稳健性的唯一证据：同一策略在 5 份独立业务流上的省钱比例极差
+        'per_sample_spread': {
+            name: {
+                'cost_saving_min': round(min(v), 4),
+                'cost_saving_max': round(max(v), 4),
+                'cost_saving_mean': round(sum(v) / len(v), 4),
+                'n_samples': len(v),
+            } for name, v in sorted(spread.items())
+        },
     }
 
 
@@ -213,6 +236,11 @@ def main():
     if kp:
         print(f"\n推荐配置（膝点）: λ={kp['cost_weight']}  "
               f"正确率 {kp['accuracy']*100:.1f}%  省钱 {kp['cost_saving']*100:.1f}%")
+
+    print(f"\n跨 {len(m['seeds'])} 份独立业务流的离散度（省钱比例 %）:")
+    for name, s in payload['per_sample_spread'].items():
+        print(f"  {name:<20} {s['cost_saving_min']*100:>6.1f} ~ {s['cost_saving_max']*100:>6.1f}  "
+              f"均值 {s['cost_saving_mean']*100:>6.1f}")
 
     print('\nGPU 利用率敏感性（自建 vs 商用 API）:')
     for r in payload['utilization_sensitivity']:

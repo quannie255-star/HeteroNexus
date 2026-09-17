@@ -87,10 +87,16 @@ def sweep_cost_weight(tasks: Sequence[TaskProfile], executors: Sequence[ModelExe
     return pts
 
 
-def knee_point(points: Sequence[SweepPoint]) -> SweepPoint:
+def knee_point(points: Sequence[SweepPoint], min_retention: float = 0.95) -> SweepPoint:
     """前沿上的「膝点」：归一化后距离理想点（最低成本、最高正确率）最近的点。
 
     这是给用户推荐的默认配置 —— 边际收益开始明显递减的那个拐点。
+
+    min_retention 是**必要的一道闸门**，不是锦上添花：
+    纯几何膝点会把 λ=0.4（质量保有 94%）选出来，因为它在归一化空间里离理想点最近。
+    但「便宜 74% 的同时每 16 个问题多错 1 个」对多数业务不是最优，而是事故。
+    因此膝点只在质量保有不低于 min_retention 的点里选 —— 先划出可接受区间，
+    再在区间内谈省钱，这才是对用户负责的推荐顺序。
     """
     if not points:
         raise ValueError('空的点集')
@@ -100,8 +106,15 @@ def knee_point(points: Sequence[SweepPoint]) -> SweepPoint:
     amin, amax = min(accs), max(accs)
     cspan = (cmax - cmin) or 1.0
     aspan = (amax - amin) or 1.0
+
+    def _retention(p: SweepPoint) -> float:
+        return p.quality_retention if p.quality_retention else (p.accuracy / amax if amax else 1.0)
+
+    eligible = [p for p in points if _retention(p) >= min_retention - 1e-12]
+    pool = eligible or [max(points, key=_retention)]   # 全不满足时退化为质量最高点
+
     best, best_d = None, None
-    for p in points:
+    for p in pool:
         # 理想点：成本最小 + 正确率最大
         d = math.hypot((p.total_cost - cmin) / cspan, (amax - p.accuracy) / aspan)
         if best_d is None or d < best_d:
