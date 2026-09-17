@@ -1,0 +1,74 @@
+<Slide style={{ width: 1280, height: 720, padding: 0, background: '#FFFFFF', fontFamily: '"Source Han Sans SC","Noto Sans SC","Microsoft YaHei",sans-serif' }}>
+    <Box style={{ height: 72, background: '#1E4FA8', padding: '0 40px', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#FFFFFF' }}>01 · 立项背景与产品定位</Text>
+        <Text style={{ fontSize: 14, color: '#BFD3EE' }}>HeteroNexus · 2026 Q1</Text>
+    </Box>
+
+    <Box style={{ height: 588, padding: '20px 40px 12px 40px', flexDirection: 'column' }}>
+        <Text style={{ fontSize: 22, color: '#4A5568', marginBottom: 14 }}>
+            我们系统比对了 6 类主流方案 —— 结论是：<span style={{ fontWeight: 'bold', color: '#0E3F8C' }}>它们各自成立，但都不覆盖「轻量 + 开源 + 智能」的交集</span>。
+        </Text>
+
+        {/* 表头 */}
+        <Box style={{ flexDirection: 'row', background: '#0E3F8C', borderTopLeftRadius: 4, borderTopRightRadius: 4, height: 52, alignItems: 'center' }}>
+            <Text style={{ width: 250, paddingLeft: 20, fontSize: 20, fontWeight: 'bold', color: '#FFFFFF' }}>方案</Text>
+            <Text style={{ width: 150, fontSize: 20, fontWeight: 'bold', color: '#FFFFFF' }}>类型</Text>
+            <Text style={{ flex: 1, fontSize: 20, fontWeight: 'bold', color: '#FFFFFF' }}>主要局限</Text>
+            <Text style={{ flex: 1, fontSize: 20, fontWeight: 'bold', color: '#FFFFFF' }}>本项目的差异</Text>
+        </Box>
+
+        <Box style={{ flexDirection: 'row', height: 56, alignItems: 'center', background: '#FFFFFF', border: '1px solid #E5E7EB', borderTop: 'none' }}>
+            <Text style={{ width: 250, paddingLeft: 20, fontSize: 20, color: '#1A2230', fontWeight: 'bold' }}>Kubeflow</Text>
+            <Text style={{ width: 150, fontSize: 20, color: '#4A5568' }}>开源平台</Text>
+            <Text style={{ flex: 1, fontSize: 20, color: '#4A5568' }}>功能偏重、部署复杂，静态分配为主</Text>
+            <Text style={{ flex: 1, fontSize: 20, color: '#1E4FA8' }}>更轻量，聚焦调度智能层</Text>
+        </Box>
+
+        <Box style={{ flexDirection: 'row', height: 56, alignItems: 'center', background: '#F7F9FC', border: '1px solid #E5E7EB', borderTop: 'none' }}>
+            <Text style={{ width: 250, paddingLeft: 20, fontSize: 20, color: '#1A2230', fontWeight: 'bold' }}>NVIDIA GPU Operator</Text>
+            <Text style={{ width: 150, fontSize: 20, color: '#4A5568' }}>商业工具</Text>
+            <Text style={{ flex: 1, fontSize: 20, color: '#4A5568' }}>仅支持自家硬件，跨架构能力弱且闭源</Text>
+            <Text style={{ flex: 1, fontSize: 20, color: '#1E4FA8' }}>开源，支持异构混合</Text>
+        </Box>
+
+        <Box style={{ flexDirection: 'row', height: 56, alignItems: 'center', background: '#FFFFFF', border: '1px solid #E5E7EB', borderTop: 'none' }}>
+            <Text style={{ width: 250, paddingLeft: 20, fontSize: 20, color: '#1A2230', fontWeight: 'bold' }}>Volcano</Text>
+            <Text style={{ width: 150, fontSize: 20, color: '#4A5568' }}>开源调度器</Text>
+            <Text style={{ flex: 1, fontSize: 20, color: '#4A5568' }}>Gang 调度成熟，但算法以启发式为主</Text>
+            <Text style={{ flex: 1, fontSize: 20, color: '#1E4FA8' }}>在其之上增加智能决策层</Text>
+        </Box>
+
+        <Box style={{ flexDirection: 'row', height: 56, alignItems: 'center', background: '#F7F9FC', border: '1px solid #E5E7EB', borderTop: 'none' }}>
+            <Text style={{ width: 250, paddingLeft: 20, fontSize: 20, color: '#1A2230', fontWeight: 'bold' }}>Kueue</Text>
+            <Text style={{ width: 150, fontSize: 20, color: '#4A5568' }}>开源队列</Text>
+            <Text style={{ flex: 1, fontSize: 20, color: '#4A5568' }}>只做队列准入，不做智能放置决策</Text>
+            <Text style={{ flex: 1, fontSize: 20, color: '#1E4FA8' }}>聚焦放置与多目标权衡</Text>
+        </Box>
+
+        <Box style={{ flexDirection: 'row', height: 56, alignItems: 'center', background: '#FFFFFF', border: '1px solid #E5E7EB', borderTop: 'none' }}>
+            <Text style={{ width: 250, paddingLeft: 20, fontSize: 20, color: '#1A2230', fontWeight: 'bold' }}>阿里云 ACK</Text>
+            <Text style={{ width: 150, fontSize: 20, color: '#4A5568' }}>商业云服务</Text>
+            <Text style={{ flex: 1, fontSize: 20, color: '#4A5568' }}>闭源，定制成本高，绑定云厂商</Text>
+            <Text style={{ flex: 1, fontSize: 20, color: '#1E4FA8' }}>开源，可私有化部署</Text>
+        </Box>
+
+        <Box style={{ flexDirection: 'row', height: 56, alignItems: 'center', background: '#F7F9FC', border: '1px solid #E5E7EB', borderTop: 'none', borderBottomLeftRadius: 4, borderBottomRightRadius: 4 }}>
+            <Text style={{ width: 250, paddingLeft: 20, fontSize: 20, color: '#1A2230', fontWeight: 'bold' }}>自建脚本调度</Text>
+            <Text style={{ width: 150, fontSize: 20, color: '#4A5568' }}>自研方案</Text>
+            <Text style={{ flex: 1, fontSize: 20, color: '#4A5568' }}>灵活零成本，但功能简陋、维护成本高</Text>
+            <Text style={{ flex: 1, fontSize: 20, color: '#1E4FA8' }}>提供标准化、算法驱动的方案</Text>
+        </Box>
+
+        <Box style={{ height: 58, background: '#E8EFF8', borderLeft: '4px solid #1E4FA8', borderRadius: 4, padding: '0 22px', flexDirection: 'row', alignItems: 'center', marginTop: 'auto' }}>
+            <Text style={{ fontSize: 21, color: '#1A2230', lineHeight: 1.4 }}>
+                定位：<span style={{ fontWeight: 'bold', color: '#0E3F8C' }}>开源、插件化、多目标优化的异构算力智能调度平台</span>
+                —— 不重写调度器，只在 K8s 调度框架上补一个"会学习的决策层"。
+            </Text>
+        </Box>
+    </Box>
+
+    <Box style={{ height: 60, padding: '0 40px', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Text style={{ fontSize: 14, color: '#8B97A8' }}>中国人民大学 · 大学生创业训练计划</Text>
+        <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#1E4FA8' }}>05 / 16</Text>
+    </Box>
+</Slide>

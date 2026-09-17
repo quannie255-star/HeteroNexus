@@ -30,3 +30,7 @@ desktop.ini
 _tmp/
 _temp/
 ~$*
+
+# PPT 工具缓存
+docs/**/.cache/
+docs/**/.slidep/

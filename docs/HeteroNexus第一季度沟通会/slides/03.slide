@@ -1,0 +1,31 @@
+<Slide style={{ width: 1280, height: 720, padding: 0, position: 'relative', background: 'linear-gradient(135deg, #0E3F8C 0%, #1E4FA8 100%)', fontFamily: '"Source Han Sans SC","Noto Sans SC","Microsoft YaHei",sans-serif' }}>
+    <Box style={{ position: 'absolute', top: 0, left: 0, width: 1280, height: 720, opacity: 0.10 }}>
+        <svg width={1280} height={720} viewBox='0 0 1280 720'>
+            <g stroke='#FFFFFF' strokeWidth='1.5' fill='none'>
+                <path d='M0 620 L320 470 L640 540 L980 400 L1280 480' />
+                <path d='M0 520 L320 370 L640 440 L980 300 L1280 380' />
+                <path d='M0 420 L320 270 L640 340 L980 200 L1280 280' />
+            </g>
+        </svg>
+    </Box>
+
+    <Box style={{ position: 'relative', zIndex: 1, width: 1280, height: 720, padding: '0 88px', flexDirection: 'column', justifyContent: 'center' }}>
+        <Text style={{ fontSize: 160, fontWeight: 'bold', color: '#FFFFFF', lineHeight: 1.0, opacity: 0.94 }}>01</Text>
+        <Box style={{ width: 140, height: 5, background: '#FFC107', marginBottom: 26, marginTop: 6 }} />
+        <Text style={{ fontSize: 52, fontWeight: 'bold', color: '#FFFFFF', lineHeight: 1.25, marginBottom: 30 }}>
+            立项背景与产品定位
+        </Text>
+
+        <Box style={{ flexDirection: 'row', gap: 18 }}>
+            <Box style={{ background: 'rgba(255,255,255,0.12)', borderRadius: 4, padding: '10px 20px' }}>
+                <Text style={{ fontSize: 20, color: '#E8EFF8' }}>行业痛点：GPU 平均利用率不足 40%</Text>
+            </Box>
+            <Box style={{ background: 'rgba(255,255,255,0.12)', borderRadius: 4, padding: '10px 20px' }}>
+                <Text style={{ fontSize: 20, color: '#E8EFF8' }}>技术缺口：多目标不可兼得</Text>
+            </Box>
+            <Box style={{ background: 'rgba(255,255,255,0.12)', borderRadius: 4, padding: '10px 20px' }}>
+                <Text style={{ fontSize: 20, color: '#E8EFF8' }}>产品定位：开源 · 插件化 · 轻量</Text>
+            </Box>
+        </Box>
+    </Box>
+</Slide>

@@ -1,0 +1,83 @@
+<Slide style={{ width: 1280, height: 720, padding: 0, position: 'relative', background: 'linear-gradient(135deg, #0E3F8C 0%, #1E4FA8 100%)', fontFamily: '"Source Han Sans SC","Noto Sans SC","Microsoft YaHei",sans-serif' }}>
+    <Box style={{ position: 'absolute', top: 0, left: 0, width: 1280, height: 720, opacity: 0.10 }}>
+        <svg width={1280} height={720} viewBox='0 0 1280 720'>
+            <g stroke='#FFFFFF' strokeWidth='1.5' fill='none'>
+                <path d='M0 120 L340 240 L680 160 L1020 280 L1280 200' />
+                <path d='M0 320 L340 440 L680 360 L1020 480 L1280 400' />
+                <path d='M0 520 L340 640 L680 560 L1020 680 L1280 600' />
+                <path d='M340 240 L340 440' />
+                <path d='M1020 280 L1020 480' />
+            </g>
+        </svg>
+    </Box>
+
+    <Box style={{ position: 'relative', zIndex: 1, width: 1280, height: 720, padding: '0 88px', flexDirection: 'column', justifyContent: 'center' }}>
+
+        <Text style={{ fontSize: 16, color: '#BFD3EE', letterSpacing: 3, marginBottom: 12 }}>CLOSING · 恳请老师指导</Text>
+        <Text style={{ fontSize: 44, fontWeight: 'bold', color: '#FFFFFF', lineHeight: 1.25, marginBottom: 8 }}>
+            我们需要老师支持的四件事
+        </Text>
+        <Box style={{ width: 120, height: 4, background: '#FFC107', marginBottom: 26 }} />
+
+        <Box style={{ flexDirection: 'row', gap: 20, marginBottom: 16 }}>
+            <Box style={{ flex: 1, flexDirection: 'row', background: 'rgba(255,255,255,0.10)', border: '1px solid rgba(255,255,255,0.18)', borderRadius: 6, padding: '18px 20px', alignItems: 'flex-start' }}>
+                <Box style={{ width: 52, height: 52, background: '#FFC107', borderRadius: 4, alignItems: 'center', justifyContent: 'center', marginRight: 16 }}>
+                    <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#0E3F8C' }}>1</Text>
+                </Box>
+                <Box style={{ flexDirection: 'column', flex: 1 }}>
+                    <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#FFFFFF', marginBottom: 6 }}>判断节奏</Text>
+                    <Text style={{ fontSize: 17, color: '#D6E2F5', lineHeight: 1.5 }}>
+                        Q2「先闭环、后插件」的调整是否可行？是否需要进一步压缩或延后某一项？
+                    </Text>
+                </Box>
+            </Box>
+
+            <Box style={{ flex: 1, flexDirection: 'row', background: 'rgba(255,255,255,0.10)', border: '1px solid rgba(255,255,255,0.18)', borderRadius: 6, padding: '18px 20px', alignItems: 'flex-start' }}>
+                <Box style={{ width: 52, height: 52, background: '#FFC107', borderRadius: 4, alignItems: 'center', justifyContent: 'center', marginRight: 16 }}>
+                    <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#0E3F8C' }}>2</Text>
+                </Box>
+                <Box style={{ flexDirection: 'column', flex: 1 }}>
+                    <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#FFFFFF', marginBottom: 6 }}>集群权限</Text>
+                    <Text style={{ fontSize: 17, color: '#D6E2F5', lineHeight: 1.5 }}>
+                        能否协助申请实验室 GPU 集群的只读监控权限，用于 Q3 真实负载采集与验证？
+                    </Text>
+                </Box>
+            </Box>
+        </Box>
+
+        <Box style={{ flexDirection: 'row', gap: 20, marginBottom: 28 }}>
+            <Box style={{ flex: 1, flexDirection: 'row', background: 'rgba(255,255,255,0.10)', border: '1px solid rgba(255,255,255,0.18)', borderRadius: 6, padding: '18px 20px', alignItems: 'flex-start' }}>
+                <Box style={{ width: 52, height: 52, background: '#FFC107', borderRadius: 4, alignItems: 'center', justifyContent: 'center', marginRight: 16 }}>
+                    <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#0E3F8C' }}>3</Text>
+                </Box>
+                <Box style={{ flexDirection: 'column', flex: 1 }}>
+                    <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#FFFFFF', marginBottom: 6 }}>文献校准</Text>
+                    <Text style={{ fontSize: 17, color: '#D6E2F5', lineHeight: 1.5 }}>
+                        推荐 1–2 篇多目标 DRL 调度的代表性工作，帮助我们校准奖励设计与评测口径。
+                    </Text>
+                </Box>
+            </Box>
+
+            <Box style={{ flex: 1, flexDirection: 'row', background: 'rgba(255,255,255,0.10)', border: '1px solid rgba(255,255,255,0.18)', borderRadius: 6, padding: '18px 20px', alignItems: 'flex-start' }}>
+                <Box style={{ width: 52, height: 52, background: '#FFC107', borderRadius: 4, alignItems: 'center', justifyContent: 'center', marginRight: 16 }}>
+                    <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#0E3F8C' }}>4</Text>
+                </Box>
+                <Box style={{ flexDirection: 'column', flex: 1 }}>
+                    <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#FFFFFF', marginBottom: 6 }}>算力与渠道</Text>
+                    <Text style={{ fontSize: 17, color: '#D6E2F5', lineHeight: 1.5 }}>
+                        是否有可参与的算力或云资源渠道，用以降低 Q3 真实集群验证的成本？
+                    </Text>
+                </Box>
+            </Box>
+        </Box>
+
+        <Box style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Text style={{ fontSize: 17, color: '#BFD3EE' }}>
+                HeteroNexus 项目组 · 汇报人：聂权 · 中国人民大学统计学院
+            </Text>
+            <Text style={{ fontSize: 17, color: '#BFD3EE' }}>
+                代码与数据：github.com/quannie255-star/HeteroNexus
+            </Text>
+        </Box>
+    </Box>
+</Slide>

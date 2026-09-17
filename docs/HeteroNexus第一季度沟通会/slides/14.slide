@@ -1,0 +1,109 @@
+<Slide style={{ width: 1280, height: 720, padding: 0, background: '#FFFFFF', fontFamily: '"Source Han Sans SC","Noto Sans SC","Microsoft YaHei",sans-serif' }}>
+    <Box style={{ height: 72, background: '#1E4FA8', padding: '0 40px', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#FFFFFF' }}>03 · 风险识别与计划调整</Text>
+        <Text style={{ fontSize: 14, color: '#BFD3EE' }}>HeteroNexus · 2026 Q1</Text>
+    </Box>
+
+    <Box style={{ height: 588, padding: '20px 40px 12px 40px', flexDirection: 'column' }}>
+        <Text style={{ fontSize: 22, color: '#4A5568', marginBottom: 14 }}>
+            我们主动列出三条最可能让项目失败的风险 —— 每一条都配了<span style={{ fontWeight: 'bold', color: '#0E3F8C' }}>可检查的止损红线</span>，而不是"我们会努力克服"。
+        </Text>
+
+        <Box style={{ flexDirection: 'row', gap: 20, flex: 1 }}>
+
+            <Box style={{ flex: 1, background: '#F7F9FC', border: '1px solid #E5E7EB', borderTop: '4px solid #D9534F', borderRadius: 6, padding: '16px 20px', flexDirection: 'column' }}>
+                <Box style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                    <svg width={146} height={10} viewBox='0 0 146 10'>
+                        <rect x='0' y='1' width='26' height='8' rx='2' fill='#D9534F' />
+                        <rect x='30' y='1' width='26' height='8' rx='2' fill='#D9534F' />
+                        <rect x='60' y='1' width='26' height='8' rx='2' fill='#D9534F' />
+                        <rect x='90' y='1' width='26' height='8' rx='2' fill='#D9534F' />
+                        <rect x='120' y='1' width='26' height='8' rx='2' fill='#D6DCE5' />
+                    </svg>
+                    <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#D9534F' }}>等级 高</Text>
+                </Box>
+                <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#0E3F8C', lineHeight: 1.35, marginBottom: 10 }}>
+                    算法风险
+                </Text>
+                <Text style={{ fontSize: 18, color: '#4A5568', lineHeight: 1.55 }}>
+                    DRL 收敛性尚无保证。多目标奖励下的 PPO 训练稳定性差、样本效率低、对超参敏感；即便仿真收敛，
+                    从合成负载迁移到真实集群仍存在分布偏移，策略可能整体退化。
+                </Text>
+                <Box style={{ marginTop: 'auto', paddingTop: 14, borderTop: '1px dashed #D6DCE5' }}>
+                    <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#B03A37', marginBottom: 6 }}>止损红线</Text>
+                    <Text style={{ fontSize: 18, color: '#4A5568', lineHeight: 1.55 }}>
+                        Q2 末若未稳定优于 DRF，则退回<span style={{ fontWeight: 'bold', color: '#0E3F8C' }}>「自适应权重 + 启发式」</span>方案，
+                        绝不把 DRL 作为唯一技术路线。
+                    </Text>
+                </Box>
+            </Box>
+
+            <Box style={{ flex: 1, background: '#F7F9FC', border: '1px solid #E5E7EB', borderTop: '4px solid #D9534F', borderRadius: 6, padding: '16px 20px', flexDirection: 'column' }}>
+                <Box style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                    <svg width={146} height={10} viewBox='0 0 146 10'>
+                        <rect x='0' y='1' width='26' height='8' rx='2' fill='#D9534F' />
+                        <rect x='30' y='1' width='26' height='8' rx='2' fill='#D9534F' />
+                        <rect x='60' y='1' width='26' height='8' rx='2' fill='#D9534F' />
+                        <rect x='90' y='1' width='26' height='8' rx='2' fill='#D6DCE5' />
+                        <rect x='120' y='1' width='26' height='8' rx='2' fill='#D6DCE5' />
+                    </svg>
+                    <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#D9534F' }}>等级 中高</Text>
+                </Box>
+                <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#0E3F8C', lineHeight: 1.35, marginBottom: 10 }}>
+                    工程风险
+                </Text>
+                <Text style={{ fontSize: 18, color: '#4A5568', lineHeight: 1.55 }}>
+                    调度器插件需 Go 与 client-go，团队以统计与算法背景为主，K8s 实操积累有限。
+                    原计划把插件压在第三季度，一旦延期会连锁影响真实集群验证与结题答辩。
+                </Text>
+                <Box style={{ marginTop: 'auto', paddingTop: 14, borderTop: '1px dashed #D6DCE5' }}>
+                    <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#B03A37', marginBottom: 6 }}>止损红线</Text>
+                    <Text style={{ fontSize: 18, color: '#4A5568', lineHeight: 1.55 }}>
+                        Q2 只承诺仿真闭环；插件在 Q3 前四周只做<span style={{ fontWeight: 'bold', color: '#0E3F8C' }}>最小可行原型</span>，
+                        不做全量 scheduler framework 改造。
+                    </Text>
+                </Box>
+            </Box>
+
+            <Box style={{ flex: 1, background: '#F7F9FC', border: '1px solid #E5E7EB', borderTop: '4px solid #FFC107', borderRadius: 6, padding: '16px 20px', flexDirection: 'column' }}>
+                <Box style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                    <svg width={146} height={10} viewBox='0 0 146 10'>
+                        <rect x='0' y='1' width='26' height='8' rx='2' fill='#FFC107' />
+                        <rect x='30' y='1' width='26' height='8' rx='2' fill='#FFC107' />
+                        <rect x='60' y='1' width='26' height='8' rx='2' fill='#D6DCE5' />
+                        <rect x='90' y='1' width='26' height='8' rx='2' fill='#D6DCE5' />
+                        <rect x='120' y='1' width='26' height='8' rx='2' fill='#D6DCE5' />
+                    </svg>
+                    <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#B8860B' }}>等级 中</Text>
+                </Box>
+                <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#0E3F8C', lineHeight: 1.35, marginBottom: 10 }}>
+                    验证风险
+                </Text>
+                <Text style={{ fontSize: 18, color: '#4A5568', lineHeight: 1.55 }}>
+                    当前 200 任务实验使用参数化合成负载，长尾与突发特征可能偏离真实训练作业；
+                    实验室集群数据的采集授权周期长，若 Q3 才开始准备会直接拖慢验证进度。
+                </Text>
+                <Box style={{ marginTop: 'auto', paddingTop: 14, borderTop: '1px dashed #D6DCE5' }}>
+                    <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#B8860B', marginBottom: 6 }}>止损红线</Text>
+                    <Text style={{ fontSize: 18, color: '#4A5568', lineHeight: 1.55 }}>
+                        Q2 内接入公开 GPU trace（Alibaba / Helios 等）做<span style={{ fontWeight: 'bold', color: '#0E3F8C' }}>分布对齐校验</span>，
+                        并提前申请集群只读监控权限。
+                    </Text>
+                </Box>
+            </Box>
+
+        </Box>
+
+        <Box style={{ height: 66, background: '#E8EFF8', borderLeft: '4px solid #1E4FA8', borderRadius: 4, padding: '0 22px', flexDirection: 'row', alignItems: 'center', marginTop: 14 }}>
+            <Text style={{ fontSize: 21, color: '#1A2230', lineHeight: 1.4 }}>
+                风险不是因为"可能发生"才被列出，而是因为<span style={{ fontWeight: 'bold', color: '#0E3F8C' }}>我们已经为每一条定好了退出条件</span>
+                —— 请老师重点判断第二项（插件后移）的节奏是否可行。
+            </Text>
+        </Box>
+    </Box>
+
+    <Box style={{ height: 60, padding: '0 40px', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Text style={{ fontSize: 14, color: '#8B97A8' }}>中国人民大学 · 大学生创业训练计划</Text>
+        <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#1E4FA8' }}>14 / 16</Text>
+    </Box>
+</Slide>

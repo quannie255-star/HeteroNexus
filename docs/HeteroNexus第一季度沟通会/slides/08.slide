@@ -1,0 +1,88 @@
+<Slide style={{ width: 1280, height: 720, padding: 0, background: '#FFFFFF', fontFamily: '"Source Han Sans SC","Noto Sans SC","Microsoft YaHei",sans-serif' }}>
+    <Box style={{ height: 72, background: '#1E4FA8', padding: '0 40px', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#FFFFFF' }}>02 · 第一季度工作进展</Text>
+        <Text style={{ fontSize: 14, color: '#BFD3EE' }}>HeteroNexus · 2026 Q1</Text>
+    </Box>
+
+    <Box style={{ height: 588, padding: '20px 40px 12px 40px', flexDirection: 'column' }}>
+        <Text style={{ fontSize: 22, color: '#4A5568', marginBottom: 14 }}>
+            架构设计的核心取舍：<span style={{ fontWeight: 'bold', color: '#0E3F8C' }}>智能决策层与调度内核层彻底解耦</span>，让模型出问题时系统仍能安全运行。
+        </Text>
+
+        <Box style={{ flexDirection: 'row', gap: 16, height: 440, marginBottom: 14 }}>
+            {/* 左：五层架构 */}
+            <Box style={{ width: 700, flexDirection: 'column', gap: 5 }}>
+                <Box style={{ height: 83, background: '#F7F9FC', border: '1px solid #D6DCE5', borderLeft: '5px solid #8B97A8', borderRadius: 4, padding: '10px 18px', flexDirection: 'column', justifyContent: 'center' }}>
+                    <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#1A2230' }}>产品与接口层</Text>
+                    <Text style={{ fontSize: 17, color: '#4A5568' }}>Web 控制台 · FastAPI 任务提交 API · CLI · Helm 一键部署</Text>
+                </Box>
+                <Box style={{ height: 83, background: '#F7F9FC', border: '1px solid #D6DCE5', borderLeft: '5px solid #3D7BD9', borderRadius: 4, padding: '10px 18px', flexDirection: 'column', justifyContent: 'center' }}>
+                    <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#1A2230' }}>可观测与管理层</Text>
+                    <Text style={{ fontSize: 17, color: '#4A5568' }}>Prometheus 指标 · Grafana 面板 · OpenTelemetry 链路 · 成本核算</Text>
+                </Box>
+                <Box style={{ height: 83, background: '#1E4FA8', borderRadius: 4, padding: '10px 18px', flexDirection: 'column', justifyContent: 'center' }}>
+                    <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#FFFFFF' }}>智能决策层　★ 核心创新</Text>
+                    <Text style={{ fontSize: 17, color: '#CFE0F5' }}>DRL 调度代理（PPO）· 20 维任务特征提取 · 多目标奖励引擎</Text>
+                </Box>
+                <Box style={{ height: 83, background: '#F7F9FC', border: '1px solid #D6DCE5', borderLeft: '5px solid #3D7BD9', borderRadius: 4, padding: '10px 18px', flexDirection: 'column', justifyContent: 'center' }}>
+                    <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#1A2230' }}>集群调度内核层</Text>
+                    <Text style={{ fontSize: 17, color: '#4A5568' }}>K8s Scheduler Framework · Filter / Score / Permit / Reserve · DRA</Text>
+                </Box>
+                <Box style={{ height: 83, background: '#F7F9FC', border: '1px solid #D6DCE5', borderLeft: '5px solid #8B97A8', borderRadius: 4, padding: '10px 18px', flexDirection: 'column', justifyContent: 'center' }}>
+                    <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#1A2230' }}>基础设施层</Text>
+                    <Text style={{ fontSize: 17, color: '#4A5568' }}>CPU / GPU / FPGA 异构节点池 · containerd · NVLink / RDMA 拓扑</Text>
+                </Box>
+            </Box>
+
+            {/* 右：核心数据流 */}
+            <Box style={{ flex: 1, background: '#F0F5FC', borderRadius: 6, padding: '14px 18px', flexDirection: 'column' }}>
+                <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#0E3F8C', marginBottom: 10 }}>核心数据流</Text>
+                <Box style={{ flexDirection: 'row', gap: 10, marginBottom: 8, alignItems: 'flex-start' }}>
+                    <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#1E4FA8', width: 20 }}>1</Text>
+                    <Text style={{ fontSize: 16, color: '#4A5568', flex: 1, lineHeight: 1.4 }}>用户经 CLI / API 提交任务，声明 CPU / GPU / 显存需求</Text>
+                </Box>
+                <Box style={{ flexDirection: 'row', gap: 10, marginBottom: 8, alignItems: 'flex-start' }}>
+                    <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#1E4FA8', width: 20 }}>2</Text>
+                    <Text style={{ fontSize: 16, color: '#4A5568', flex: 1, lineHeight: 1.4 }}>特征提取器生成 20 维向量，任务进入调度队列</Text>
+                </Box>
+                <Box style={{ flexDirection: 'row', gap: 10, marginBottom: 8, alignItems: 'flex-start' }}>
+                    <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#1E4FA8', width: 20 }}>3</Text>
+                    <Text style={{ fontSize: 16, color: '#4A5568', flex: 1, lineHeight: 1.4 }}>监控模块按秒级采集各节点 CPU / GPU / 功耗指标</Text>
+                </Box>
+                <Box style={{ flexDirection: 'row', gap: 10, marginBottom: 8, alignItems: 'flex-start' }}>
+                    <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#1E4FA8', width: 20 }}>4</Text>
+                    <Text style={{ fontSize: 16, color: '#4A5568', flex: 1, lineHeight: 1.4 }}>决策代理输出（任务 → 节点）放置方案</Text>
+                </Box>
+                <Box style={{ flexDirection: 'row', gap: 10, marginBottom: 8, alignItems: 'flex-start' }}>
+                    <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#1E4FA8', width: 20 }}>5</Text>
+                    <Text style={{ fontSize: 16, color: '#4A5568', flex: 1, lineHeight: 1.4 }}>K8s 插件在 Score 扩展点消费该方案</Text>
+                </Box>
+                <Box style={{ flexDirection: 'row', gap: 10, marginBottom: 8, alignItems: 'flex-start' }}>
+                    <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#1E4FA8', width: 20 }}>6</Text>
+                    <Text style={{ fontSize: 16, color: '#4A5568', flex: 1, lineHeight: 1.4 }}>运行期持续回采指标，反馈给奖励引擎</Text>
+                </Box>
+                <Box style={{ flexDirection: 'row', gap: 10, alignItems: 'flex-start' }}>
+                    <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#1E4FA8', width: 20 }}>7</Text>
+                    <Text style={{ fontSize: 16, color: '#4A5568', flex: 1, lineHeight: 1.4 }}>任务结束记录 JCT / 利用率 / 资源浪费，写入经验回放池</Text>
+                </Box>
+                <Box style={{ marginTop: 'auto', paddingTop: 10, borderTop: '1px solid #D6DCE5' }}>
+                    <Text style={{ fontSize: 16, color: '#0E3F8C', lineHeight: 1.4 }}>
+                        <span style={{ fontWeight: 'bold' }}>安全回退</span>：决策代理不可用时，插件降级为内置 DRF 启发式。
+                    </Text>
+                </Box>
+            </Box>
+        </Box>
+
+        <Box style={{ height: 48, background: '#E8EFF8', borderLeft: '4px solid #FFC107', borderRadius: 4, padding: '0 20px', flexDirection: 'row', alignItems: 'center', marginTop: 'auto' }}>
+            <Text style={{ fontSize: 20, color: '#1A2230' }}>
+                本季度已完成的，是图中<span style={{ fontWeight: 'bold', color: '#0E3F8C' }}>智能决策层的算法验证</span>与
+                <span style={{ fontWeight: 'bold', color: '#0E3F8C' }}>内核层的接口设计</span>；编码实现从第二季度展开。
+            </Text>
+        </Box>
+    </Box>
+
+    <Box style={{ height: 60, padding: '0 40px', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Text style={{ fontSize: 14, color: '#8B97A8' }}>中国人民大学 · 大学生创业训练计划</Text>
+        <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#1E4FA8' }}>08 / 16</Text>
+    </Box>
+</Slide>

@@ -1,0 +1,36 @@
+<Slide style={{ width: 1280, height: 720, padding: 0, position: 'relative', background: 'linear-gradient(135deg, #0E3F8C 0%, #1E4FA8 100%)', fontFamily: '"Source Han Sans SC","Noto Sans SC","Microsoft YaHei",sans-serif' }}>
+    <Box style={{ position: 'absolute', top: 0, left: 0, width: 1280, height: 720, opacity: 0.10 }}>
+        <svg width={1280} height={720} viewBox='0 0 1280 720'>
+            <g stroke='#FFFFFF' strokeWidth='1.5' fill='none'>
+                <path d='M120 200 L400 130 L700 260 L1010 160 L1230 250' />
+                <path d='M120 360 L400 290 L700 420 L1010 320 L1230 410' />
+                <path d='M120 520 L400 450 L700 580 L1010 480 L1230 570' />
+                <path d='M400 130 L400 450' />
+                <path d='M1010 160 L1010 480' />
+            </g>
+        </svg>
+    </Box>
+
+    <Box style={{ position: 'relative', zIndex: 1, width: 1280, height: 720, padding: '0 88px', flexDirection: 'column', justifyContent: 'center' }}>
+        <Text style={{ fontSize: 160, fontWeight: 'bold', color: '#FFFFFF', lineHeight: 1.0, opacity: 0.94 }}>02</Text>
+        <Box style={{ width: 140, height: 5, background: '#FFC107', marginBottom: 26, marginTop: 6 }} />
+        <Text style={{ fontSize: 52, fontWeight: 'bold', color: '#FFFFFF', lineHeight: 1.25, marginBottom: 30 }}>
+            第一季度工作进展
+        </Text>
+
+        <Box style={{ flexDirection: 'row', gap: 18 }}>
+            <Box style={{ background: 'rgba(255,255,255,0.12)', borderRadius: 4, padding: '10px 20px' }}>
+                <Text style={{ fontSize: 20, color: '#E8EFF8' }}>技术架构定稿</Text>
+            </Box>
+            <Box style={{ background: 'rgba(255,255,255,0.12)', borderRadius: 4, padding: '10px 20px' }}>
+                <Text style={{ fontSize: 20, color: '#E8EFF8' }}>仿真引擎可用</Text>
+            </Box>
+            <Box style={{ background: 'rgba(255,255,255,0.12)', borderRadius: 4, padding: '10px 20px' }}>
+                <Text style={{ fontSize: 20, color: '#E8EFF8' }}>实验数据可复现</Text>
+            </Box>
+            <Box style={{ background: 'rgba(255,255,255,0.12)', borderRadius: 4, padding: '10px 20px' }}>
+                <Text style={{ fontSize: 20, color: '#E8EFF8' }}>控制台可现场演示</Text>
+            </Box>
+        </Box>
+    </Box>
+</Slide>

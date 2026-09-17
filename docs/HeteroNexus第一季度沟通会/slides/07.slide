@@ -1,0 +1,88 @@
+<Slide style={{ width: 1280, height: 720, padding: 0, background: '#FFFFFF', fontFamily: '"Source Han Sans SC","Noto Sans SC","Microsoft YaHei",sans-serif' }}>
+    <Box style={{ height: 72, background: '#1E4FA8', padding: '0 40px', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#FFFFFF' }}>02 · 第一季度工作进展</Text>
+        <Text style={{ fontSize: 14, color: '#BFD3EE' }}>HeteroNexus · 2026 Q1</Text>
+    </Box>
+
+    <Box style={{ height: 588, padding: '20px 40px 12px 40px', flexDirection: 'column' }}>
+        <Text style={{ fontSize: 22, color: '#4A5568', marginBottom: 10 }}>
+            本季度的产出原则是：<span style={{ fontWeight: 'bold', color: '#0E3F8C' }}>任何结论都必须能被别人一条命令复现</span>。以下是四个可核验的数字。
+        </Text>
+
+        {/* KPI 四联数 */}
+        <Box style={{ flexDirection: 'row', gap: 14, height: 148, marginBottom: 12 }}>
+            <Box style={{ flex: 1, background: '#F0F5FC', borderRadius: 6, padding: '16px 20px', flexDirection: 'column', justifyContent: 'center' }}>
+                <Text style={{ fontSize: 72, fontWeight: 'bold', color: '#1E4FA8', lineHeight: 1.0 }}>4</Text>
+                <Text style={{ fontSize: 20, color: '#4A5568', marginTop: 6 }}>类基线调度算法
+                    <br />
+                    已完整复现</Text>
+            </Box>
+            <Box style={{ flex: 1, background: '#F0F5FC', borderRadius: 6, padding: '16px 20px', flexDirection: 'column', justifyContent: 'center' }}>
+                <Text style={{ fontSize: 72, fontWeight: 'bold', color: '#1E4FA8', lineHeight: 1.0 }}>200</Text>
+                <Text style={{ fontSize: 20, color: '#4A5568', marginTop: 6 }}>个混合任务的
+                    <br />
+                    全量对比实验</Text>
+            </Box>
+            <Box style={{ flex: 1, background: '#F0F5FC', borderRadius: 6, padding: '16px 20px', flexDirection: 'column', justifyContent: 'center' }}>
+                <Text style={{ fontSize: 72, fontWeight: 'bold', color: '#1E4FA8', lineHeight: 1.0 }}>20</Text>
+                <Text style={{ fontSize: 20, color: '#4A5568', marginTop: 6 }}>维任务特征向量
+                    <br />
+                    静态 / 动态 / 预测</Text>
+            </Box>
+            <Box style={{ flex: 1, background: '#FFF8E1', borderRadius: 6, padding: '16px 20px', flexDirection: 'column', justifyContent: 'center' }}>
+                <Text style={{ fontSize: 72, fontWeight: 'bold', color: '#B8860B', lineHeight: 1.0 }}>40</Text>
+                <Text style={{ fontSize: 20, color: '#7A6234', marginTop: 6 }}>项单元测试
+                    <br />
+                    持续集成流水线通过</Text>
+            </Box>
+        </Box>
+
+        {/* 双栏对照卡 */}
+        <Box style={{ flexDirection: 'row', gap: 16, height: 288, marginBottom: 12 }}>
+            <Box style={{ flex: 1, background: '#FFFFFF', border: '1px solid #D6DCE5', borderTop: '3px solid #1E4FA8', borderRadius: 6, padding: '16px 22px', flexDirection: 'column' }}>
+                <Text style={{ fontSize: 26, fontWeight: 'bold', color: '#0E3F8C', marginBottom: 10 }}>已完成 · 可验证产出</Text>
+                <Text style={{ fontSize: 18, color: '#4A5568', lineHeight: 1.5 }}>
+                    <span style={{ fontWeight: 'bold', color: '#1E4FA8' }}>① 技术架构定稿</span>：确定五层解耦架构，
+                    K8s 调度插件与 Python 决策服务以 gRPC 解耦，支持启发式安全回退。
+                    <br />
+                    <span style={{ fontWeight: 'bold', color: '#1E4FA8' }}>② 仿真引擎</span>：自研离散事件仿真器，
+                    支持自定义异构拓扑与拥塞负载生成，单次 200 任务实验耗时不足 1 秒。
+                    <br />
+                    <span style={{ fontWeight: 'bold', color: '#1E4FA8' }}>③ 核心模块</span>：任务特征提取（20 维）
+                    与硬件性能监控（无硬件时自动降级为模拟采集）均已通过测试。
+                </Text>
+                <Text style={{ fontSize: 17, color: '#8B97A8', marginTop: 'auto', paddingTop: 10 }}>
+                    已开源：github.com/quannie255-star/HeteroNexus
+                </Text>
+            </Box>
+
+            <Box style={{ flex: 1, background: '#FFFFFF', border: '1px solid #D6DCE5', borderTop: '3px solid #D9534F', borderRadius: 6, padding: '16px 22px', flexDirection: 'column' }}>
+                <Text style={{ fontSize: 26, fontWeight: 'bold', color: '#B03A37', marginBottom: 10 }}>未完成 · 主动暴露</Text>
+                <Text style={{ fontSize: 18, color: '#4A5568', lineHeight: 1.5 }}>
+                    <span style={{ fontWeight: 'bold', color: '#D9534F' }}>① 真实集群验证尚未开展</span>：
+                    本季度结论全部来自仿真环境，集群验证安排在第三季度。
+                    <br />
+                    <span style={{ fontWeight: 'bold', color: '#D9534F' }}>② DRL 策略尚未训练</span>：
+                    当前交付的是奖励驱动的贪心策略原型，PPO 网络待第二季度训练。
+                    <br />
+                    <span style={{ fontWeight: 'bold', color: '#D9534F' }}>③ K8s 插件未启动编码</span>：
+                    受 Go 语言经验限制，调整见第四部分。
+                </Text>
+                <Text style={{ fontSize: 17, color: '#8B97A8', marginTop: 'auto', paddingTop: 10 }}>
+                    我们倾向于先讲清楚边界，再请老师判断调整方向。
+                </Text>
+            </Box>
+        </Box>
+
+        <Box style={{ height: 48, background: '#E8EFF8', borderLeft: '4px solid #FFC107', borderRadius: 4, padding: '0 20px', flexDirection: 'row', alignItems: 'center', marginTop: 'auto' }}>
+            <Text style={{ fontSize: 20, color: '#1A2230' }}>
+                一句话概括本季度：<span style={{ fontWeight: 'bold', color: '#0E3F8C' }}>把"能跑、能复现、能演示"的验证底座搭起来了</span>，而不是先堆文档。
+            </Text>
+        </Box>
+    </Box>
+
+    <Box style={{ height: 60, padding: '0 40px', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Text style={{ fontSize: 14, color: '#8B97A8' }}>中国人民大学 · 大学生创业训练计划</Text>
+        <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#1E4FA8' }}>07 / 16</Text>
+    </Box>
+</Slide>

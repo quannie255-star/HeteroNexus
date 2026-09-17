@@ -1,0 +1,128 @@
+<Slide style={{ width: 1280, height: 720, padding: 0, background: '#FFFFFF', fontFamily: '"Source Han Sans SC","Noto Sans SC","Microsoft YaHei",sans-serif' }}>
+    <Box style={{ height: 72, background: '#1E4FA8', padding: '0 40px', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#FFFFFF' }}>02 · 第一季度工作进展</Text>
+        <Text style={{ fontSize: 14, color: '#BFD3EE' }}>HeteroNexus · 2026 Q1</Text>
+    </Box>
+
+    <Box style={{ height: 588, padding: '20px 40px 12px 40px', flexDirection: 'column' }}>
+        {/* L0 引导问题条 */}
+        <Box style={{ height: 48, background: '#0E3F8C', borderRadius: 4, padding: '0 22px', flexDirection: 'row', alignItems: 'center', marginBottom: 14 }}>
+            <Text style={{ fontSize: 21, fontWeight: 'bold', color: '#FFFFFF' }}>
+                问题：在异构集群里，「按什么顺序排队」到底有多大影响？我们跑了 200 个任务来量化它。
+            </Text>
+        </Box>
+
+        {/* 主图 + 洞察 */}
+        <Box style={{ flexDirection: 'row', gap: 18, height: 400, marginBottom: 14 }}>
+            {/* 主图：JCT 三指标对比 */}
+            <Box style={{ width: 720, background: '#F7F9FC', borderRadius: 6, padding: '16px 20px', flexDirection: 'column' }}>
+                <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#1A2230', marginBottom: 4 }}>
+                    四类基线算法的作业完成时间（JCT）对比
+                </Text>
+                <Text style={{ fontSize: 15, color: '#8B97A8', marginBottom: 10 }}>
+                    3 × GPU 节点（8 卡）+ 3 × CPU 节点 · 200 混合任务 · 随机种子 42 · 单位：仿真秒
+                </Text>
+
+                <Box style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 20, flex: 1 }}>
+                    {/* FIFO */}
+                    <Box style={{ flex: 1, flexDirection: 'column', alignItems: 'center' }}>
+                        <Box style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 5, height: 240 }}>
+                            <Box style={{ width: 32, height: 53, background: '#8B97A8', borderRadius: '2px 2px 0 0' }} />
+                            <Box style={{ width: 32, height: 38, background: '#B8C4D2', borderRadius: '2px 2px 0 0' }} />
+                            <Box style={{ width: 32, height: 206, background: '#FFC107', borderRadius: '2px 2px 0 0' }} />
+                        </Box>
+                        <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#1A2230', marginTop: 8 }}>FIFO</Text>
+                        <Text style={{ fontSize: 15, color: '#8B97A8' }}>基线</Text>
+                    </Box>
+
+                    {/* BestFit */}
+                    <Box style={{ flex: 1, flexDirection: 'column', alignItems: 'center' }}>
+                        <Box style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 5, height: 240 }}>
+                            <Box style={{ width: 32, height: 56, background: '#8B97A8', borderRadius: '2px 2px 0 0' }} />
+                            <Box style={{ width: 32, height: 42, background: '#B8C4D2', borderRadius: '2px 2px 0 0' }} />
+                            <Box style={{ width: 32, height: 210, background: '#FFC107', borderRadius: '2px 2px 0 0' }} />
+                        </Box>
+                        <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#1A2230', marginTop: 8 }}>BestFit</Text>
+                        <Text style={{ fontSize: 15, color: '#8B97A8' }}>最佳适配</Text>
+                    </Box>
+
+                    {/* DRF */}
+                    <Box style={{ flex: 1, flexDirection: 'column', alignItems: 'center' }}>
+                        <Box style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 5, height: 240 }}>
+                            <Box style={{ width: 32, height: 46, background: '#1E4FA8', borderRadius: '2px 2px 0 0' }} />
+                            <Box style={{ width: 32, height: 17, background: '#3D7BD9', borderRadius: '2px 2px 0 0' }} />
+                            <Box style={{ width: 32, height: 239, background: '#FFC107', borderRadius: '2px 2px 0 0' }} />
+                        </Box>
+                        <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#1E4FA8', marginTop: 8 }}>DRF</Text>
+                        <Text style={{ fontSize: 15, color: '#8B97A8' }}>主导资源公平</Text>
+                    </Box>
+
+                    {/* SJF */}
+                    <Box style={{ flex: 1, flexDirection: 'column', alignItems: 'center' }}>
+                        <Box style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 5, height: 240 }}>
+                            <Box style={{ width: 32, height: 44, background: '#1E4FA8', borderRadius: '2px 2px 0 0' }} />
+                            <Box style={{ width: 32, height: 16, background: '#3D7BD9', borderRadius: '2px 2px 0 0' }} />
+                            <Box style={{ width: 32, height: 229, background: '#FFC107', borderRadius: '2px 2px 0 0' }} />
+                        </Box>
+                        <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#1E4FA8', marginTop: 8 }}>SJF</Text>
+                        <Text style={{ fontSize: 15, color: '#8B97A8' }}>最短作业优先</Text>
+                    </Box>
+                </Box>
+
+                <Box style={{ flexDirection: 'row', gap: 22, marginTop: 10, paddingTop: 8, borderTop: '1px solid #D6DCE5' }}>
+                    <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                        <Box style={{ width: 14, height: 14, background: '#1E4FA8' }} />
+                        <Text style={{ fontSize: 16, color: '#4A5568' }}>平均 JCT</Text>
+                    </Box>
+                    <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                        <Box style={{ width: 14, height: 14, background: '#3D7BD9' }} />
+                        <Text style={{ fontSize: 16, color: '#4A5568' }}>中位 JCT</Text>
+                    </Box>
+                    <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                        <Box style={{ width: 14, height: 14, background: '#FFC107' }} />
+                        <Text style={{ fontSize: 16, color: '#4A5568' }}>P95 JCT（长尾）</Text>
+                    </Box>
+                    <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                        <Box style={{ width: 14, height: 14, background: '#8B97A8' }} />
+                        <Text style={{ fontSize: 16, color: '#4A5568' }}>FIFO 对照</Text>
+                    </Box>
+                </Box>
+            </Box>
+
+            {/* 洞察栏 */}
+            <Box style={{ flex: 1, flexDirection: 'column', gap: 12 }}>
+                <Box style={{ background: '#F0F5FC', borderRadius: 6, padding: '14px 18px', flexDirection: 'row', alignItems: 'center', gap: 14 }}>
+                    <Text style={{ fontSize: 64, fontWeight: 'bold', color: '#1E4FA8', lineHeight: 1.0 }}>14.2%</Text>
+                    <Text style={{ fontSize: 19, color: '#4A5568', flex: 1, lineHeight: 1.4 }}>DRF 相较 FIFO
+                        <br />
+                        平均 JCT 降幅</Text>
+                </Box>
+                <Box style={{ background: '#F0F5FC', borderRadius: 6, padding: '14px 18px', flexDirection: 'row', alignItems: 'center', gap: 14 }}>
+                    <Text style={{ fontSize: 64, fontWeight: 'bold', color: '#1E4FA8', lineHeight: 1.0 }}>54.3%</Text>
+                    <Text style={{ fontSize: 19, color: '#4A5568', flex: 1, lineHeight: 1.4 }}>DRF 相较 FIFO
+                        <br />
+                        中位 JCT 降幅</Text>
+                </Box>
+                <Box style={{ background: '#FDF3F3', borderRadius: 6, padding: '14px 18px', flexDirection: 'row', alignItems: 'center', gap: 14 }}>
+                    <Text style={{ fontSize: 64, fontWeight: 'bold', color: '#D9534F', lineHeight: 1.0 }}>+16%</Text>
+                    <Text style={{ fontSize: 19, color: '#4A5568', flex: 1, lineHeight: 1.4 }}>DRF 的 P95 JCT
+                        <br />
+                        相对 FIFO 反而变差</Text>
+                </Box>
+            </Box>
+        </Box>
+
+        <Box style={{ height: 48, background: '#E8EFF8', borderLeft: '4px solid #FFC107', borderRadius: 4, padding: '0 20px', flexDirection: 'row', alignItems: 'center', marginTop: 'auto' }}>
+            <Text style={{ fontSize: 20, color: '#1A2230' }}>
+                「排队顺序」是完成时间的第一影响因子；但
+                <span style={{ fontWeight: 'bold', color: '#B03A37' }}>短任务优先会饿死大任务</span>
+                —— 这是所有启发式算法的共同天花板。
+            </Text>
+        </Box>
+    </Box>
+
+    <Box style={{ height: 60, padding: '0 40px', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Text style={{ fontSize: 14, color: '#8B97A8' }}>数据来源：simulation/baseline_results.json（seed=42，可复现）</Text>
+        <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#1E4FA8' }}>09 / 16</Text>
+    </Box>
+</Slide>

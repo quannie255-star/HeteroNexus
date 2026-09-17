@@ -1,0 +1,80 @@
+<Slide style={{ width: 1280, height: 720, padding: 0, background: '#FFFFFF', fontFamily: '"Source Han Sans SC","Noto Sans SC","Microsoft YaHei",sans-serif' }}>
+    <Box style={{ height: 72, background: '#1E4FA8', padding: '0 40px', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#FFFFFF' }}>目录</Text>
+        <Text style={{ fontSize: 14, color: '#BFD3EE' }}>HeteroNexus · 2026 Q1</Text>
+    </Box>
+
+    <Box style={{ height: 588, padding: '20px 40px 12px 40px', flexDirection: 'row', gap: 48 }}>
+        {/* 左栏：标题区 */}
+        <Box style={{ width: 300, flexDirection: 'column', justifyContent: 'center', paddingBottom: 40 }}>
+            <Text style={{ fontSize: 96, fontWeight: 'bold', color: '#1E4FA8', lineHeight: 1.0, marginBottom: 10 }}>05</Text>
+            <Text style={{ fontSize: 26, fontWeight: 'bold', color: '#1A2230', marginBottom: 14 }}>五个部分</Text>
+            <Box style={{ width: 64, height: 4, background: '#FFC107', marginBottom: 18 }} />
+            <Text style={{ fontSize: 22, color: '#4A5568', lineHeight: 1.55 }}>
+                从问题定义到计划调整，
+                <br />
+                每个部分都以「可验证的证据」
+                <br />
+                收口，而非停留在主张。
+            </Text>
+        </Box>
+
+        {/* 右栏：五条目 */}
+        <Box style={{ flex: 1, flexDirection: 'column', justifyContent: 'space-between', paddingBottom: 4 }}>
+            <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 22, background: '#F0F5FC', borderRadius: 6, padding: '16px 22px' }}>
+                <Box style={{ width: 48, height: 48, background: '#1E4FA8', borderRadius: 4, alignItems: 'center', justifyContent: 'center' }}>
+                    <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#FFFFFF' }}>01</Text>
+                </Box>
+                <Box style={{ flexDirection: 'column', gap: 5 }}>
+                    <Text style={{ fontSize: 26, fontWeight: 'bold', color: '#0E3F8C' }}>立项背景与产品定位</Text>
+                    <Text style={{ fontSize: 20, color: '#4A5568' }}>算力利用率的行业缺口，与现有方案的三个失效点</Text>
+                </Box>
+            </Box>
+
+            <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 22, background: '#F7F9FC', borderRadius: 6, padding: '16px 22px' }}>
+                <Box style={{ width: 48, height: 48, background: '#1E4FA8', borderRadius: 4, alignItems: 'center', justifyContent: 'center' }}>
+                    <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#FFFFFF' }}>02</Text>
+                </Box>
+                <Box style={{ flexDirection: 'column', gap: 5 }}>
+                    <Text style={{ fontSize: 26, fontWeight: 'bold', color: '#0E3F8C' }}>第一季度工作进展</Text>
+                    <Text style={{ fontSize: 20, color: '#4A5568' }}>五层架构、仿真引擎、四类基线算法与核心模块</Text>
+                </Box>
+            </Box>
+
+            <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 22, background: '#F7F9FC', borderRadius: 6, padding: '16px 22px' }}>
+                <Box style={{ width: 48, height: 48, background: '#1E4FA8', borderRadius: 4, alignItems: 'center', justifyContent: 'center' }}>
+                    <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#FFFFFF' }}>03</Text>
+                </Box>
+                <Box style={{ flexDirection: 'column', gap: 5 }}>
+                    <Text style={{ fontSize: 26, fontWeight: 'bold', color: '#0E3F8C' }}>实验证据与关键结论</Text>
+                    <Text style={{ fontSize: 20, color: '#4A5568' }}>200 任务基线实验，与 36 组奖励权重扫描的帕累托结论</Text>
+                </Box>
+            </Box>
+
+            <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 22, background: '#F7F9FC', borderRadius: 6, padding: '16px 22px' }}>
+                <Box style={{ width: 48, height: 48, background: '#1E4FA8', borderRadius: 4, alignItems: 'center', justifyContent: 'center' }}>
+                    <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#FFFFFF' }}>04</Text>
+                </Box>
+                <Box style={{ flexDirection: 'column', gap: 5 }}>
+                    <Text style={{ fontSize: 26, fontWeight: 'bold', color: '#0E3F8C' }}>风险识别与年度规划调整</Text>
+                    <Text style={{ fontSize: 20, color: '#4A5568' }}>四项主要风险，及拟调整的季度交付节奏</Text>
+                </Box>
+            </Box>
+
+            <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 22, background: '#F7F9FC', borderRadius: 6, padding: '16px 22px' }}>
+                <Box style={{ width: 48, height: 48, background: '#1E4FA8', borderRadius: 4, alignItems: 'center', justifyContent: 'center' }}>
+                    <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#FFFFFF' }}>05</Text>
+                </Box>
+                <Box style={{ flexDirection: 'column', gap: 5 }}>
+                    <Text style={{ fontSize: 26, fontWeight: 'bold', color: '#0E3F8C' }}>下一阶段计划与支持事项</Text>
+                    <Text style={{ fontSize: 20, color: '#4A5568' }}>第二季度四项交付，以及需要老师协调的四项资源</Text>
+                </Box>
+            </Box>
+        </Box>
+    </Box>
+
+    <Box style={{ height: 60, padding: '0 40px', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Text style={{ fontSize: 14, color: '#8B97A8' }}>中国人民大学 · 大学生创业训练计划</Text>
+        <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#1E4FA8' }}>02 / 16</Text>
+    </Box>
+</Slide>

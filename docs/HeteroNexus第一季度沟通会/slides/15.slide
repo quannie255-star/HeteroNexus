@@ -1,0 +1,92 @@
+<Slide style={{ width: 1280, height: 720, padding: 0, background: '#FFFFFF', fontFamily: '"Source Han Sans SC","Noto Sans SC","Microsoft YaHei",sans-serif' }}>
+    <Box style={{ height: 72, background: '#1E4FA8', padding: '0 40px', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#FFFFFF' }}>03 · 风险识别与计划调整</Text>
+        <Text style={{ fontSize: 14, color: '#BFD3EE' }}>HeteroNexus · 2026 Q1</Text>
+    </Box>
+
+    <Box style={{ height: 588, padding: '20px 40px 12px 40px', flexDirection: 'column' }}>
+        <Text style={{ fontSize: 21, color: '#4A5568', marginBottom: 12, lineHeight: 1.4 }}>
+            基于 Q1 的实验结论，我们对年度计划提出 <span style={{ fontWeight: 'bold', color: '#0E3F8C' }}>5 处拟调整</span> —— 核心思路是：<span style={{ fontWeight: 'bold', color: '#0E3F8C' }}>把不确定性最强的环节提前</span>，而不是留到最后。
+        </Text>
+
+        <Box style={{ flexDirection: 'row', background: '#0E3F8C', height: 40, alignItems: 'center', borderTopLeftRadius: 4, borderTopRightRadius: 4 }}>
+            <Text style={{ width: 132, paddingLeft: 18, fontSize: 18, fontWeight: 'bold', color: '#FFFFFF' }}>维度</Text>
+            <Text style={{ width: 288, fontSize: 18, fontWeight: 'bold', color: '#FFFFFF' }}>原计划</Text>
+            <Text style={{ width: 400, fontSize: 18, fontWeight: 'bold', color: '#FFFFFF' }}>拟调整</Text>
+            <Text style={{ flex: 1, fontSize: 18, fontWeight: 'bold', color: '#FFFFFF' }}>调整依据</Text>
+        </Box>
+
+        <Box style={{ flexDirection: 'row', height: 52, alignItems: 'center', background: '#FFF8E1', border: '1px solid #E5E7EB', borderTop: 'none' }}>
+            <Text style={{ width: 132, paddingLeft: 18, fontSize: 18, fontWeight: 'bold', color: '#0E3F8C' }}>Q2 目标</Text>
+            <Text style={{ width: 288, fontSize: 17, color: '#8B97A8', lineHeight: 1.3 }}>完成 K8s 调度器插件原型</Text>
+            <Text style={{ width: 400, fontSize: 17, fontWeight: 'bold', color: '#1E4FA8', lineHeight: 1.3 }}>先交付“仿真+训练+控制台”闭环，插件顺延至 Q3</Text>
+            <Text style={{ flex: 1, fontSize: 17, color: '#4A5568', lineHeight: 1.3 }}>算法未验证就写插件，等于把风险押在最后一步</Text>
+        </Box>
+
+        <Box style={{ flexDirection: 'row', height: 52, alignItems: 'center', background: '#FFFFFF', border: '1px solid #E5E7EB', borderTop: 'none' }}>
+            <Text style={{ width: 132, paddingLeft: 18, fontSize: 18, fontWeight: 'bold', color: '#0E3F8C' }}>技术路线</Text>
+            <Text style={{ width: 288, fontSize: 17, color: '#8B97A8', lineHeight: 1.3 }}>Go 全量重写调度器</Text>
+            <Text style={{ width: 400, fontSize: 17, fontWeight: 'bold', color: '#1E4FA8', lineHeight: 1.3 }}>Python 仿真 + Go 最小插件（走 DRA 扩展点）</Text>
+            <Text style={{ flex: 1, fontSize: 17, color: '#4A5568', lineHeight: 1.3 }}>降低学习成本，同时保留 K8s 生态兼容</Text>
+        </Box>
+
+        <Box style={{ flexDirection: 'row', height: 52, alignItems: 'center', background: '#FFFFFF', border: '1px solid #E5E7EB', borderTop: 'none' }}>
+            <Text style={{ width: 132, paddingLeft: 18, fontSize: 18, fontWeight: 'bold', color: '#0E3F8C' }}>验证方式</Text>
+            <Text style={{ width: 288, fontSize: 17, color: '#8B97A8', lineHeight: 1.3 }}>Q3 直接上真实实验室集群</Text>
+            <Text style={{ width: 400, fontSize: 17, fontWeight: 'bold', color: '#1E4FA8', lineHeight: 1.3 }}>先用公开 GPU trace 回放，再上集群</Text>
+            <Text style={{ flex: 1, fontSize: 17, color: '#4A5568', lineHeight: 1.3 }}>避免用未对齐的合成负载直接做真实验证</Text>
+        </Box>
+
+        <Box style={{ flexDirection: 'row', height: 52, alignItems: 'center', background: '#FFFFFF', border: '1px solid #E5E7EB', borderTop: 'none' }}>
+            <Text style={{ width: 132, paddingLeft: 18, fontSize: 18, fontWeight: 'bold', color: '#0E3F8C' }}>交付节奏</Text>
+            <Text style={{ width: 288, fontSize: 17, color: '#8B97A8', lineHeight: 1.3 }}>第四季度集中交付与结题</Text>
+            <Text style={{ width: 400, fontSize: 17, fontWeight: 'bold', color: '#1E4FA8', lineHeight: 1.3 }}>每季度一个可演示里程碑，季度末汇报</Text>
+            <Text style={{ flex: 1, fontSize: 17, color: '#4A5568', lineHeight: 1.3 }}>分散延期风险，便于老师逐季度把关</Text>
+        </Box>
+
+        <Box style={{ flexDirection: 'row', height: 52, alignItems: 'center', background: '#FFFFFF', border: '1px solid #E5E7EB', borderTop: 'none', borderBottomLeftRadius: 4, borderBottomRightRadius: 4 }}>
+            <Text style={{ width: 132, paddingLeft: 18, fontSize: 18, fontWeight: 'bold', color: '#0E3F8C' }}>权重策略</Text>
+            <Text style={{ width: 288, fontSize: 17, color: '#8B97A8', lineHeight: 1.3 }}>训练一个固定权重模型</Text>
+            <Text style={{ width: 400, fontSize: 17, fontWeight: 'bold', color: '#1E4FA8', lineHeight: 1.3 }}>把“权重选择”本身作为可学习动作</Text>
+            <Text style={{ flex: 1, fontSize: 17, color: '#4A5568', lineHeight: 1.3 }}>36 组实验证明不存在全局最优权重</Text>
+        </Box>
+
+        <Box style={{ marginTop: 16 }}>
+            <svg width={1200} height={104} viewBox='0 0 1200 104' fontFamily='Source Han Sans SC, Noto Sans SC, Microsoft YaHei, sans-serif'>
+                <line x1='150' y1='30' x2='1050' y2='30' stroke='#D6DCE5' strokeWidth='4' strokeLinecap='round' />
+                <line x1='150' y1='30' x2='450' y2='30' stroke='#1E4FA8' strokeWidth='4' strokeLinecap='round' />
+                <circle cx='150' cy='30' r='17' fill='#1E4FA8' />
+                <text x='150' y='36' textAnchor='middle' fill='#FFFFFF' fontSize='15' fontWeight='bold'>1</text>
+                <circle cx='450' cy='30' r='17' fill='#FFFFFF' stroke='#3D7BD9' strokeWidth='3' />
+                <text x='450' y='36' textAnchor='middle' fill='#3D7BD9' fontSize='15' fontWeight='bold'>2</text>
+                <circle cx='750' cy='30' r='17' fill='#FFFFFF' stroke='#3D7BD9' strokeWidth='3' />
+                <text x='750' y='36' textAnchor='middle' fill='#3D7BD9' fontSize='15' fontWeight='bold'>3</text>
+                <circle cx='1050' cy='30' r='17' fill='#FFFFFF' stroke='#3D7BD9' strokeWidth='3' />
+                <text x='1050' y='36' textAnchor='middle' fill='#3D7BD9' fontSize='15' fontWeight='bold'>4</text>
+
+                <text x='150' y='70' textAnchor='middle' fill='#1E4FA8' fontSize='17' fontWeight='bold'>Q1 已交付</text>
+                <text x='150' y='92' textAnchor='middle' fill='#4A5568' fontSize='14'>仿真引擎 · 基线实验 · 控制台 v1</text>
+
+                <text x='450' y='70' textAnchor='middle' fill='#0E3F8C' fontSize='17' fontWeight='bold'>Q2 本次调整重点</text>
+                <text x='450' y='92' textAnchor='middle' fill='#4A5568' fontSize='14'>DRL 训练闭环 · 权重在线选择</text>
+
+                <text x='750' y='70' textAnchor='middle' fill='#0E3F8C' fontSize='17' fontWeight='bold'>Q3</text>
+                <text x='750' y='92' textAnchor='middle' fill='#4A5568' fontSize='14'>K8s 插件 · trace 回放 · 集群验证</text>
+
+                <text x='1050' y='70' textAnchor='middle' fill='#0E3F8C' fontSize='17' fontWeight='bold'>Q4</text>
+                <text x='1050' y='92' textAnchor='middle' fill='#4A5568' fontSize='14'>结题答辩 · 开源发布 v1.0</text>
+            </svg>
+        </Box>
+
+        <Box style={{ height: 58, background: '#E8EFF8', borderLeft: '4px solid #1E4FA8', borderRadius: 4, padding: '0 22px', flexDirection: 'row', alignItems: 'center', marginTop: 'auto' }}>
+            <Text style={{ fontSize: 20, color: '#1A2230', lineHeight: 1.4 }}>
+                以上调整<span style={{ fontWeight: 'bold', color: '#0E3F8C' }}>不改变项目目标与验收范围</span>，只重排交付顺序 —— 恳请老师判断是否可行。
+            </Text>
+        </Box>
+    </Box>
+
+    <Box style={{ height: 60, padding: '0 40px', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Text style={{ fontSize: 14, color: '#8B97A8' }}>拟调整，供老师审议 · 详见《年度规划调整建议表》</Text>
+        <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#1E4FA8' }}>15 / 16</Text>
+    </Box>
+</Slide>

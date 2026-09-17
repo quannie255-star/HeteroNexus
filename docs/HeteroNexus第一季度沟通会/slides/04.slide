@@ -1,0 +1,112 @@
+<Slide style={{ width: 1280, height: 720, padding: 0, background: '#FFFFFF', fontFamily: '"Source Han Sans SC","Noto Sans SC","Microsoft YaHei",sans-serif' }}>
+    <Box style={{ height: 72, background: '#1E4FA8', padding: '0 40px', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#FFFFFF' }}>01 · 立项背景与产品定位</Text>
+        <Text style={{ fontSize: 14, color: '#BFD3EE' }}>HeteroNexus · 2026 Q1</Text>
+    </Box>
+
+    <Box style={{ height: 588, padding: '20px 40px 12px 40px', flexDirection: 'column' }}>
+        <Text style={{ fontSize: 22, color: '#4A5568', marginBottom: 16 }}>
+            高校实验室与中小企业的 GPU 集群，正在被四个结构性问题持续消耗 —— 而且它们互相纠缠。
+        </Text>
+
+        {/* KPI 三联数 · 视觉锚点 */}
+        <Box style={{ flexDirection: 'row', gap: 16, height: 128, marginBottom: 16 }}>
+            <Box style={{ flex: 1, background: '#F0F5FC', borderRadius: 6, padding: '16px 24px', flexDirection: 'row', alignItems: 'center', gap: 18 }}>
+                <Text style={{ fontSize: 72, fontWeight: 'bold', color: '#1E4FA8', lineHeight: 1.0 }}>&lt;40</Text>
+                <Box style={{ flexDirection: 'column', gap: 4 }}>
+                    <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#1A2230' }}>%</Text>
+                    <Text style={{ fontSize: 20, color: '#4A5568', lineHeight: 1.35 }}>高校实验室
+                        <br />
+                        GPU 平均利用率</Text>
+                </Box>
+            </Box>
+            <Box style={{ flex: 1, background: '#F0F5FC', borderRadius: 6, padding: '16px 24px', flexDirection: 'row', alignItems: 'center', gap: 18 }}>
+                <Text style={{ fontSize: 72, fontWeight: 'bold', color: '#1E4FA8', lineHeight: 1.0 }}>&gt;1000</Text>
+                <Box style={{ flexDirection: 'column', gap: 4 }}>
+                    <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#1A2230' }}>亿元</Text>
+                    <Text style={{ fontSize: 20, color: '#4A5568', lineHeight: 1.35 }}>国内 AI 算力服务
+                        <br />
+                        市场规模</Text>
+                </Box>
+            </Box>
+            <Box style={{ flex: 1, background: '#F0F5FC', borderRadius: 6, padding: '16px 24px', flexDirection: 'row', alignItems: 'center', gap: 18 }}>
+                <Text style={{ fontSize: 72, fontWeight: 'bold', color: '#1E4FA8', lineHeight: 1.0 }}>&gt;30</Text>
+                <Box style={{ flexDirection: 'column', gap: 4 }}>
+                    <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#1A2230' }}>% / 年</Text>
+                    <Text style={{ fontSize: 20, color: '#4A5568', lineHeight: 1.35 }}>市场规模
+                        <br />
+                        年复合增长率</Text>
+                </Box>
+            </Box>
+        </Box>
+
+        {/* 2×2 痛点矩阵 */}
+        <Box style={{ flexDirection: 'row', gap: 16, height: 268, marginBottom: 16 }}>
+            <Box style={{ flex: 1, background: '#FFFFFF', border: '1px solid #D6DCE5', borderRadius: 6, padding: '16px 20px', flexDirection: 'column' }}>
+                <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+                    <Box style={{ width: 28, height: 28, background: '#1E4FA8', borderRadius: 3, alignItems: 'center', justifyContent: 'center' }}>
+                        <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#FFFFFF' }}>A</Text>
+                    </Box>
+                    <Text style={{ fontSize: 26, fontWeight: 'bold', color: '#0E3F8C' }}>队列阻塞</Text>
+                </Box>
+                <Text style={{ fontSize: 20, color: '#4A5568', lineHeight: 1.55 }}>
+                    调度以静态分配为主，大任务长期占用加速卡，小任务等待时间过长。缺乏优先级与抢占机制，
+                    导致集群"看起来满负荷、实际大量时间在排队"。
+                </Text>
+            </Box>
+
+            <Box style={{ flex: 1, background: '#FFFFFF', border: '1px solid #D6DCE5', borderRadius: 6, padding: '16px 20px', flexDirection: 'column' }}>
+                <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+                    <Box style={{ width: 28, height: 28, background: '#1E4FA8', borderRadius: 3, alignItems: 'center', justifyContent: 'center' }}>
+                        <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#FFFFFF' }}>B</Text>
+                    </Box>
+                    <Text style={{ fontSize: 26, fontWeight: 'bold', color: '#0E3F8C' }}>资源失衡</Text>
+                </Box>
+                <Text style={{ fontSize: 20, color: '#4A5568', lineHeight: 1.55 }}>
+                    训练任务通常把 GPU 打满而 CPU 大量闲置，数据预处理任务则恰好相反。
+                    CPU 与 GPU 分属不同节点池、各自独立调度，异构资源之间无法互补。
+                </Text>
+            </Box>
+
+            <Box style={{ flex: 1, background: '#FFFFFF', border: '1px solid #D6DCE5', borderRadius: 6, padding: '16px 20px', flexDirection: 'column' }}>
+                <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+                    <Box style={{ width: 28, height: 28, background: '#1E4FA8', borderRadius: 3, alignItems: 'center', justifyContent: 'center' }}>
+                        <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#FFFFFF' }}>C</Text>
+                    </Box>
+                    <Text style={{ fontSize: 26, fontWeight: 'bold', color: '#0E3F8C' }}>管理割裂</Text>
+                </Box>
+                <Text style={{ fontSize: 20, color: '#4A5568', lineHeight: 1.55 }}>
+                    CPU、GPU、FPGA 等不同架构硬件需要分别管理，缺乏统一的资源抽象层与调度接口。
+                    运维人员被迫维护多套配置，扩展一种新硬件就要改动整套流程。
+                </Text>
+            </Box>
+
+            <Box style={{ flex: 1, background: '#FFFFFF', border: '1px solid #D6DCE5', borderRadius: 6, padding: '16px 20px', flexDirection: 'column' }}>
+                <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+                    <Box style={{ width: 28, height: 28, background: '#1E4FA8', borderRadius: 3, alignItems: 'center', justifyContent: 'center' }}>
+                        <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#FFFFFF' }}>D</Text>
+                    </Box>
+                    <Text style={{ fontSize: 26, fontWeight: 'bold', color: '#0E3F8C' }}>优化单一</Text>
+                </Box>
+                <Text style={{ fontSize: 20, color: '#4A5568', lineHeight: 1.55 }}>
+                    现有方案以启发式规则为主，"降低完成时间"与"提高利用率"往往此消彼长。
+                    缺少能同时权衡延迟、吞吐、能耗与公平性的多目标决策手段。
+                </Text>
+            </Box>
+        </Box>
+
+        {/* 底部结论条 */}
+        <Box style={{ height: 58, background: '#E8EFF8', borderLeft: '4px solid #FFC107', borderRadius: 4, padding: '0 22px', flexDirection: 'row', alignItems: 'center', marginTop: 'auto' }}>
+            <Text style={{ fontSize: 21, color: '#1A2230', lineHeight: 1.4 }}>
+                真正的技术缺口不在「能不能调度」，而在
+                <span style={{ fontWeight: 'bold', color: '#0E3F8C' }}>「多目标不可兼得」</span>
+                —— 这是本项目一切技术选择的出发点。
+            </Text>
+        </Box>
+    </Box>
+
+    <Box style={{ height: 60, padding: '0 40px', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Text style={{ fontSize: 14, color: '#8B97A8' }}>中国人民大学 · 大学生创业训练计划</Text>
+        <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#1E4FA8' }}>04 / 16</Text>
+    </Box>
+</Slide>

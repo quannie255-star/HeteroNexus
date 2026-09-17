@@ -1,0 +1,37 @@
+<Slide style={{ width: 1280, height: 720, padding: 0, position: 'relative', background: 'linear-gradient(135deg, #0E3F8C 0%, #1E4FA8 100%)', fontFamily: '"Source Han Sans SC","Noto Sans SC","Microsoft YaHei",sans-serif' }}>
+    <Box style={{ position: 'absolute', top: 0, left: 0, width: 1280, height: 720, opacity: 0.10 }}>
+        <svg width={1280} height={720} viewBox='0 0 1280 720'>
+            <g stroke='#FFFFFF' strokeWidth='1.5' fill='none'>
+                <path d='M0 180 L280 300 L560 220 L860 340 L1280 240' />
+                <path d='M0 380 L280 500 L560 420 L860 540 L1280 440' />
+                <path d='M280 300 L280 500' />
+                <path d='M860 340 L860 540' />
+                <path d='M560 80 L560 220' />
+            </g>
+        </svg>
+    </Box>
+
+    <Box style={{ position: 'relative', zIndex: 1, width: 1280, height: 720, padding: '0 88px', flexDirection: 'column', justifyContent: 'center' }}>
+        <Text style={{ fontSize: 160, fontWeight: 'bold', color: '#FFFFFF', lineHeight: 1.0, opacity: 0.94 }}>03</Text>
+        <Box style={{ width: 140, height: 5, background: '#D9534F', marginBottom: 26, marginTop: 6 }} />
+        <Text style={{ fontSize: 52, fontWeight: 'bold', color: '#FFFFFF', lineHeight: 1.25, marginBottom: 30 }}>
+            风险识别与计划调整
+        </Text>
+
+        <Box style={{ flexDirection: 'row', gap: 18 }}>
+            <Box style={{ background: 'rgba(255,255,255,0.12)', borderRadius: 4, padding: '10px 20px', borderLeft: '3px solid #D9534F' }}>
+                <Text style={{ fontSize: 20, color: '#E8EFF8' }}>算法风险：DRL 收敛性与迁移落差</Text>
+            </Box>
+            <Box style={{ background: 'rgba(255,255,255,0.12)', borderRadius: 4, padding: '10px 20px', borderLeft: '3px solid #D9534F' }}>
+                <Text style={{ fontSize: 20, color: '#E8EFF8' }}>工程风险：K8s 经验不足、压力后置</Text>
+            </Box>
+            <Box style={{ background: 'rgba(255,255,255,0.12)', borderRadius: 4, padding: '10px 20px', borderLeft: '3px solid #D9534F' }}>
+                <Text style={{ fontSize: 20, color: '#E8EFF8' }}>验证风险：合成负载不等于真实分布</Text>
+            </Box>
+        </Box>
+
+        <Text style={{ fontSize: 20, color: '#BFD3EE', marginTop: 30 }}>
+            以下调整方案均为<span style={{ color: '#FFFFFF', fontWeight: 'bold' }}>「拟调整」</span>，恳请老师判断节奏是否合理
+        </Text>
+    </Box>
+</Slide>

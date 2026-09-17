@@ -1,0 +1,116 @@
+<Slide style={{ width: 1280, height: 720, padding: 0, background: '#FFFFFF', fontFamily: '"Source Han Sans SC","Noto Sans SC","Microsoft YaHei",sans-serif' }}>
+    <Box style={{ height: 72, background: '#1E4FA8', padding: '0 40px', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#FFFFFF' }}>02 · 第一季度工作进展</Text>
+        <Text style={{ fontSize: 14, color: '#BFD3EE' }}>HeteroNexus · 2026 Q1</Text>
+    </Box>
+
+    <Box style={{ height: 588, padding: '20px 40px 12px 40px', flexDirection: 'column' }}>
+        <Box style={{ height: 48, background: '#0E3F8C', borderRadius: 4, padding: '0 22px', flexDirection: 'row', alignItems: 'center', marginBottom: 14 }}>
+            <Text style={{ fontSize: 21, fontWeight: 'bold', color: '#FFFFFF' }}>
+                问题：把奖励权重换一换，结果会怎样？我们扫了 36 组配置 —— 结论比预期更有价值。
+            </Text>
+        </Box>
+
+        {/* 表头 */}
+        <Box style={{ flexDirection: 'row', background: '#0E3F8C', height: 42, alignItems: 'center', borderTopLeftRadius: 4, borderTopRightRadius: 4 }}>
+            <Text style={{ width: 250, paddingLeft: 18, fontSize: 19, fontWeight: 'bold', color: '#FFFFFF' }}>奖励权重预设</Text>
+            <Text style={{ width: 118, fontSize: 19, fontWeight: 'bold', color: '#FFFFFF', textAlign: 'center' }}>平均 JCT</Text>
+            <Text style={{ width: 118, fontSize: 19, fontWeight: 'bold', color: '#FFFFFF', textAlign: 'center' }}>中位 JCT</Text>
+            <Text style={{ width: 112, fontSize: 19, fontWeight: 'bold', color: '#FFFFFF', textAlign: 'center' }}>P95 JCT</Text>
+            <Text style={{ width: 140, fontSize: 19, fontWeight: 'bold', color: '#FFFFFF', textAlign: 'center' }}>GPU 利用率</Text>
+            <Text style={{ flex: 1, fontSize: 19, fontWeight: 'bold', color: '#FFFFFF' }}>适用场景</Text>
+        </Box>
+
+        <Box style={{ flexDirection: 'row', height: 50, alignItems: 'center', background: '#FFF8E1', border: '1px solid #E5E7EB', borderTop: 'none' }}>
+            <Box style={{ width: 250, paddingLeft: 18, flexDirection: 'column', justifyContent: 'center' }}>
+                <Text style={{ fontSize: 19, fontWeight: 'bold', color: '#1A2230', lineHeight: 1.15 }}>延迟优先</Text>
+                <Text style={{ fontSize: 15, color: '#8B97A8', lineHeight: 1.25 }}>w 0.70/0.05/0.05/0.10/0.10</Text>
+            </Box>
+            <Text style={{ width: 118, fontSize: 19, fontWeight: 'bold', color: '#1E4FA8', textAlign: 'center' }}>−20.4%</Text>
+            <Text style={{ width: 118, fontSize: 19, fontWeight: 'bold', color: '#1E4FA8', textAlign: 'center' }}>−60.3%</Text>
+            <Text style={{ width: 112, fontSize: 19, color: '#4A5568', textAlign: 'center' }}>−2.4%</Text>
+            <Text style={{ width: 140, fontSize: 19, color: '#4A5568', textAlign: 'center' }}>88.5%</Text>
+            <Text style={{ flex: 1, fontSize: 18, color: '#4A5568' }}>交互式训练、调试密集</Text>
+        </Box>
+
+        <Box style={{ flexDirection: 'row', height: 50, alignItems: 'center', background: '#FFFFFF', border: '1px solid #E5E7EB', borderTop: 'none' }}>
+            <Box style={{ width: 250, paddingLeft: 18, flexDirection: 'column', justifyContent: 'center' }}>
+                <Text style={{ fontSize: 19, fontWeight: 'bold', color: '#1A2230', lineHeight: 1.15 }}>吞吐优先</Text>
+                <Text style={{ fontSize: 15, color: '#8B97A8', lineHeight: 1.25 }}>w 0.20/0.45/0.15/0.10/0.10</Text>
+            </Box>
+            <Text style={{ width: 118, fontSize: 19, color: '#B03A37', textAlign: 'center' }}>−1.2%</Text>
+            <Text style={{ width: 118, fontSize: 19, color: '#4A5568', textAlign: 'center' }}>−28.2%</Text>
+            <Text style={{ width: 112, fontSize: 19, color: '#4A5568', textAlign: 'center' }}>−2.2%</Text>
+            <Text style={{ width: 140, fontSize: 19, fontWeight: 'bold', color: '#1E4FA8', textAlign: 'center' }}>92.2%</Text>
+            <Text style={{ flex: 1, fontSize: 18, color: '#4A5568' }}>离线批量训练、成本敏感</Text>
+        </Box>
+
+        <Box style={{ flexDirection: 'row', height: 50, alignItems: 'center', background: '#FFFFFF', border: '1px solid #E5E7EB', borderTop: 'none' }}>
+            <Box style={{ width: 250, paddingLeft: 18, flexDirection: 'column', justifyContent: 'center' }}>
+                <Text style={{ fontSize: 19, fontWeight: 'bold', color: '#1A2230', lineHeight: 1.15 }}>均衡（默认）</Text>
+                <Text style={{ fontSize: 15, color: '#8B97A8', lineHeight: 1.25 }}>w 0.50/0.15/0.05/0.20/0.10</Text>
+            </Box>
+            <Text style={{ width: 118, fontSize: 19, color: '#1E4FA8', textAlign: 'center' }}>−16.2%</Text>
+            <Text style={{ width: 118, fontSize: 19, color: '#1E4FA8', textAlign: 'center' }}>−43.3%</Text>
+            <Text style={{ width: 112, fontSize: 19, color: '#4A5568', textAlign: 'center' }}>−3.1%</Text>
+            <Text style={{ width: 140, fontSize: 19, color: '#4A5568', textAlign: 'center' }}>89.5%</Text>
+            <Text style={{ flex: 1, fontSize: 18, color: '#4A5568' }}>通用默认，兼顾延迟与吞吐</Text>
+        </Box>
+
+        <Box style={{ flexDirection: 'row', height: 50, alignItems: 'center', background: '#F7F9FC', border: '1px solid #E5E7EB', borderTop: 'none' }}>
+            <Box style={{ width: 250, paddingLeft: 18, flexDirection: 'column', justifyContent: 'center' }}>
+                <Text style={{ fontSize: 19, fontWeight: 'bold', color: '#1A2230', lineHeight: 1.15 }}>公平优先</Text>
+                <Text style={{ fontSize: 15, color: '#8B97A8', lineHeight: 1.25 }}>w 0.25/0.10/0.05/0.55/0.05</Text>
+            </Box>
+            <Text style={{ width: 118, fontSize: 19, color: '#1E4FA8', textAlign: 'center' }}>−9.8%</Text>
+            <Text style={{ width: 118, fontSize: 19, color: '#4A5568', textAlign: 'center' }}>−16.5%</Text>
+            <Text style={{ width: 112, fontSize: 19, fontWeight: 'bold', color: '#1E4FA8', textAlign: 'center' }}>−4.1%</Text>
+            <Text style={{ width: 140, fontSize: 19, color: '#4A5568', textAlign: 'center' }}>89.7%</Text>
+            <Text style={{ flex: 1, fontSize: 18, color: '#4A5568' }}>多租户共享、公平分配</Text>
+        </Box>
+
+        <Box style={{ flexDirection: 'row', height: 50, alignItems: 'center', background: '#F7F9FC', border: '1px solid #E5E7EB', borderTop: 'none' }}>
+            <Box style={{ width: 250, paddingLeft: 18, flexDirection: 'column', justifyContent: 'center' }}>
+                <Text style={{ fontSize: 18, color: '#8B97A8', lineHeight: 1.15 }}>参照 SJF 启发式</Text>
+                <Text style={{ fontSize: 15, color: '#8B97A8', lineHeight: 1.25 }}>无奖励函数</Text>
+            </Box>
+            <Text style={{ width: 118, fontSize: 19, color: '#1E4FA8', textAlign: 'center' }}>−20.5%</Text>
+            <Text style={{ width: 118, fontSize: 19, color: '#1E4FA8', textAlign: 'center' }}>−66.1%</Text>
+            <Text style={{ width: 112, fontSize: 19, color: '#4A5568', textAlign: 'center' }}>−3.5%</Text>
+            <Text style={{ width: 140, fontSize: 19, color: '#B03A37', textAlign: 'center' }}>87.7%</Text>
+            <Text style={{ flex: 1, fontSize: 18, color: '#4A5568' }}>延迟最优，牺牲 2.1pt 利用率</Text>
+        </Box>
+
+        <Box style={{ flexDirection: 'row', height: 50, alignItems: 'center', background: '#F7F9FC', border: '1px solid #E5E7EB', borderTop: 'none', borderBottomLeftRadius: 4, borderBottomRightRadius: 4 }}>
+            <Box style={{ width: 250, paddingLeft: 18, flexDirection: 'column', justifyContent: 'center' }}>
+                <Text style={{ fontSize: 18, color: '#8B97A8', lineHeight: 1.15 }}>参照 FIFO 基线</Text>
+                <Text style={{ fontSize: 15, color: '#8B97A8', lineHeight: 1.25 }}>无奖励函数</Text>
+            </Box>
+            <Text style={{ width: 118, fontSize: 19, color: '#4A5568', textAlign: 'center' }}>基准 0%</Text>
+            <Text style={{ width: 118, fontSize: 19, color: '#4A5568', textAlign: 'center' }}>基准 0%</Text>
+            <Text style={{ width: 112, fontSize: 19, color: '#4A5568', textAlign: 'center' }}>基准 0%</Text>
+            <Text style={{ width: 140, fontSize: 19, color: '#4A5568', textAlign: 'center' }}>89.8%</Text>
+            <Text style={{ flex: 1, fontSize: 18, color: '#4A5568' }}>吞吐高，但长任务阻塞严重</Text>
+        </Box>
+
+        {/* 巨型结论 */}
+        <Box style={{ height: 140, background: '#FFF8E1', borderLeft: '6px solid #FFC107', borderRadius: 6, padding: '14px 24px', flexDirection: 'row', alignItems: 'center', gap: 24, marginTop: 'auto' }}>
+            <Text style={{ fontSize: 96, fontWeight: 'bold', color: '#B03A37', lineHeight: 1.0 }}>0</Text>
+            <Box style={{ flexDirection: 'column', gap: 6 }}>
+                <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#0E3F8C' }}>
+                    36 组权重配置中，"同时最优"的单点数量为 0
+                </Text>
+                <Text style={{ fontSize: 20, color: '#4A5568', lineHeight: 1.5 }}>
+                    「延迟优先」的 JCT 已追平最优的 SJF，同时 GPU 利用率高出 0.8pt；「吞吐优先」占据利用率端点（92.2%）。
+                    四组预设落在<span style={{ fontWeight: 'bold', color: '#0E3F8C' }}>帕累托前沿的不同位置</span>。
+                    既然最优权重随负载特征变化，那么<span style={{ fontWeight: 'bold', color: '#B03A37' }}>「在线选择权重」本身就是一个可学习的策略</span> —— 这是 DRL 的必要性论证，而非技术偏好。
+                </Text>
+            </Box>
+        </Box>
+    </Box>
+
+    <Box style={{ height: 60, padding: '0 40px', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Text style={{ fontSize: 14, color: '#8B97A8' }}>权重向量依 w₁ 完成时间 / w₂ 利用率 / w₃ 能耗 / w₄ 公平性 / w₅ 碎片度 顺序 · 相对 FIFO 基线</Text>
+        <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#1E4FA8' }}>11 / 16</Text>
+    </Box>
+</Slide>

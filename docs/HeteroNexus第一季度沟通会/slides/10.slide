@@ -1,0 +1,64 @@
+<Slide style={{ width: 1280, height: 720, padding: 0, background: '#FFFFFF', fontFamily: '"Source Han Sans SC","Noto Sans SC","Microsoft YaHei",sans-serif' }}>
+    <Box style={{ height: 72, background: '#1E4FA8', padding: '0 40px', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#FFFFFF' }}>02 · 第一季度工作进展</Text>
+        <Text style={{ fontSize: 14, color: '#BFD3EE' }}>HeteroNexus · 2026 Q1</Text>
+    </Box>
+
+    <Box style={{ height: 588, padding: '20px 40px 12px 40px', flexDirection: 'column' }}>
+        <Text style={{ fontSize: 22, color: '#4A5568', marginBottom: 14 }}>
+            把这组数据读完，我们得到了四条结论 —— 其中<span style={{ fontWeight: 'bold', color: '#B03A37' }}>第三条恰恰解释了为什么必须有强化学习</span>。
+        </Text>
+
+        <Box style={{ flexDirection: 'row', gap: 14, height: 360, marginBottom: 14 }}>
+            <Box style={{ flex: 1, flexDirection: 'column', gap: 14 }}>
+                <Box style={{ flex: 1, background: '#FFFFFF', border: '1px solid #D6DCE5', borderLeft: '4px solid #1E4FA8', borderRadius: 6, padding: '14px 18px', flexDirection: 'column' }}>
+                    <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#0E3F8C', marginBottom: 8 }}>① 排序策略是第一影响因子</Text>
+                    <Text style={{ fontSize: 20, color: '#4A5568', lineHeight: 1.55 }}>
+                        DRF 平均 JCT 降低 14.2%、中位降低 54.3%，SJF 分别达 20.5% 与 66.1%。
+                        这一幅度超过绝大多数硬件升级带来的边际收益。
+                    </Text>
+                </Box>
+                <Box style={{ flex: 1, background: '#FFFFFF', border: '1px solid #D6DCE5', borderLeft: '4px solid #D9534F', borderRadius: 6, padding: '14px 18px', flexDirection: 'column' }}>
+                    <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#B03A37', marginBottom: 8 }}>③ 长尾任务是所有基线的共同短板</Text>
+                    <Text style={{ fontSize: 20, color: '#4A5568', lineHeight: 1.55 }}>
+                        DRF（10940.9）与 SJF（10503.8）的 P95 JCT 均高于 FIFO（9430.4）。
+                        「短任务优先」会饿死大任务 —— 缺乏公平性约束的规则必然产生长尾。
+                    </Text>
+                </Box>
+            </Box>
+
+            <Box style={{ flex: 1, flexDirection: 'column', gap: 14 }}>
+                <Box style={{ flex: 1, background: '#FFFFFF', border: '1px solid #D6DCE5', borderLeft: '4px solid #3D7BD9', borderRadius: 6, padding: '14px 18px', flexDirection: 'column' }}>
+                    <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#0E3F8C', marginBottom: 8 }}>② 吞吐与延迟存在明确权衡</Text>
+                    <Text style={{ fontSize: 20, color: '#4A5568', lineHeight: 1.55 }}>
+                        FIFO 的 GPU 利用率最高（94.2%）、Makespan 最短（15231），
+                        但代价是长任务被大任务阻塞。任何单一目标的优化都必然顾此失彼。
+                    </Text>
+                </Box>
+                <Box style={{ flex: 1, background: '#FFFFFF', border: '1px solid #D6DCE5', borderLeft: '4px solid #3D7BD9', borderRadius: 6, padding: '14px 18px', flexDirection: 'column' }}>
+                    <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#0E3F8C', marginBottom: 8 }}>④ 异构资源协同存在明显空间</Text>
+                    <Text style={{ fontSize: 20, color: '#4A5568', lineHeight: 1.55 }}>
+                        四类算法的 CPU 利用率均仅约 46%，GPU 节点 CPU 与 CPU 节点大量闲置。
+                        CPU 密集的预处理任务与 GPU 训练的互补放置，是本项目的切入点之一。
+                    </Text>
+                </Box>
+            </Box>
+        </Box>
+
+        <Box style={{ height: 120, background: '#1E4FA8', borderRadius: 6, padding: '16px 24px', flexDirection: 'row', alignItems: 'center', gap: 22, marginTop: 'auto' }}>
+            <Text style={{ fontSize: 76, fontWeight: 'bold', color: '#FFC107', lineHeight: 1.0 }}>→</Text>
+            <Box style={{ flexDirection: 'column', gap: 6 }}>
+                <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#FFFFFF' }}>对 HeteroNexus-DRL 的直接指导</Text>
+                <Text style={{ fontSize: 20, color: '#CFE0F5', lineHeight: 1.5 }}>
+                    三条结论指向同一件事：固定规则无法同时优化平均 JCT、P95 长尾与 GPU 利用率。
+                    因此"D R L 的价值"不是找一条更聪明的静态规则，而是<span style={{ fontWeight: 'bold', color: '#FFC107' }}>根据实时集群状态动态调整多目标权重</span>——下一节给出这一判断的量化依据。
+                </Text>
+            </Box>
+        </Box>
+    </Box>
+
+    <Box style={{ height: 60, padding: '0 40px', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Text style={{ fontSize: 14, color: '#8B97A8' }}>中国人民大学 · 大学生创业训练计划</Text>
+        <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#1E4FA8' }}>10 / 16</Text>
+    </Box>
+</Slide>
