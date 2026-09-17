@@ -107,17 +107,53 @@ def test_feature_values_are_finite():
 # 硬件监控
 # --------------------------------------------------------------------------
 
+def _assert_physically_valid(m: NodeMetrics, node_id: str):
+    """占用不得超过容量、利用率不得超过 100%。"""
+    assert isinstance(m, NodeMetrics)
+    assert m.node_id == node_id
+    assert 0.0 <= m.cpu_util <= 1.0, f"cpu_util={m.cpu_util}"
+    assert 0.0 <= m.mem_util <= 1.0, f"mem_util={m.mem_util}"
+    assert m.mem_used_gb <= m.mem_total_gb, (
+        f"{node_id} 内存超额：{m.mem_used_gb} > {m.mem_total_gb}")
+    assert m.cpu_cores_used <= m.cpu_cores_total, (
+        f"{node_id} CPU 核数超额：{m.cpu_cores_used} > {m.cpu_cores_total}")
+    assert len(m.gpu_utils) == m.gpu_count
+    assert len(m.gpu_mem_used_gb) == m.gpu_count
+    for u in m.gpu_utils:
+        assert 0.0 <= u <= 1.0, f"gpu_util={u}"
+    for used, total in zip(m.gpu_mem_used_gb, m.gpu_mem_total_gb):
+        assert used <= total, f"显存超额：{used} > {total}"
+
+
 def test_monitor_collect_once_without_hardware():
     """无 GPU / 无 psutil 环境下，collect_once 应走模拟分支而非抛异常。"""
-    mon = HardwareMonitor(node_ids=["gpu-node-1", "cpu-node-1"], sample_interval=1.0)
+    mon = HardwareMonitor(node_ids=["gpu-node-1", "cpu-node-1"],
+                          sample_interval=1.0, mock_seed=42)
     snap = mon.collect_once()
     assert set(snap.keys()) == {"gpu-node-1", "cpu-node-1"}
     for node_id, m in snap.items():
-        assert isinstance(m, NodeMetrics)
-        assert m.node_id == node_id
-        assert 0.0 <= m.cpu_util <= 1.0
-        assert 0.0 <= m.mem_util <= 1.0
-        assert m.mem_used_gb <= m.mem_total_gb
+        _assert_physically_valid(m, node_id)
+
+
+def test_monitor_never_exceeds_capacity_over_many_samples():
+    """连续多次采样均不得出现超额占用。
+
+    该用例用于防止「模拟采集随机取值越过节点容量」的回归 ——
+    此类缺陷会产出利用率 > 100% 的非法状态，污染下游调度决策。
+    """
+    mon = HardwareMonitor(node_ids=["gpu-node-1", "gpu-node-2", "cpu-node-1"],
+                          sample_interval=1.0, mock_seed=7)
+    for _ in range(300):
+        for node_id, m in mon.collect_once().items():
+            _assert_physically_valid(m, node_id)
+
+
+def test_mock_seed_makes_collection_reproducible():
+    a = HardwareMonitor(node_ids=["gpu-node-1"], mock_seed=123).collect_once()["gpu-node-1"]
+    b = HardwareMonitor(node_ids=["gpu-node-1"], mock_seed=123).collect_once()["gpu-node-1"]
+    assert a.cpu_util == b.cpu_util
+    assert a.mem_used_gb == b.mem_used_gb
+    assert a.gpu_utils == b.gpu_utils
 
 
 def test_cluster_state_aggregation():

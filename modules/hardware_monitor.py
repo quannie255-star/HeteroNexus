@@ -13,9 +13,10 @@
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Callable
 from collections import deque
-import time
-import threading
 import json
+import random
+import threading
+import time
 
 
 @dataclass
@@ -79,16 +80,24 @@ class HardwareMonitor:
     """硬件性能监控器"""
 
     def __init__(self, node_ids: List[str], sample_interval: float = 5.0,
-                 history_size: int = 360):
+                 history_size: int = 360, mock_seed: Optional[int] = None):
         """
         Args:
             node_ids: 监控的节点 ID 列表
             sample_interval: 采样间隔（秒）
             history_size: 历史数据保留条数（默认 360 * 5s = 30 分钟）
+            mock_seed: 模拟采集的随机种子；传入固定值可让测试完全确定
         """
         self.node_ids = node_ids
         self.sample_interval = sample_interval
         self.history_size = history_size
+        # 模拟采集使用独立且可播种的随机源：避免与业务代码争夺全局 random 状态，
+        # 并让测试可通过 mock_seed 消除偶发性。
+        self._rng = random.Random(mock_seed)
+        # 模拟采集使用独立且可播种的随机源：
+        # 1) 避免与业务代码争夺全局 random 状态；
+        # 2) 传入 mock_seed 可让测试完全确定，消除偶发失败。
+        self._rng = random.Random(mock_seed)
         self.current_metrics: Dict[str, NodeMetrics] = {}
         self.history: Dict[str, deque] = {nid: deque(maxlen=history_size) for nid in node_ids}
         self._collector_fn: Optional[Callable[[str], NodeMetrics]] = None
@@ -132,32 +141,40 @@ class HardwareMonitor:
         return results
 
     def _mock_collect(self) -> Dict[str, NodeMetrics]:
-        """模拟采集（用于开发测试）"""
-        import random
+        """模拟采集（用于开发测试）。
+
+        关键约束：生成的占用值必须落在节点物理容量内
+        （cpu_cores_used <= cpu_cores_total，mem_used_gb <= mem_total_gb），
+        否则会产生「利用率 > 100%」这类物理上不可能的状态，污染下游调度决策。
+        """
         results = {}
         for nid in self.node_ids:
             is_gpu = 'gpu' in nid
             gpu_count = 8 if is_gpu else 0
+            cpu_total = 64 if is_gpu else 32
+            mem_total = 256.0 if is_gpu else 128.0
             m = NodeMetrics(
                 node_id=nid,
                 timestamp=time.time(),
-                cpu_util=random.uniform(0.3, 0.85),
-                cpu_cores_total=64 if is_gpu else 32,
-                cpu_cores_used=random.uniform(10, 50),
-                mem_total_gb=256 if is_gpu else 128,
-                mem_used_gb=random.uniform(40, 180),
+                cpu_util=self._rng.uniform(0.3, 0.85),
+                cpu_cores_total=cpu_total,
+                cpu_cores_used=0.0,
+                mem_total_gb=mem_total,
+                mem_used_gb=self._rng.uniform(0.15, 0.70) * mem_total,
                 gpu_count=gpu_count,
-                gpu_utils=[random.uniform(0.5, 0.95) for _ in range(gpu_count)],
-                gpu_mem_total_gb=[80 for _ in range(gpu_count)],
-                gpu_mem_used_gb=[random.uniform(20, 70) for _ in range(gpu_count)],
-                gpu_temps=[random.uniform(55, 78) for _ in range(gpu_count)],
-                gpu_power_watts=[random.uniform(200, 350) for _ in range(gpu_count)],
-                net_rx_mbps=random.uniform(50, 500),
-                net_tx_mbps=random.uniform(30, 300),
-                disk_read_mbps=random.uniform(20, 200),
-                disk_write_mbps=random.uniform(10, 100),
+                gpu_utils=[self._rng.uniform(0.5, 0.95) for _ in range(gpu_count)],
+                gpu_mem_total_gb=[80.0 for _ in range(gpu_count)],
+                gpu_mem_used_gb=[self._rng.uniform(0.20, 0.80) * 80.0 for _ in range(gpu_count)],
+                gpu_temps=[self._rng.uniform(55, 78) for _ in range(gpu_count)],
+                gpu_power_watts=[self._rng.uniform(200, 350) for _ in range(gpu_count)],
+                net_rx_mbps=self._rng.uniform(50, 500),
+                net_tx_mbps=self._rng.uniform(30, 300),
+                disk_read_mbps=self._rng.uniform(20, 200),
+                disk_write_mbps=self._rng.uniform(10, 100),
             )
-            m.mem_util = m.mem_used_gb / m.mem_total_gb if m.mem_total_gb else 0
+            # 核使用量与利用率保持一致，避免「利用率 85% 却只用了 10 核」的矛盾
+            m.cpu_cores_used = round(m.cpu_util * cpu_total, 2)
+            m.mem_util = m.mem_used_gb / m.mem_total_gb if m.mem_total_gb else 0.0
             m.power_total_watts = sum(m.gpu_power_watts) + m.cpu_cores_used * 5
             self._detect_anomaly(m)
             results[nid] = m
