@@ -162,6 +162,13 @@ def main() -> int:
             sweep[tier] = {k: v.__dict__ for k, v in sub.items()}
         print()
 
+    # 时间序列采样（每 30 秒一个点）只服务于绘图，控制台自己在浏览器里算同一条
+    # 曲线。8 小时 × 6 策略写进 JSON 是 3 MB 多，塞进 git 没有意义。
+    def _slim(d):
+        d = dict(d)
+        d.pop('samples', None)
+        return d
+
     payload = {
         'meta': {
             'scenario': args.scenario,
@@ -183,8 +190,9 @@ def main() -> int:
                               '故「总花费最低」可通过大量丢请求实现。'
                               % (MIN_SERVE_RATE_FOR_HEADLINE * 100)),
         },
-        'results': {k: v.__dict__ for k, v in results.items()},
-        'tier_sweep': sweep,
+        'results': {k: _slim(v.__dict__) for k, v in results.items()},
+        'tier_sweep': {t: {k: _slim(v) for k, v in sub.items()}
+                       for t, sub in sweep.items()},
     }
     OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     OUT_PATH.write_text(json.dumps(payload, ensure_ascii=False, indent=1), encoding='utf-8')
